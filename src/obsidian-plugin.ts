@@ -1,9 +1,15 @@
-import { Plugin, Notice, WorkspaceLeaf, ItemView } from 'obsidian';
+import { Plugin, Notice, WorkspaceLeaf, ItemView, addIcon } from 'obsidian';
 import { createRoot } from 'react-dom/client';
 import * as React from 'react';
 import WordManager from './WordManager';
 
 const VIEW_TYPE_WORD_MANAGER = 'word-manager-view';
+
+// 添加一个简单的图标（可自定义 SVG）
+addIcon(
+    'word-book',
+    '<svg viewBox="0 0 100 100" width="100" height="100"><rect x="15" y="20" width="70" height="60" rx="10" fill="#a78bfa"/><rect x="25" y="30" width="50" height="40" rx="5" fill="#fff"/></svg>',
+);
 
 export default class LanguageAssistantPlugin extends Plugin {
     async onload() {
@@ -24,6 +30,10 @@ export default class LanguageAssistantPlugin extends Plugin {
             id: 'open-word-manager',
             name: '📖 打开单词管理页面',
             callback: () => this.openWordManagerLeaf(),
+        });
+        // 添加 ribon 按钮
+        this.addRibbonIcon('word-book', '单词管理', () => {
+            this.openWordManagerLeaf();
         });
     }
 
@@ -62,6 +72,7 @@ class WordManagerView extends ItemView {
                 words: [],
                 onAdd: () => {},
                 onEdit: () => {},
+                onDelete: () => {},
             }),
         );
     }

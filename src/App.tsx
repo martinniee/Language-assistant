@@ -14,6 +14,9 @@ function App() {
     const handleEdit = (word: Word) => {
         setWords((ws) => ws.map((w) => (w.id === word.id ? word : w)));
     };
+    const handleDelete = (id: number) => {
+        setWords((ws) => ws.filter((w) => w.id !== id));
+    };
 
     return (
         <div style={{ padding: 32 }}>
@@ -21,6 +24,7 @@ function App() {
                 words={words}
                 onAdd={handleAdd}
                 onEdit={handleEdit}
+                onDelete={handleDelete}
             />
         </div>
     );

@@ -10,12 +10,14 @@ interface WordManagerProps {
     words: Word[];
     onAdd: (word: Omit<Word, 'id'>) => void;
     onEdit: (word: Word) => void;
+    onDelete: (id: number) => void;
 }
 
 export default function WordManager({
     words,
     onAdd,
     onEdit,
+    onDelete,
 }: WordManagerProps) {
     const [newWord, setNewWord] = useState('');
     const [newMeaning, setNewMeaning] = useState('');
@@ -23,9 +25,19 @@ export default function WordManager({
     const [editWord, setEditWord] = useState('');
     const [editMeaning, setEditMeaning] = useState('');
 
+    // 本地数据用于演示静态功能
+    const [localWords, setLocalWords] = useState<Word[]>(words);
+    const [localNextId, setLocalNextId] = useState(1);
+
     const handleAdd = () => {
         if (newWord && newMeaning) {
-            onAdd({ word: newWord, meaning: newMeaning });
+            const newEntry = {
+                id: localNextId,
+                word: newWord,
+                meaning: newMeaning,
+            };
+            setLocalWords((ws) => [...ws, newEntry]);
+            setLocalNextId((id) => id + 1);
             setNewWord('');
             setNewMeaning('');
         }
@@ -33,9 +45,19 @@ export default function WordManager({
 
     const handleEdit = () => {
         if (editing && editWord && editMeaning) {
-            onEdit({ ...editing, word: editWord, meaning: editMeaning });
+            setLocalWords((ws) =>
+                ws.map((w) =>
+                    w.id === editing.id
+                        ? { ...editing, word: editWord, meaning: editMeaning }
+                        : w,
+                ),
+            );
             setEditing(null);
         }
+    };
+
+    const handleDelete = (id: number) => {
+        setLocalWords((ws) => ws.filter((w) => w.id !== id));
     };
 
     return (
@@ -65,7 +87,7 @@ export default function WordManager({
                     </tr>
                 </thead>
                 <tbody>
-                    {words.map((w) =>
+                    {localWords.map((w) =>
                         editing?.id === w.id ? (
                             <tr key={w.id}>
                                 <td>
@@ -103,6 +125,11 @@ export default function WordManager({
                                             setEditMeaning(w.meaning);
                                         }}>
                                         编辑
+                                    </button>
+                                    <button
+                                        style={{ marginLeft: 8, color: 'red' }}
+                                        onClick={() => handleDelete(w.id)}>
+                                        删除
                                     </button>
                                 </td>
                             </tr>
