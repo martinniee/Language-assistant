@@ -60,6 +60,8 @@ class WordManagerView extends ItemView {
     root: ReturnType<typeof createRoot> | null = null;
     private wordStorage: MarkdownWordStorage;
     private words: Word[] = [];
+    private renderKey: number = 0; // 添加渲染键用于强制刷新
+
     constructor(leaf: WorkspaceLeaf) {
         super(leaf);
         // 初始化 Markdown 存储器，指向 vault 根目录的 words.md
@@ -198,17 +200,36 @@ class WordManagerView extends ItemView {
         this.renderComponent();
     }
     private renderComponent() {
+        // 增加渲染键以确保组件重新渲染
+        this.renderKey++;
+
         if (this.root) {
             this.root.render(
                 React.createElement(MainApp, {
-                    words: this.words,
+                    key: this.renderKey, // 添加key强制重新渲染
+                    words: [...this.words], // 创建新数组引用确保React检测到变化
                     onAdd: this.handleAddWord.bind(this),
                     onEdit: this.handleEditWord.bind(this),
                     onDelete: this.handleDeleteWord.bind(this),
                     onJumpToSource: this.jumpToWordInMarkdown.bind(this),
                 }),
             );
+            console.log(
+                `🔄 界面已重新渲染 (key: ${this.renderKey}, words: ${this.words.length})`,
+            );
         }
+    }
+
+    // 强制刷新界面的辅助方法
+    private forceRefreshUI() {
+        console.log('🔄 强制刷新UI...');
+        this.renderComponent();
+
+        // 使用 setTimeout 确保在下一个事件循环中再次刷新
+        setTimeout(() => {
+            console.log('🔄 延迟刷新UI...');
+            this.renderComponent();
+        }, 100);
     }
     private async handleAddWord(word: Word) {
         console.log('➕ 尝试添加新单词:', word.name);
@@ -230,14 +251,15 @@ class WordManagerView extends ItemView {
 
             // 添加到本地数组
             this.words.push(word);
-            console.log('📝 单词已添加到本地数组，正在保存到文件...');
+            console.log('📝 单词已添加到本地数组，正在保存到文件...'); // 立即更新界面显示新数据
+            this.forceRefreshUI();
 
             // 保存到 words.md 文件
             await this.wordStorage.saveWords(this.words);
             console.log('💾 已保存到 words.md 文件');
 
-            // 重新渲染界面
-            this.renderComponent();
+            // 保存成功后再次确保界面更新
+            this.forceRefreshUI();
 
             new Notice(`✅ 成功添加单词 "${word.name}" 并保存到 words.md`);
         } catch (error) {
@@ -275,14 +297,15 @@ class WordManagerView extends ItemView {
 
                 // 更新本地数组
                 this.words[index] = editedWord;
-                console.log('📝 单词已更新到本地数组，正在保存到文件...');
+                console.log('📝 单词已更新到本地数组，正在保存到文件...'); // 立即更新界面显示修改后的数据
+                this.forceRefreshUI();
 
                 // 保存到文件
                 await this.wordStorage.saveWords(this.words);
                 console.log('💾 已保存到 words.md 文件');
 
-                // 重新渲染界面
-                this.renderComponent();
+                // 保存成功后再次确保界面更新
+                this.forceRefreshUI();
 
                 new Notice(
                     `✅ 成功编辑单词 "${editedWord.name}" 并保存到 words.md`,
@@ -292,10 +315,10 @@ class WordManagerView extends ItemView {
             }
         } catch (error) {
             console.error('❌ 编辑单词失败:', error);
-            new Notice('❌ 编辑单词失败，请查看控制台错误信息');
+            new Notice('❌ 编辑单词失败，请查看控制台错误信息'); // 发生错误时也要刷新界面，恢复原始状态
+            this.forceRefreshUI();
         }
     }
-
     private async handleDeleteWord(wordName: string) {
         console.log('🗑️ 尝试删除单词:', wordName);
         try {
@@ -305,14 +328,15 @@ class WordManagerView extends ItemView {
             this.words = this.words.filter((w) => w.name !== wordName);
 
             if (this.words.length < originalLength) {
-                console.log('📝 单词已从本地数组移除，正在保存到文件...');
+                console.log('📝 单词已从本地数组移除，正在保存到文件...'); // 立即更新界面显示删除后的数据
+                this.forceRefreshUI();
 
                 // 保存到文件
                 await this.wordStorage.saveWords(this.words);
                 console.log('💾 已保存到 words.md 文件');
 
-                // 重新渲染界面
-                this.renderComponent();
+                // 保存成功后再次确保界面更新
+                this.forceRefreshUI();
 
                 new Notice(`✅ 成功删除单词 "${wordName}" 并更新 words.md`);
             } else {
@@ -320,7 +344,8 @@ class WordManagerView extends ItemView {
             }
         } catch (error) {
             console.error('❌ 删除单词失败:', error);
-            new Notice('❌ 删除单词失败，请查看控制台错误信息');
+            new Notice('❌ 删除单词失败，请查看控制台错误信息'); // 发生错误时也要刷新界面
+            this.forceRefreshUI();
         }
     }
 

@@ -588,7 +588,22 @@ export default function WordManagerMarkdown({
     const [viewMode, setViewMode] = useState<'list' | 'detail' | 'filter'>(
         'list',
     );
-    const [currentWord, setCurrentWord] = useState<Word | null>(null); // 新增：标签和分类过滤状态
+    const [currentWord, setCurrentWord] = useState<Word | null>(null);
+
+    // 监控数据变化
+    React.useEffect(() => {
+        console.log(
+            `📝 WordManager received ${words.length} words, updating interface`,
+        );
+    }, [words.length]);
+
+    // 监控 words 数组内容变化
+    React.useEffect(() => {
+        console.log(
+            `🔄 Words data changed:`,
+            words.map((w) => w.name).slice(0, 5),
+        );
+    }, [words]); // 新增：标签和分类过滤状态
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
@@ -786,29 +801,50 @@ export default function WordManagerMarkdown({
             setErrorMessage(`单词 "${trimmedName}" 已存在，请使用不同的名称`);
             return;
         }
-        if (editTarget) {
-            // 编辑时保留原有元数据
-            onEdit(
-                {
-                    ...form,
-                    name: trimmedName,
-                    metadata: {
-                        ...editTarget.metadata,
-                        ...form.metadata,
+
+        // 记录操作类型用于调试
+        const operation = editTarget ? '编辑' : '添加';
+        console.log(`🔄 ${operation}单词操作开始:`, trimmedName);
+
+        try {
+            if (editTarget) {
+                // 编辑时保留原有元数据
+                onEdit(
+                    {
+                        ...form,
+                        name: trimmedName,
+                        metadata: {
+                            ...editTarget.metadata,
+                            ...form.metadata,
+                        },
                     },
-                },
-                editTarget,
-            );
-            setEditTarget(null);
-        } else {
-            // 添加新单词时，让后端生成ID
-            onAdd({ ...form, name: trimmedName });
-        } // 重置表单和错误消息
-        setForm(createEmptyWord());
-        setErrorMessage('');
-        setNewTagInput('');
-        setShowAdd(false);
-    }, [editTarget, form, onEdit, onAdd, words]);
+                    editTarget,
+                );
+                setEditTarget(null);
+                console.log(`✅ ${operation}单词请求已发送，等待界面更新`);
+            } else {
+                // 添加新单词时，让后端生成ID
+                onAdd({ ...form, name: trimmedName });
+                console.log(`✅ ${operation}单词请求已发送，等待界面更新`);
+            }
+
+            // 重置表单和错误消息
+            setForm(createEmptyWord());
+            setErrorMessage('');
+            setNewTagInput('');
+            setShowAdd(false);
+
+            // 如果在详细视图中，返回列表视图以查看更新
+            if (viewMode === 'detail') {
+                setViewMode('list');
+                setCurrentWord(null);
+                console.log('🔄 返回列表视图以查看更新');
+            }
+        } catch (error) {
+            console.error(`❌ ${operation}单词时发生错误:`, error);
+            setErrorMessage(`${operation}失败，请重试`);
+        }
+    }, [editTarget, form, onEdit, onAdd, words, viewMode]);
     const handleEditClick = useCallback((word: Word) => {
         setEditTarget(word);
         setForm({
@@ -1020,9 +1056,7 @@ export default function WordManagerMarkdown({
     const handleBackToList = useCallback(() => {
         setViewMode('list');
         setCurrentWord(null);
-    }, []);
-
-    // 带确认提示的单词删除函数
+    }, []); // 带确认提示的单词删除函数
     const handleDeleteWord = useCallback(
         (word: Word) => {
             const wordName = word.name;
@@ -1051,10 +1085,26 @@ export default function WordManagerMarkdown({
                         `此操作将永久删除该单词的所有信息，无法撤销。`,
                 )
             ) {
+                console.log(`🗑️ 删除单词操作开始:`, wordName);
+
+                // 如果当前在详细视图中且正在查看要删除的单词，先返回列表
+                if (
+                    viewMode === 'detail' &&
+                    currentWord &&
+                    currentWord.name === wordName
+                ) {
+                    setViewMode('list');
+                    setCurrentWord(null);
+                    console.log(
+                        '🔄 从详细视图返回列表视图（因为正在删除当前查看的单词）',
+                    );
+                }
+
                 onDelete(wordName);
+                console.log('✅ 删除单词请求已发送，等待界面更新');
             }
         },
-        [onDelete],
+        [onDelete, viewMode, currentWord],
     );
     return (
         <div

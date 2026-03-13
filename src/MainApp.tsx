@@ -34,6 +34,11 @@ const MainApp: React.FC<MainAppProps> = ({
     const [currentView, setCurrentView] = useState<ViewMode>('home');
     const [isCollapsed, setIsCollapsed] = useState(false); // 新增折叠状态
 
+    // 添加调试信息，监控数据变化
+    React.useEffect(() => {
+        console.log(`📊 MainApp received ${words.length} words`);
+    }, [words]);
+
     // 计算统计信息用于导航栏显示
     const stats = useMemo(() => {
         const totalWords = words.length;
@@ -44,6 +49,7 @@ const MainApp: React.FC<MainAppProps> = ({
             return !nextReviewDate || nextReviewDate <= new Date();
         }).length;
 
+        console.log(`📈 Stats updated: ${totalWords} total, ${dueWords} due`);
         return { totalWords, dueWords };
     }, [words]);
 
