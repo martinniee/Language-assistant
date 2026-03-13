@@ -129,19 +129,19 @@ const MainApp: React.FC<MainAppProps> = ({
             style={{
                 display: 'flex',
                 height: '100vh',
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#f8f9fa',
                 fontFamily:
                     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
             }}>
-            {/* 左侧导航栏 */}
+            {/* 左侧导航栏 */}{' '}
             <div
                 style={{
                     width: isCollapsed ? '80px' : '280px',
                     backgroundColor: '#ffffff',
-                    borderRight: '1px solid #e0e0e0',
+                    borderRight: '1px solid #dee2e6',
                     display: 'flex',
                     flexDirection: 'column',
-                    boxShadow: '2px 0 8px rgba(0,0,0,0.08)',
+                    boxShadow: '2px 0 10px rgba(0,0,0,0.08)',
                     overflow: 'hidden',
                     transition: 'width 0.3s ease',
                 }}>

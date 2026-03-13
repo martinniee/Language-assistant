@@ -117,18 +117,26 @@ const WordCard: React.FC<{
         return (
             <div
                 style={{
-                    padding: 15,
-                    border: '1px solid #ddd',
-                    borderRadius: 8,
+                    padding: '20px',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    borderRadius: '12px',
                     cursor: 'pointer',
-                    transition: 'box-shadow 0.2s',
+                    transition: 'all 0.2s ease',
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                 }}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.boxShadow =
-                        '0 2px 8px rgba(0,0,0,0.1)';
+                        '0 4px 12px rgba(0,0,0,0.15)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.borderColor =
+                        'rgba(0, 102, 204, 0.2)';
                 }}
                 onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.boxShadow =
+                        '0 2px 4px rgba(0,0,0,0.05)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)';
                 }}>
                 <div
                     style={{
@@ -142,23 +150,35 @@ const WordCard: React.FC<{
                             text={word.name}
                             searchTerm={searchTerm}
                         />
-                    </h3>
-                    <div style={{ display: 'flex', gap: 5 }}>
+                    </h3>{' '}
+                    <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onEdit();
                             }}
                             style={{
-                                padding: '4px 8px',
+                                padding: '6px 12px',
                                 fontSize: '12px',
-                                backgroundColor: '#f0f0f0',
-                                border: '1px solid #ccc',
-                                borderRadius: '4px',
+                                backgroundColor: '#f8f9fa',
+                                border: '1px solid #e9ecef',
+                                borderRadius: '6px',
                                 cursor: 'pointer',
+                                color: '#495057',
+                                fontWeight: '500',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#e9ecef';
+                                e.currentTarget.style.borderColor = '#adb5bd';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#f8f9fa';
+                                e.currentTarget.style.borderColor = '#e9ecef';
                             }}>
-                            {' '}
-                            编辑
+                            ✏️ 编辑
                         </button>
                         <button
                             onClick={(e) => {
@@ -166,14 +186,30 @@ const WordCard: React.FC<{
                                 onDelete();
                             }}
                             style={{
-                                padding: '4px 8px',
+                                padding: '6px 12px',
                                 fontSize: '12px',
-                                backgroundColor: '#ffe6e6',
-                                border: '1px solid #ffb3b3',
-                                borderRadius: '4px',
+                                backgroundColor: '#fff5f5',
+                                border: '1px solid #fed7d7',
+                                borderRadius: '6px',
                                 cursor: 'pointer',
+                                color: '#c53030',
+                                fontWeight: '500',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#c53030';
+                                e.currentTarget.style.color = '#ffffff';
+                                e.currentTarget.style.borderColor = '#c53030';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#fff5f5';
+                                e.currentTarget.style.color = '#c53030';
+                                e.currentTarget.style.borderColor = '#fed7d7';
                             }}>
-                            删除
+                            {' '}
+                            🗑️ 删除
                         </button>
                         <button
                             onClick={(e) => {
@@ -181,14 +217,29 @@ const WordCard: React.FC<{
                                 onJumpToSource();
                             }}
                             style={{
-                                padding: '4px 8px',
+                                padding: '6px 12px',
                                 fontSize: '12px',
-                                backgroundColor: '#e6f3ff',
-                                border: '1px solid #b3d9ff',
-                                borderRadius: '4px',
+                                backgroundColor: '#eff6ff',
+                                border: '1px solid #bfdbfe',
+                                borderRadius: '6px',
                                 cursor: 'pointer',
+                                color: '#1d4ed8',
+                                fontWeight: '500',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#1d4ed8';
+                                e.currentTarget.style.color = '#ffffff';
+                                e.currentTarget.style.borderColor = '#1d4ed8';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#eff6ff';
+                                e.currentTarget.style.color = '#1d4ed8';
+                                e.currentTarget.style.borderColor = '#bfdbfe';
                             }}>
-                            跳转
+                            🔗 跳转
                         </button>
                     </div>
                 </div>
@@ -278,6 +329,7 @@ const WordListItem: React.FC<{
     onViewDetail: () => void;
     onJumpToSource: () => void;
     enableFullHighlight: boolean;
+    isLast?: boolean;
 }> = React.memo(
     ({
         word,
@@ -287,6 +339,7 @@ const WordListItem: React.FC<{
         onViewDetail,
         onJumpToSource,
         enableFullHighlight,
+        isLast = false,
     }) => {
         return (
             <div
@@ -294,17 +347,21 @@ const WordListItem: React.FC<{
                     display: 'flex',
                     alignItems: 'center',
                     padding: '12px 15px',
-                    border: '1px solid #ddd',
-                    borderRadius: 6,
+                    border: '1px solid #dee2e6',
+                    borderTop: 'none',
+                    borderRadius: isLast ? '0 0 8px 8px' : '0',
                     cursor: 'pointer',
-                    transition: 'background-color 0.2s',
-                    backgroundColor: '#fff',
+                    transition: 'all 0.2s ease',
+                    backgroundColor: '#ffffff',
+                    minHeight: '60px',
                 }}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#f8f9fa';
+                    e.currentTarget.style.transform = 'translateX(2px)';
                 }}
                 onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#fff';
+                    e.currentTarget.style.backgroundColor = '#ffffff';
+                    e.currentTarget.style.transform = 'translateX(0)';
                 }}
                 onClick={onViewDetail}>
                 {/* 单词名称 */}
@@ -314,7 +371,6 @@ const WordListItem: React.FC<{
                         searchTerm={searchTerm}
                     />
                 </div>
-
                 {/* 发音 */}
                 <div
                     style={{
@@ -331,7 +387,6 @@ const WordListItem: React.FC<{
                         word.pronunciation
                     )}
                 </div>
-
                 {/* 分类 */}
                 <div style={{ flex: '0 0 120px', fontSize: '14px' }}>
                     <span
@@ -352,7 +407,6 @@ const WordListItem: React.FC<{
                         )}
                     </span>
                 </div>
-
                 {/* 标签 */}
                 <div style={{ flex: '1', fontSize: '14px' }}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -383,7 +437,6 @@ const WordListItem: React.FC<{
                         )}
                     </div>
                 </div>
-
                 {/* 查询次数 */}
                 <div
                     style={{
@@ -394,7 +447,6 @@ const WordListItem: React.FC<{
                     }}>
                     {word.metadata.queryCount || 0}
                 </div>
-
                 {/* 等级 */}
                 <div
                     style={{
@@ -422,16 +474,16 @@ const WordListItem: React.FC<{
                         }}>
                         {word.level}
                     </span>
-                </div>
-
+                </div>{' '}
                 {/* 操作按钮 */}
                 <div
                     style={{
                         flex: '0 0 120px',
                         display: 'flex',
-                        gap: 5,
+                        gap: '4px',
                         justifyContent: 'flex-end',
                     }}>
+                    {' '}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -439,14 +491,23 @@ const WordListItem: React.FC<{
                         }}
                         style={{
                             padding: '4px 8px',
-                            fontSize: '12px',
-                            backgroundColor: '#f0f0f0',
-                            border: '1px solid #ccc',
+                            fontSize: '11px',
+                            backgroundColor: '#f8f9fa',
+                            border: '1px solid #e9ecef',
                             borderRadius: '4px',
                             cursor: 'pointer',
+                            color: '#495057',
+                            fontWeight: '500',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#e9ecef';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f8f9fa';
                         }}>
-                        编辑
-                    </button>{' '}
+                        ✏️ 编辑
+                    </button>
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -454,13 +515,24 @@ const WordListItem: React.FC<{
                         }}
                         style={{
                             padding: '4px 8px',
-                            fontSize: '12px',
-                            backgroundColor: '#ffe6e6',
-                            border: '1px solid #ffb3b3',
+                            fontSize: '11px',
+                            backgroundColor: '#fff5f5',
+                            border: '1px solid #fed7d7',
                             borderRadius: '4px',
                             cursor: 'pointer',
+                            color: '#c53030',
+                            fontWeight: '500',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#c53030';
+                            e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#fff5f5';
+                            e.currentTarget.style.color = '#c53030';
                         }}>
-                        删除
+                        🗑️ 删除
                     </button>
                     <button
                         onClick={(e) => {
@@ -469,13 +541,24 @@ const WordListItem: React.FC<{
                         }}
                         style={{
                             padding: '4px 8px',
-                            fontSize: '12px',
-                            backgroundColor: '#e6f3ff',
-                            border: '1px solid #b3d9ff',
+                            fontSize: '11px',
+                            backgroundColor: '#f0f9ff',
+                            border: '1px solid #bae6fd',
                             borderRadius: '4px',
                             cursor: 'pointer',
+                            color: '#0284c7',
+                            fontWeight: '500',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#0284c7';
+                            e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f0f9ff';
+                            e.currentTarget.style.color = '#0284c7';
                         }}>
-                        跳转
+                        🔗 跳转
                     </button>
                 </div>
             </div>
@@ -981,99 +1064,216 @@ export default function WordManagerMarkdown({
                 padding: 20,
                 boxSizing: 'border-box',
             }}>
+            {' '}
             {viewMode === 'list' && (
                 <>
-                    <h1>单词管理</h1>
                     <div
                         style={{
-                            display: 'flex',
-                            gap: 10,
-                            marginBottom: 20,
-                            alignItems: 'center',
+                            background:
+                                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            padding: '24px',
+                            borderRadius: '12px',
+                            marginBottom: '24px',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                         }}>
-                        <input
-                            type="text"
-                            placeholder="搜索单词、分类、标签、发音或内容..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                        <h1
                             style={{
-                                flex: 1,
-                                padding: '10px',
-                                border: '1px solid #ccc',
-                                borderRadius: '6px',
-                                fontSize: '14px',
-                            }}
-                        />
-                        {searchTerm && (
-                            <label
+                                margin: 0,
+                                color: 'white',
+                                fontSize: '28px',
+                                fontWeight: '600',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                            }}>
+                            📚 单词管理中心
+                        </h1>
+                        <p
+                            style={{
+                                margin: '8px 0 0 0',
+                                color: 'rgba(255,255,255,0.9)',
+                                fontSize: '16px',
+                                fontWeight: '300',
+                            }}>
+                            管理您的单词库，让学习更高效
+                        </p>
+                    </div>{' '}
+                    <div
+                        style={{
+                            background: '#ffffff',
+                            padding: '20px',
+                            borderRadius: '12px',
+                            marginBottom: '24px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            border: '1px solid rgba(0,0,0,0.05)',
+                        }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                gap: '16px',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                            }}>
+                            <input
+                                type="text"
+                                placeholder="🔍 搜索单词、分类、标签、发音或内容..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 style={{
+                                    flex: 1,
+                                    padding: '12px 16px',
+                                    border: '2px solid #e1e5e9',
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    backgroundColor: '#ffffff',
+                                    transition: 'all 0.2s ease',
+                                    outline: 'none',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                }}
+                                onFocus={(e) => {
+                                    e.currentTarget.style.borderColor =
+                                        '#0066cc';
+                                    e.currentTarget.style.boxShadow =
+                                        '0 0 0 3px rgba(0, 102, 204, 0.1)';
+                                }}
+                                onBlur={(e) => {
+                                    e.currentTarget.style.borderColor =
+                                        '#e1e5e9';
+                                    e.currentTarget.style.boxShadow =
+                                        '0 2px 4px rgba(0,0,0,0.05)';
+                                }}
+                            />
+                            {searchTerm && (
+                                <label
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 5,
+                                        fontSize: '14px',
+                                        color: '#666',
+                                        whiteSpace: 'nowrap',
+                                    }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={enableFullHighlight}
+                                        onChange={(e) =>
+                                            setEnableFullHighlight(
+                                                e.target.checked,
+                                            )
+                                        }
+                                    />
+                                    全部高亮
+                                </label>
+                            )}{' '}
+                            <button
+                                onClick={() => setShowAdd(true)}
+                                style={{
+                                    padding: '12px 24px',
+                                    backgroundColor: '#0066cc',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                    transition: 'all 0.2s ease',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 5,
-                                    fontSize: '14px',
-                                    color: '#666',
-                                    whiteSpace: 'nowrap',
+                                    gap: '8px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#0052a3';
+                                    e.currentTarget.style.transform =
+                                        'translateY(-1px)';
+                                    e.currentTarget.style.boxShadow =
+                                        '0 4px 8px rgba(0,0,0,0.15)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#0066cc';
+                                    e.currentTarget.style.transform =
+                                        'translateY(0)';
+                                    e.currentTarget.style.boxShadow =
+                                        '0 2px 4px rgba(0,0,0,0.1)';
                                 }}>
-                                <input
-                                    type="checkbox"
-                                    checked={enableFullHighlight}
-                                    onChange={(e) =>
-                                        setEnableFullHighlight(e.target.checked)
+                                ➕ 添加新单词
+                            </button>{' '}
+                            <button
+                                onClick={() => setShowFilters(!showFilters)}
+                                style={{
+                                    padding: '12px 16px',
+                                    backgroundColor: showFilters
+                                        ? '#e6f3ff'
+                                        : '#ffffff',
+                                    color: showFilters ? '#0066cc' : '#6c757d',
+                                    border: showFilters
+                                        ? '2px solid #0066cc'
+                                        : '2px solid #e1e5e9',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: '500',
+                                    transition: 'all 0.2s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!showFilters) {
+                                        e.currentTarget.style.borderColor =
+                                            '#0066cc';
+                                        e.currentTarget.style.color = '#0066cc';
                                     }
-                                />
-                                全部高亮
-                            </label>
-                        )}{' '}
-                        <button
-                            onClick={() => setShowAdd(true)}
-                            style={{
-                                padding: '10px 20px',
-                                backgroundColor: '#007acc',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                            }}>
-                            {' '}
-                            添加新单词
-                        </button>
-                        <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            style={{
-                                padding: '10px 15px',
-                                backgroundColor: showFilters
-                                    ? '#f0f0f0'
-                                    : '#e8e8e8',
-                                color: '#333',
-                                border: '1px solid #ccc',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                            }}>
-                            筛选{' '}
-                            {selectedTags.length +
-                                selectedCategories.length +
-                                selectedLevels.length +
-                                selectedPartsOfSpeech.length >
-                                0 &&
-                                `(${
-                                    selectedTags.length +
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!showFilters) {
+                                        e.currentTarget.style.borderColor =
+                                            '#e1e5e9';
+                                        e.currentTarget.style.color = '#6c757d';
+                                    }
+                                }}>
+                                🔍 筛选
+                                {selectedTags.length +
                                     selectedCategories.length +
                                     selectedLevels.length +
-                                    selectedPartsOfSpeech.length
-                                })`}
-                        </button>
+                                    selectedPartsOfSpeech.length >
+                                    0 && (
+                                    <span
+                                        style={{
+                                            background: '#dc3545',
+                                            color: 'white',
+                                            borderRadius: '12px',
+                                            padding: '2px 6px',
+                                            fontSize: '12px',
+                                            fontWeight: 'bold',
+                                            minWidth: '18px',
+                                            textAlign: 'center',
+                                        }}>
+                                        {selectedTags.length +
+                                            selectedCategories.length +
+                                            selectedLevels.length +
+                                            selectedPartsOfSpeech.length}
+                                    </span>
+                                )}{' '}
+                            </button>
+                        </div>
                     </div>
-                    {/* 展示控制栏 */}
+                    {/* 展示控制栏 */}{' '}
                     <div
                         style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            marginBottom: 15,
-                            padding: '10px 15px',
-                            backgroundColor: '#f8f9fa',
-                            borderRadius: 6,
-                            border: '1px solid #e9ecef',
+                            marginBottom: '20px',
+                            padding: '16px 20px',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(0,0,0,0.05)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                         }}>
                         <div
                             style={{
@@ -1088,48 +1288,67 @@ export default function WordManagerMarkdown({
                                     alignItems: 'center',
                                     gap: 5,
                                 }}>
+                                {' '}
                                 <span
-                                    style={{ fontSize: '14px', color: '#555' }}>
+                                    style={{
+                                        fontSize: '14px',
+                                        color: '#374151',
+                                        fontWeight: '500',
+                                        marginRight: '8px',
+                                    }}>
                                     视图:
                                 </span>
-                                <button
-                                    onClick={() => setDisplayMode('grid')}
+                                <div
                                     style={{
-                                        padding: '6px 10px',
-                                        fontSize: '12px',
-                                        backgroundColor:
-                                            displayMode === 'grid'
-                                                ? '#007acc'
-                                                : '#fff',
-                                        color:
-                                            displayMode === 'grid'
-                                                ? '#fff'
-                                                : '#333',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        backgroundColor: '#f3f4f6',
+                                        borderRadius: '8px',
+                                        padding: '2px',
+                                        gap: '2px',
                                     }}>
-                                    网格
-                                </button>
-                                <button
-                                    onClick={() => setDisplayMode('list')}
-                                    style={{
-                                        padding: '6px 10px',
-                                        fontSize: '12px',
-                                        backgroundColor:
-                                            displayMode === 'list'
-                                                ? '#007acc'
-                                                : '#fff',
-                                        color:
-                                            displayMode === 'list'
-                                                ? '#fff'
-                                                : '#333',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                    }}>
-                                    列表
-                                </button>
+                                    <button
+                                        onClick={() => setDisplayMode('grid')}
+                                        style={{
+                                            padding: '8px 12px',
+                                            fontSize: '13px',
+                                            backgroundColor:
+                                                displayMode === 'grid'
+                                                    ? '#0066cc'
+                                                    : 'transparent',
+                                            color:
+                                                displayMode === 'grid'
+                                                    ? '#ffffff'
+                                                    : '#6b7280',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontWeight: '500',
+                                            transition: 'all 0.2s ease',
+                                        }}>
+                                        📊 网格
+                                    </button>
+                                    <button
+                                        onClick={() => setDisplayMode('list')}
+                                        style={{
+                                            padding: '8px 12px',
+                                            fontSize: '13px',
+                                            backgroundColor:
+                                                displayMode === 'list'
+                                                    ? '#0066cc'
+                                                    : 'transparent',
+                                            color:
+                                                displayMode === 'list'
+                                                    ? '#ffffff'
+                                                    : '#6b7280',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontWeight: '500',
+                                            transition: 'all 0.2s ease',
+                                        }}>
+                                        📋 列表
+                                    </button>
+                                </div>
                             </div>
 
                             {/* 排序选择 */}
@@ -1503,45 +1722,46 @@ export default function WordManagerMarkdown({
                                 )
                             </span>
                         )}
-                    </h2>
+                    </h2>{' '}
                     {/* 列表视图表头 */}
                     {displayMode === 'list' && paginatedWords.length > 0 && (
                         <div
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                padding: '10px 15px',
+                                padding: '12px 15px',
                                 backgroundColor: '#f8f9fa',
                                 border: '1px solid #dee2e6',
-                                borderRadius: '6px 6px 0 0',
-                                fontWeight: 'bold',
-                                fontSize: '14px',
+                                borderRadius: '8px 8px 0 0',
+                                fontWeight: '600',
+                                fontSize: '13px',
                                 color: '#495057',
+                                borderBottom: '2px solid #dee2e6',
                             }}>
-                            <div style={{ flex: '0 0 200px' }}>单词名称</div>
-                            <div style={{ flex: '0 0 180px' }}>发音</div>
-                            <div style={{ flex: '0 0 120px' }}>分类</div>
-                            <div style={{ flex: '1' }}>标签</div>
+                            <div style={{ flex: '0 0 200px' }}>📝 单词名称</div>
+                            <div style={{ flex: '0 0 180px' }}>🔊 发音</div>
+                            <div style={{ flex: '0 0 120px' }}>📂 分类</div>
+                            <div style={{ flex: '1' }}>🏷️ 标签</div>
                             <div
                                 style={{
                                     flex: '0 0 80px',
                                     textAlign: 'center',
                                 }}>
-                                查询次数
+                                🔢 查询次数
                             </div>
                             <div
                                 style={{
                                     flex: '0 0 60px',
                                     textAlign: 'center',
                                 }}>
-                                等级
+                                📊 等级
                             </div>
                             <div
                                 style={{
                                     flex: '0 0 120px',
                                     textAlign: 'center',
                                 }}>
-                                操作
+                                ⚙️ 操作
                             </div>
                         </div>
                     )}
@@ -1579,7 +1799,7 @@ export default function WordManagerMarkdown({
                                     : '没有更多单词了，请返回上一页'}
                             </div>
                         ) : (
-                            paginatedWords.map((word) =>
+                            paginatedWords.map((word, index) =>
                                 displayMode === 'grid' ? (
                                     <WordCard
                                         key={word.name}
@@ -1612,6 +1832,9 @@ export default function WordManagerMarkdown({
                                         }
                                         enableFullHighlight={
                                             enableFullHighlight
+                                        }
+                                        isLast={
+                                            index === paginatedWords.length - 1
                                         }
                                     />
                                 ),
@@ -1736,7 +1959,6 @@ export default function WordManagerMarkdown({
                     )}
                 </>
             )}
-
             {viewMode === 'detail' && currentWord && (
                 <>
                     <div style={{ marginBottom: 20 }}>
@@ -1880,7 +2102,6 @@ export default function WordManagerMarkdown({
                     </div>
                 </>
             )}
-
             {showAdd && (
                 <div
                     style={{
