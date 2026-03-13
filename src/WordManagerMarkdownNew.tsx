@@ -92,9 +92,14 @@ export default function WordManagerMarkdown({
             return { ...f, content };
         });
     };
-
     return (
-        <div style={{ padding: 20 }}>
+        <div
+            style={{
+                height: '100vh',
+                overflow: 'auto',
+                padding: 20,
+                boxSizing: 'border-box',
+            }}>
             <h1>单词管理</h1>
             <button onClick={() => setShowAdd(true)}>添加新单词</button>
 

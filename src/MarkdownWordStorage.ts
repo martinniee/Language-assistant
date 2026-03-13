@@ -34,9 +34,7 @@ export class MarkdownWordStorage {
     constructor(vault: Vault, wordsFilePath: string = 'words.md') {
         this.vault = vault;
         this.wordsFilePath = wordsFilePath;
-    }
-
-    // 解析 markdown 内容为单词数组
+    } // 解析 markdown 内容为单词数组
     parseMarkdownToWords(content: string): Word[] {
         const words: Word[] = [];
 
@@ -62,42 +60,71 @@ export class MarkdownWordStorage {
                 content: [],
             };
 
+            let contentStartIndex = -1;
+
             // 解析字段
             for (let i = 1; i < lines.length; i++) {
-                const line = lines[i];
+                const line = lines[i].trim();
 
-                if (line.startsWith('- 发音:')) {
-                    word.pronunciation = line.replace('- 发音:', '').trim();
-                } else if (line.startsWith('- 词汇:')) {
-                    word.vocabulary = line.replace('- 词汇:', '').trim();
-                } else if (line.startsWith('- 分类:')) {
-                    word.category = line.replace('- 分类:', '').trim();
-                } else if (line.startsWith('- 标签:')) {
-                    const tagsStr = line.replace('- 标签:', '').trim();
+                if (
+                    line.startsWith('-   发音:') ||
+                    line.startsWith('- 发音:')
+                ) {
+                    word.pronunciation = line.replace(/^-\s*发音:/, '').trim();
+                } else if (
+                    line.startsWith('-   词汇:') ||
+                    line.startsWith('- 词汇:')
+                ) {
+                    word.vocabulary = line.replace(/^-\s*词汇:/, '').trim();
+                } else if (
+                    line.startsWith('-   分类:') ||
+                    line.startsWith('- 分类:')
+                ) {
+                    word.category = line.replace(/^-\s*分类:/, '').trim();
+                } else if (
+                    line.startsWith('-   标签:') ||
+                    line.startsWith('- 标签:')
+                ) {
+                    const tagsStr = line.replace(/^-\s*标签:/, '').trim();
                     word.tags = tagsStr
                         ? tagsStr.split(',').map((t) => t.trim())
                         : [];
-                } else if (line.startsWith('- 等级:')) {
-                    word.level = line.replace('- 等级:', '').trim();
-                } else if (line.startsWith('- 查询次数:')) {
+                } else if (
+                    line.startsWith('-   等级:') ||
+                    line.startsWith('- 等级:')
+                ) {
+                    word.level = line.replace(/^-\s*等级:/, '').trim();
+                } else if (
+                    line.startsWith('-   查询次数:') ||
+                    line.startsWith('- 查询次数:')
+                ) {
                     word.queryCount =
-                        parseInt(line.replace('- 查询次数:', '').trim()) || 0;
-                } else if (line.startsWith('- 词性:')) {
-                    word.partsOfSpeech = line.replace('- 词性:', '').trim();
-                } else if (line.startsWith('- 内容:')) {
-                    // 解析内容部分（嵌套结构）
-                    word.content = this.parseContent(lines, i + 1);
+                        parseInt(line.replace(/^-\s*查询次数:/, '').trim()) ||
+                        0;
+                } else if (
+                    line.startsWith('-   词性:') ||
+                    line.startsWith('- 词性:')
+                ) {
+                    word.partsOfSpeech = line.replace(/^-\s*词性:/, '').trim();
+                } else if (
+                    line.startsWith('-   内容:') ||
+                    line.startsWith('- 内容:')
+                ) {
+                    contentStartIndex = i + 1;
                     break;
                 }
+            }
+
+            // 解析内容部分（如果存在）
+            if (contentStartIndex >= 0) {
+                word.content = this.parseContent(lines, contentStartIndex);
             }
 
             words.push(word);
         }
 
         return words;
-    }
-
-    // 解析内容部分的嵌套结构
+    } // 解析内容部分的嵌套结构
     private parseContent(lines: string[], startIndex: number): PartOfSpeech[] {
         const content: PartOfSpeech[] = [];
         let currentPartOfSpeech: PartOfSpeech | null = null;
@@ -106,9 +133,9 @@ export class MarkdownWordStorage {
         for (let i = startIndex; i < lines.length; i++) {
             const line = lines[i];
 
-            // 词性 (4个空格缩进)
-            if (line.match(/^    - /)) {
-                const partType = line.replace(/^    - /, '').trim();
+            // 词性 (4个空格缩进，匹配 "    -   感叹词")
+            if (line.match(/^    -\s+\S/)) {
+                const partType = line.replace(/^    -\s+/, '').trim();
                 currentPartOfSpeech = {
                     type: partType,
                     definitions: [],
@@ -116,9 +143,9 @@ export class MarkdownWordStorage {
                 content.push(currentPartOfSpeech);
                 currentDefinition = null;
             }
-            // 定义 (8个空格缩进)
-            else if (line.match(/^        - /)) {
-                const defText = line.replace(/^        - /, '').trim();
+            // 定义 (8个空格缩进，匹配 "        -   用于问候或引起注意的感叹词")
+            else if (line.match(/^        -\s+\S/)) {
+                const defText = line.replace(/^        -\s+/, '').trim();
                 currentDefinition = {
                     definition: defText,
                     examples: [],
@@ -127,9 +154,11 @@ export class MarkdownWordStorage {
                     currentPartOfSpeech.definitions.push(currentDefinition);
                 }
             }
-            // 例句 (12个空格缩进)
-            else if (line.match(/^            - /)) {
-                const exampleText = line.replace(/^            - /, '').trim();
+            // 例句 (12个空格缩进，匹配 "            -   Hello, how are you? (你好，你好吗？)")
+            else if (line.match(/^            -\s+\S/)) {
+                const exampleText = line
+                    .replace(/^            -\s+/, '')
+                    .trim();
                 if (currentDefinition) {
                     currentDefinition.examples.push({ text: exampleText });
                 }
