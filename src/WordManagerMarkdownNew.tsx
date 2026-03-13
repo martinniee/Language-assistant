@@ -811,28 +811,47 @@ export default function WordManagerMarkdown({
             });
         },
         [],
-    );
-
-    // 页面模式切换函数 - 添加查询次数+1功能
+    ); // 页面模式切换函数 - 只有通过搜索/筛选后查看才增加查询次数
     const handleViewWord = useCallback(
         (word: Word) => {
-            // 创建更新后的单词对象，查询次数+1
-            const updatedWord: Word = {
-                ...word,
-                metadata: {
-                    ...word.metadata,
-                    queryCount: (word.metadata.queryCount || 0) + 1,
-                },
-            };
+            // 检查是否有搜索或筛选条件
+            const hasSearchFilters =
+                searchTerm.trim() !== '' ||
+                selectedTags.length > 0 ||
+                selectedCategories.length > 0 ||
+                selectedLevels.length > 0 ||
+                selectedPartsOfSpeech.length > 0;
+
+            let updatedWord: Word;
+
+            if (hasSearchFilters) {
+                // 有搜索/筛选条件时，查询次数+1
+                updatedWord = {
+                    ...word,
+                    metadata: {
+                        ...word.metadata,
+                        queryCount: (word.metadata.queryCount || 0) + 1,
+                    },
+                };
+                // 同步更新到数据存储中
+                onEdit(updatedWord);
+            } else {
+                // 没有搜索/筛选条件时，不增加查询次数
+                updatedWord = word;
+            }
 
             // 更新当前单词状态
             setCurrentWord(updatedWord);
             setViewMode('detail');
-
-            // 同步更新到数据存储中
-            onEdit(updatedWord);
         },
-        [onEdit],
+        [
+            onEdit,
+            searchTerm,
+            selectedTags,
+            selectedCategories,
+            selectedLevels,
+            selectedPartsOfSpeech,
+        ],
     );
 
     const handleBackToList = useCallback(() => {
