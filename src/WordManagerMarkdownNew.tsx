@@ -777,40 +777,85 @@ export default function WordManagerMarkdown({
             });
         },
         [],
-    );
+    ); // 删除功能的回调函数 - 带确认提示
+    const handleRemovePart = useCallback(
+        (partIndex: number) => {
+            const partType = form.content[partIndex].type || '未命名词性';
+            const definitionsCount = form.content[partIndex].definitions.length;
 
-    // 删除功能的回调函数
-    const handleRemovePart = useCallback((partIndex: number) => {
-        setForm((f) => {
-            const content = [...f.content];
-            content.splice(partIndex, 1);
-            return { ...f, content };
-        });
-    }, []);
+            if (
+                window.confirm(
+                    `确定要删除词性"${partType}"吗？\n` +
+                        `这将同时删除该词性下的 ${definitionsCount} 个定义及其所有例句。\n\n` +
+                        `此操作无法撤销。`,
+                )
+            ) {
+                setForm((f) => {
+                    const content = [...f.content];
+                    content.splice(partIndex, 1);
+                    return { ...f, content };
+                });
+            }
+        },
+        [form.content],
+    );
 
     const handleRemoveDefinition = useCallback(
         (partIndex: number, defIndex: number) => {
-            setForm((f) => {
-                const content = [...f.content];
-                content[partIndex].definitions.splice(defIndex, 1);
-                return { ...f, content };
-            });
+            const definition =
+                form.content[partIndex].definitions[defIndex].definition ||
+                '空定义';
+            const examplesCount =
+                form.content[partIndex].definitions[defIndex].examples.length;
+            const shortDefinition =
+                definition.length > 20
+                    ? definition.substring(0, 20) + '...'
+                    : definition;
+
+            if (
+                window.confirm(
+                    `确定要删除定义"${shortDefinition}"吗？\n` +
+                        `这将同时删除该定义下的 ${examplesCount} 个例句。\n\n` +
+                        `此操作无法撤销。`,
+                )
+            ) {
+                setForm((f) => {
+                    const content = [...f.content];
+                    content[partIndex].definitions.splice(defIndex, 1);
+                    return { ...f, content };
+                });
+            }
         },
-        [],
+        [form.content],
     );
 
     const handleRemoveExample = useCallback(
         (partIndex: number, defIndex: number, exIndex: number) => {
-            setForm((f) => {
-                const content = [...f.content];
-                content[partIndex].definitions[defIndex].examples.splice(
-                    exIndex,
-                    1,
-                );
-                return { ...f, content };
-            });
+            const example =
+                form.content[partIndex].definitions[defIndex].examples[exIndex]
+                    .text || '空例句';
+            const shortExample =
+                example.length > 30
+                    ? example.substring(0, 30) + '...'
+                    : example;
+
+            if (
+                window.confirm(
+                    `确定要删除例句"${shortExample}"吗？\n\n` +
+                        `此操作无法撤销。`,
+                )
+            ) {
+                setForm((f) => {
+                    const content = [...f.content];
+                    content[partIndex].definitions[defIndex].examples.splice(
+                        exIndex,
+                        1,
+                    );
+                    return { ...f, content };
+                });
+            }
         },
-        [],
+        [form.content],
     ); // 页面模式切换函数 - 只有通过搜索/筛选后查看才增加查询次数
     const handleViewWord = useCallback(
         (word: Word) => {
@@ -853,11 +898,45 @@ export default function WordManagerMarkdown({
             selectedPartsOfSpeech,
         ],
     );
-
     const handleBackToList = useCallback(() => {
         setViewMode('list');
         setCurrentWord(null);
     }, []);
+
+    // 带确认提示的单词删除函数
+    const handleDeleteWord = useCallback(
+        (word: Word) => {
+            const wordName = word.name;
+            const wordCategory = word.category || '未分类';
+            const definitionsCount = word.content.reduce(
+                (total, part) => total + part.definitions.length,
+                0,
+            );
+            const examplesCount = word.content.reduce(
+                (total, part) =>
+                    total +
+                    part.definitions.reduce(
+                        (defTotal, def) => defTotal + def.examples.length,
+                        0,
+                    ),
+                0,
+            );
+
+            if (
+                window.confirm(
+                    `确定要删除单词"${wordName}"吗？\n\n` +
+                        `单词信息：\n` +
+                        `• 分类：${wordCategory}\n` +
+                        `• 包含 ${definitionsCount} 个定义\n` +
+                        `• 包含 ${examplesCount} 个例句\n\n` +
+                        `此操作将永久删除该单词的所有信息，无法撤销。`,
+                )
+            ) {
+                onDelete(wordName);
+            }
+        },
+        [onDelete],
+    );
     return (
         <div
             style={{
@@ -1471,7 +1550,7 @@ export default function WordManagerMarkdown({
                                         word={word}
                                         searchTerm={searchTerm}
                                         onEdit={() => handleEditClick(word)}
-                                        onDelete={() => onDelete(word.name)}
+                                        onDelete={() => handleDeleteWord(word)}
                                         onViewDetail={() =>
                                             handleViewWord(word)
                                         }
@@ -1488,7 +1567,7 @@ export default function WordManagerMarkdown({
                                         word={word}
                                         searchTerm={searchTerm}
                                         onEdit={() => handleEditClick(word)}
-                                        onDelete={() => onDelete(word.name)}
+                                        onDelete={() => handleDeleteWord(word)}
                                         onViewDetail={() =>
                                             handleViewWord(word)
                                         }
