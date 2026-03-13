@@ -2,7 +2,11 @@
 
 %%data-start%%
 
+%%global-meta{"tags":{"t1":"基础","t2":"问候","t3":"地理","t4":"描述","t5":"外观","t6":"积极","t7":"科技","t8":"设备","t9":"工作","t10":"惊讶","t11":"高级","t12":"复杂","t13":"编程","t14":"关系","t15":"情感","t16":"特殊","t17":"重复测试"},"categories":{"c1":"日常用语","c2":"基础词汇","c3":"形容词","c4":"科技"},"levels":{"l1":"初级","l2":"中级","l3":"高级"},"partsOfSpeech":{"p1":"感叹词","p2":"名词","p3":"形容词"},"version":"1.0.0","lastUpdate":"2026-03-13T16:00:00.000Z"}%%
+
 ## hello
+
+%%item-meta{"tags":["t1","t2"],"category":"c1","level":"l1","partsOfSpeech":"p1"}%%
 
 %%meta{"id":"word-test123-abc456","createBy":"user","lastUpdate":"2026-03-13T15:32:00.000Z","queryCount":0,"srsLevel":0,"reviewCount":0,"correctCount":0,"ease":2.5,"interval":1}%%
 
@@ -23,6 +27,8 @@
 
 ## world
 
+%%item-meta{"tags":["t1","t3"],"category":"c2","level":"l1","partsOfSpeech":"p2"}%%
+
 -   发音: /wɜːrld/
 -   词汇: world
 -   分类: 基础词汇
@@ -36,10 +42,11 @@
             -   The world is beautiful. (这个世界很美丽)
             -   People around the world. (世界各地的人们)
         -   领域；世界
-            -   The world of science. (科学领域)
-            -   Welcome to my world. (欢迎来到我的世界)
+            -   The world of science. (科学领域) - Welcome to my world. (欢迎来到我的世界)
 
 ## beautiful
+
+%%item-meta{"tags":["t4","t5","t6"],"category":"c3","level":"l1","partsOfSpeech":"p3"}%%
 
 -   发音: /ˈbjuːtɪfəl/
 -   词汇: beautiful
@@ -56,6 +63,8 @@
 
 ## computer
 
+%%item-meta{"tags":["t7","t8","t9"],"category":"c4","level":"l1","partsOfSpeech":"p2"}%%
+
 -   发音: /kəmˈpjuːtər/
 -   词汇: computer
 -   分类: 科技
@@ -70,6 +79,8 @@
             -   This computer is very fast. (这台电脑很快)
 
 ## amazing
+
+%%item-meta{"tags":["t4","t6","t10"],"category":"c3","level":"l2","partsOfSpeech":"p3"}%%
 
 -   发音: /əˈmeɪzɪŋ/
 -   词汇: amazing
@@ -86,6 +97,8 @@
 
 ## sophisticated
 
+%%item-meta{"tags":["t4","t11","t12"],"category":"c3","level":"l3","partsOfSpeech":"p3"}%%
+
 -   发音: /səˈfɪstɪkeɪtɪd/
 -   词汇: sophisticated
 -   分类: 形容词
@@ -100,6 +113,8 @@
             -   She is very sophisticated. (她很老练)
 
 ## programming
+
+%%item-meta{"tags":["t7","t13","t9"],"category":"c4","level":"l2","partsOfSpeech":"p2"}%%
 
 -   发音: /ˈproʊɡræmɪŋ/
 -   词汇: programming
@@ -116,6 +131,8 @@
 
 ## friendship
 
+%%item-meta{"tags":["t14","t15","t6"],"category":"c1","level":"l2","partsOfSpeech":"p2"}%%
+
 -   发音: /ˈfrendʃɪp/
 -   词汇: friendship
 -   分类: 日常用语
@@ -131,6 +148,8 @@
 
 ## extraordinary
 
+%%item-meta{"tags":["t4","t16","t11"],"category":"c3","level":"l3","partsOfSpeech":"p3"}%%
+
 -   发音: /ɪkˈstrɔːrdəneri/
 -   词汇: extraordinary
 -   分类: 形容词
@@ -138,10 +157,11 @@
 -   等级: 高级
 -   查询次数: 1
 -   词性: 形容词
--   内容:
-    -   形容词 - 非凡的；特别的 - This is an extraordinary achievement. (这是一个非凡的成就) - She has extraordinary abilities. (她有非凡的能力)
+-   内容: - 形容词 - 非凡的；特别的 - This is an extraordinary achievement. (这是一个非凡的成就) - She has extraordinary abilities. (她有非凡的能力)
 
 ## hello
+
+%%item-meta{"tags":["t1","t2","t17"],"category":"c1","level":"l1","partsOfSpeech":"p1"}%%
 
 -   发音: /həˈloʊ/
 -   词汇: hello
@@ -152,10 +172,11 @@
 -   词性: 感叹词
 -   内容:
     -   感叹词
-        -   更新版本的问候语
-            -   Hello everyone! (大家好！)
+        -   更新版本的问候语 - Hello everyone! (大家好！)
 
 ## beautiful
+
+%%item-meta{"tags":["t4","t5","t17"],"category":"c3","level":"l2","partsOfSpeech":"p3"}%%
 
 -   发音: /ˈbjuːtɪfəl/
 -   词汇: beautiful

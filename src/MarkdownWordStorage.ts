@@ -1,6 +1,7 @@
 // Markdown 单词存储和解析器
 import { TFile, Vault } from 'obsidian';
 import { SRSUtils } from './SpacedRepetitionSystem';
+import { GlobalMetaManager, MetaFormatter } from './GlobalMetaManager';
 
 export interface Example {
     text: string;
@@ -43,11 +44,15 @@ export interface Word {
     name: string; // 单词名称
     pronunciation: string; // 发音
     vocabulary: string; // 词汇
-    category: string; // 分类
-    tags: string[]; // 标签数组
+    category: string; // 分类（可以是别名或完整名称）
+    tags: string[]; // 标签数组（可以是别名或完整名称）
     level: string; // 等级
     partsOfSpeech: string; // 词性概述
     content: PartOfSpeech[]; // 详细内容
+
+    // 内部别名字段（用于存储）
+    _categoryAlias?: string; // 分类别名
+    _tagAliases?: string[]; // 标签别名数组
 }
 
 // 为向后兼容而提供的工具类
@@ -153,6 +158,7 @@ export class MarkdownWordStorage {
     } // 解析 markdown 内容为单词数组
     parseMarkdownToWords(content: string): ParseResult {
         const words: Word[] = [];
+        const globalMetaManager = GlobalMetaManager.getInstance();
 
         // 提取数据区域内容
         const dataStartPattern = /%%data-start%%/;
@@ -166,9 +172,31 @@ export class MarkdownWordStorage {
             const startIndex = startMatch.index! + startMatch[0].length;
             const endIndex = endMatch.index!;
             dataContent = content.substring(startIndex, endIndex).trim();
+            // 在数据区域内查找全局配置
+            const globalMetaLines = dataContent.match(/%%global-meta.+?%%/g);
+            if (globalMetaLines && globalMetaLines.length > 0) {
+                try {
+                    const globalConfig = MetaFormatter.parseGlobalMeta(
+                        globalMetaLines[0],
+                    );
+                    if (globalConfig) {
+                        globalMetaManager.setConfig(globalConfig);
+                        console.log('✅ 加载全局元数据配置成功');
+                    } else {
+                        console.warn('⚠️ 解析全局元数据配置失败');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ 解析全局元数据配置失败:', error);
+                }
+
+                // 移除全局配置行，只保留单词数据
+                dataContent = dataContent.replace(/%%global-meta.+?%%\s*/g, '');
+            }
         } else {
-            // 向后兼容：如果没有数据标记，使用整个内容，但过滤标题
-            dataContent = content;
+            // 向后兼容：如果没有数据标记，使用整个内容，但过滤标题和全局配置
+            dataContent = content
+                .replace(/%%global-meta.+?%%/g, '') // 移除全局配置
+                .replace(/^#[^#].*$/gm, ''); // 移除一级标题
         }
 
         // 按二级标题分割数据区域内容
@@ -182,7 +210,7 @@ export class MarkdownWordStorage {
 
             const wordName = lines[0].trim(); // 第一行是单词名
 
-            // 跳过文档标题部分（以#开头、为空、或包含特殊标记的部分）
+            // 跳过文档标题部分
             if (
                 wordName.startsWith('#') ||
                 wordName === '' ||
@@ -207,14 +235,44 @@ export class MarkdownWordStorage {
                 content: [],
             };
 
-            let contentStartIndex = -1;
-
-            // 解析字段
+            let contentStartIndex = -1; // 解析字段
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
 
-                // 解析新的元数据格式 %%meta{...}%%
-                if (line.startsWith('%%meta') && line.endsWith('%%')) {
+                // 解析新的项目元数据格式 %%item-meta{...}%%
+                if (line.startsWith('%%item-meta') && line.endsWith('%%')) {
+                    try {
+                        const metaStr = line
+                            .replace(/^%%item-meta/, '')
+                            .replace(/%%$/, '');
+                        const itemMeta = JSON.parse(metaStr);
+
+                        // 处理标签别名
+                        if (itemMeta.tags) {
+                            word._tagAliases = itemMeta.tags;
+                            word.tags = globalMetaManager.resolveTags(
+                                itemMeta.tags,
+                            );
+                        }
+
+                        // 处理分类别名
+                        if (itemMeta.category) {
+                            word._categoryAlias = itemMeta.category;
+                            word.category = globalMetaManager.resolveCategory(
+                                itemMeta.category,
+                            );
+                        }
+
+                        // 其他字段直接赋值
+                        if (itemMeta.level) word.level = itemMeta.level;
+                        if (itemMeta.partsOfSpeech)
+                            word.partsOfSpeech = itemMeta.partsOfSpeech;
+                    } catch (error) {
+                        console.warn('解析项目元数据失败:', line, error);
+                    }
+                }
+                // 解析旧的完整元数据格式 %%meta{...}%% (向后兼容)
+                else if (line.startsWith('%%meta') && line.endsWith('%%')) {
                     try {
                         const metaStr = line
                             .replace(/^%%meta/, '')
@@ -428,11 +486,36 @@ export class MarkdownWordStorage {
         return content;
     } // 将单词数组序列化为 markdown 字符串
     wordsToMarkdown(words: Word[]): string {
+        const globalMetaManager = GlobalMetaManager.getInstance();
+
+        // 为所有单词生成或更新别名映射
+        for (const word of words) {
+            if (word.tags && word.tags.length > 0) {
+                word.tags.forEach((tag) =>
+                    globalMetaManager.generateTagAlias(tag),
+                );
+            }
+            if (word.category) {
+                globalMetaManager.generateCategoryAlias(word.category);
+            }
+        }
+
         let markdown = '# 单词词汇表\n\n';
+
         markdown += '%%data-start%%\n\n';
 
+        // 添加全局元数据配置（位于数据区域内部）
+        const globalConfig = globalMetaManager.getConfig();
+        markdown += MetaFormatter.formatGlobalMeta(globalConfig) + '\n\n';
+
         for (const word of words) {
-            markdown += `## ${word.name}\n\n`; // 写入元数据（新格式）- 包含所有SRS字段
+            markdown += `## ${word.name}\n\n`;
+
+            // 生成项目元数据
+            const itemMeta = globalMetaManager.generateItemMeta(word);
+            markdown += MetaFormatter.formatItemMeta(itemMeta) + '\n\n';
+
+            // 写入完整的技术元数据（用于SRS系统）
             const metadata = {
                 id: word.metadata.id,
                 createBy: word.metadata.createBy,
@@ -447,21 +530,21 @@ export class MarkdownWordStorage {
                 reviewCount: word.metadata.reviewCount,
                 correctCount: word.metadata.correctCount,
                 ease: word.metadata.ease
-                    ? Math.round(word.metadata.ease * 1000) / 1000
-                    : undefined, // 保留3位小数
+                    ? SRSUtils.formatEase(word.metadata.ease)
+                    : undefined,
                 interval: word.metadata.interval
-                    ? Math.round(word.metadata.interval)
-                    : undefined, // 保留整数
+                    ? SRSUtils.formatInterval(word.metadata.interval)
+                    : undefined,
             };
 
-            // 过滤掉undefined的字段
-            const filteredMetadata = Object.fromEntries(
+            // 过滤掉 undefined 值
+            const cleanMetadata = Object.fromEntries(
                 Object.entries(metadata).filter(
-                    ([_, value]) => value !== undefined,
+                    ([, value]) => value !== undefined,
                 ),
             );
 
-            markdown += `%%meta${JSON.stringify(filteredMetadata)}%%\n\n`;
+            markdown += `%%meta${JSON.stringify(cleanMetadata)}%%\n\n`;
 
             // 写入内容字段
             markdown += `- 发音: ${word.pronunciation}\n`;

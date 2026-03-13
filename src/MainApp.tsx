@@ -6,8 +6,15 @@ import SpacedRepetitionLearning from './SpacedRepetitionLearning';
 import DataStatistics from './DataStatistics';
 import ImportExport from './ImportExport';
 import Settings from './Settings';
+import GlobalMetaConfig from './GlobalMetaConfig';
 
-type ViewMode = 'home' | 'srs' | 'statistics' | 'import-export' | 'settings';
+type ViewMode =
+    | 'home'
+    | 'srs'
+    | 'statistics'
+    | 'import-export'
+    | 'settings'
+    | 'global-meta';
 
 interface MainAppProps {
     words: Word[];
@@ -67,6 +74,12 @@ const MainApp: React.FC<MainAppProps> = ({
             description: '数据导入导出功能',
         },
         {
+            id: 'global-meta' as ViewMode,
+            label: '元数据管理',
+            icon: '🔄',
+            description: '全局元数据配置和别名管理',
+        },
+        {
             id: 'settings' as ViewMode,
             label: '配置设置',
             icon: '⚙️',
@@ -103,6 +116,8 @@ const MainApp: React.FC<MainAppProps> = ({
                         onUpdateWords={onEdit}
                     />
                 );
+            case 'global-meta':
+                return <GlobalMetaConfig />;
             case 'settings':
                 return <Settings />;
             default:
