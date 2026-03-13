@@ -1,7 +1,7 @@
 import { Plugin, Notice, WorkspaceLeaf, ItemView, addIcon } from 'obsidian';
 import { createRoot } from 'react-dom/client';
 import * as React from 'react';
-import WordManagerMarkdown from './WordManagerMarkdownNew';
+import MainApp from './MainApp';
 import { MarkdownWordStorage } from './MarkdownWordStorage';
 import type { Word } from './MarkdownWordStorage';
 
@@ -200,7 +200,7 @@ class WordManagerView extends ItemView {
     private renderComponent() {
         if (this.root) {
             this.root.render(
-                React.createElement(WordManagerMarkdown, {
+                React.createElement(MainApp, {
                     words: this.words,
                     onAdd: this.handleAddWord.bind(this),
                     onEdit: this.handleEditWord.bind(this),

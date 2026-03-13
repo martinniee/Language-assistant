@@ -7,6 +7,14 @@ const createEmptyWord = (): Word => ({
     metadata: {
         id: '',
         queryCount: 0,
+        createBy: 'user',
+        lastUpdate: new Date().toISOString(),
+        // 间隔学习默认值
+        srsLevel: 0,
+        reviewCount: 0,
+        correctCount: 0,
+        ease: 2.5,
+        interval: 1,
     },
     name: '',
     pronunciation: '',

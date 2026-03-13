@@ -4,13 +4,13 @@
 
 ## hello
 
--   ID: word-test123-abc456
+%%meta{"id":"word-test123-abc456","createBy":"user","lastUpdate":"2026-03-13T15:32:00.000Z","queryCount":0,"srsLevel":0,"reviewCount":0,"correctCount":0,"ease":2.5,"interval":1}%%
+
 -   发音: /həˈloʊ/
 -   词汇: hello
 -   分类: 日常用语
 -   标签: 基础,问候
 -   等级: 初级
--   查询次数: 0
 -   词性: 感叹词、名词
 -   内容:
     -   感叹词

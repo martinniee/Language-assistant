@@ -1,5 +1,6 @@
 // Markdown 单词存储和解析器
 import { TFile, Vault } from 'obsidian';
+import { SRSUtils } from './SpacedRepetitionSystem';
 
 export interface Example {
     text: string;
@@ -21,6 +22,16 @@ export interface WordMetadata {
     lastUpdate?: string; // 最后更新时间
     weight?: number; // 权重或重要性
     queryCount?: number; // 查询次数
+
+    // 间隔学习相关字段
+    srsLevel?: number; // SRS等级 (0-8，0为新卡片)
+    nextReviewDate?: string; // 下次复习日期 (ISO 8601格式)
+    lastReviewDate?: string; // 上次复习日期
+    reviewCount?: number; // 总复习次数
+    correctCount?: number; // 正确次数
+    ease?: number; // 难度因子 (1.3-2.5，默认2.5)
+    interval?: number; // 当前间隔天数
+
     [key: string]: any; // 支持扩展字段
 }
 
@@ -55,6 +66,60 @@ export class WordHelper {
 
     static setQueryCount(word: Word, count: number): void {
         word.metadata.queryCount = count;
+    }
+
+    // 间隔学习相关辅助方法
+    static getSrsLevel(word: Word): number {
+        return word.metadata.srsLevel || 0;
+    }
+
+    static getNextReviewDate(word: Word): Date | null {
+        const dateString = word.metadata.nextReviewDate;
+        return dateString ? new Date(dateString) : null;
+    }
+
+    static getLastReviewDate(word: Word): Date | null {
+        const dateString = word.metadata.lastReviewDate;
+        return dateString ? new Date(dateString) : null;
+    }
+
+    static getReviewCount(word: Word): number {
+        return word.metadata.reviewCount || 0;
+    }
+
+    static getCorrectCount(word: Word): number {
+        return word.metadata.correctCount || 0;
+    }
+
+    static getEase(word: Word): number {
+        return word.metadata.ease || 2.5;
+    }
+
+    static getInterval(word: Word): number {
+        return word.metadata.interval || 1;
+    }
+
+    static getAccuracy(word: Word): number {
+        const total = WordHelper.getReviewCount(word);
+        const correct = WordHelper.getCorrectCount(word);
+        return total > 0 ? (correct / total) * 100 : 0;
+    }
+
+    static isNewCard(word: Word): boolean {
+        return WordHelper.getSrsLevel(word) === 0;
+    }
+
+    static isDueForReview(word: Word): boolean {
+        const nextReviewDate = WordHelper.getNextReviewDate(word);
+        if (!nextReviewDate) return true; // 新卡片默认需要学习
+        return new Date() >= nextReviewDate;
+    }
+
+    static getDaysUntilReview(word: Word): number {
+        const nextReviewDate = WordHelper.getNextReviewDate(word);
+        if (!nextReviewDate) return 0;
+        const diffTime = nextReviewDate.getTime() - new Date().getTime();
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 }
 
@@ -229,11 +294,32 @@ export class MarkdownWordStorage {
             // 解析内容部分（如果存在）
             if (contentStartIndex >= 0) {
                 word.content = this.parseContent(lines, contentStartIndex);
-            }
-
-            // 如果没有 ID，生成一个新的
+            } // 如果没有 ID，生成一个新的
             if (!word.metadata.id) {
                 word.metadata.id = this.generateId();
+            }
+
+            // 确保 SRS 字段存在（为旧数据设置默认值）
+            if (word.metadata.srsLevel === undefined) {
+                word.metadata.srsLevel = 0;
+            }
+            if (word.metadata.reviewCount === undefined) {
+                word.metadata.reviewCount = 0;
+            }
+            if (word.metadata.correctCount === undefined) {
+                word.metadata.correctCount = 0;
+            }
+            if (word.metadata.ease === undefined) {
+                word.metadata.ease = 2.5;
+            }
+            if (word.metadata.interval === undefined) {
+                word.metadata.interval = 1;
+            }
+            if (!word.metadata.createBy) {
+                word.metadata.createBy = 'user';
+            }
+            if (!word.metadata.lastUpdate) {
+                word.metadata.lastUpdate = new Date().toISOString();
             }
 
             words.push(word);
@@ -346,15 +432,21 @@ export class MarkdownWordStorage {
         markdown += '%%data-start%%\n\n';
 
         for (const word of words) {
-            markdown += `## ${word.name}\n\n`;
-
-            // 写入元数据（新格式）
+            markdown += `## ${word.name}\n\n`;            // 写入元数据（新格式）- 包含所有SRS字段
             const metadata = {
                 id: word.metadata.id,
                 createBy: word.metadata.createBy,
                 lastUpdate: word.metadata.lastUpdate,
                 weight: word.metadata.weight,
                 queryCount: word.metadata.queryCount || 0,
+                
+                // SRS 间隔学习字段
+                srsLevel: word.metadata.srsLevel,
+                nextReviewDate: word.metadata.nextReviewDate,
+                lastReviewDate: word.metadata.lastReviewDate,
+                reviewCount: word.metadata.reviewCount,
+                correctCount: word.metadata.correctCount,                ease: word.metadata.ease ? Math.round(word.metadata.ease * 1000) / 1000 : undefined, // 保留3位小数
+                interval: word.metadata.interval ? Math.round(word.metadata.interval) : undefined, // 保留整数
             };
 
             // 过滤掉undefined的字段
