@@ -38,8 +38,25 @@ export class MarkdownWordStorage {
     parseMarkdownToWords(content: string): Word[] {
         const words: Word[] = [];
 
-        // 按二级标题分割
-        const sections = content
+        // 提取数据区域内容
+        const dataStartPattern = /%%data-start%%/;
+        const dataEndPattern = /%%data-end%%/;
+
+        const startMatch = content.match(dataStartPattern);
+        const endMatch = content.match(dataEndPattern);
+
+        let dataContent = '';
+        if (startMatch && endMatch) {
+            const startIndex = startMatch.index! + startMatch[0].length;
+            const endIndex = endMatch.index!;
+            dataContent = content.substring(startIndex, endIndex).trim();
+        } else {
+            // 向后兼容：如果没有数据标记，使用整个内容，但过滤标题
+            dataContent = content;
+        }
+
+        // 按二级标题分割数据区域内容
+        const sections = dataContent
             .split(/^## /gm)
             .filter((section) => section.trim());
 
@@ -48,6 +65,17 @@ export class MarkdownWordStorage {
             if (lines.length === 0) continue;
 
             const wordName = lines[0].trim(); // 第一行是单词名
+
+            // 跳过文档标题部分（以#开头、为空、或包含特殊标记的部分）
+            if (
+                wordName.startsWith('#') ||
+                wordName === '' ||
+                wordName === '单词词汇表' ||
+                wordName.includes('%%')
+            ) {
+                continue;
+            }
+
             const word: Word = {
                 name: wordName,
                 pronunciation: '',
@@ -166,11 +194,10 @@ export class MarkdownWordStorage {
         }
 
         return content;
-    }
-
-    // 将单词数组序列化为 markdown 字符串
+    } // 将单词数组序列化为 markdown 字符串
     wordsToMarkdown(words: Word[]): string {
         let markdown = '# 单词词汇表\n\n';
+        markdown += '%%data-start%%\n\n';
 
         for (const word of words) {
             markdown += `## ${word.name}\n`;
@@ -197,16 +224,17 @@ export class MarkdownWordStorage {
             markdown += '\n';
         }
 
+        markdown += '%%data-end%%\n';
         return markdown;
-    }
-
-    // 读取 words.md 文件
+    } // 读取 words.md 文件
     async loadWords(): Promise<Word[]> {
         try {
             const file = this.vault.getAbstractFileByPath(this.wordsFilePath);
             if (!file || !(file instanceof TFile)) {
-                // 文件不存在，创建空文件
-                await this.vault.create(this.wordsFilePath, '# 单词词汇表\n\n');
+                // 文件不存在，创建包含数据标记的空文件
+                const emptyContent =
+                    '# 单词词汇表\n\n%%data-start%%\n\n%%data-end%%\n';
+                await this.vault.create(this.wordsFilePath, emptyContent);
                 return [];
             }
 

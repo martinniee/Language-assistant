@@ -1,5 +1,7 @@
 # 单词词汇表
 
+%%data-start%%
+
 ## hello
 
 -   发音: /həˈloʊ/
@@ -35,3 +37,5 @@
         -   领域；世界
             -   The world of science. (科学领域)
             -   Welcome to my world. (欢迎来到我的世界)
+
+%%data-end%%

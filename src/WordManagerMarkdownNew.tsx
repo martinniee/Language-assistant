@@ -1,6 +1,50 @@
 // @ts-ignore
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Word } from './MarkdownWordStorage';
+
+interface WordManagerProps {
+    words: Word[];
+    onAdd: (word: Word) => void;
+    onEdit: (word: Word) => void;
+    onDelete: (name: string) => void;
+}
+
+// 高亮文本组件 - 优化版本
+const HighlightText: React.FC<{ text: string; searchTerm: string }> = React.memo(({ text, searchTerm }) => {
+    const highlightedContent = useMemo(() => {
+        if (!searchTerm || !text) {
+            return <span>{text}</span>;
+        }
+
+        const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const parts = text.split(new RegExp(`(${escapedTerm})`, 'gi'));
+        
+        return (
+            <span>
+                {parts.map((part, index) => (
+                    part.toLowerCase() === searchTerm.toLowerCase() ? (
+                        <span 
+                            key={index} 
+                            style={{ 
+                                backgroundColor: '#ffeb3b', 
+                                color: '#000',
+                                padding: '1px 2px',
+                                borderRadius: '2px',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            {part}
+                        </span>
+                    ) : (
+                        <span key={index}>{part}</span>
+                    )
+                ))}
+            </span>
+        );
+    }, [text, searchTerm]);
+
+    return highlightedContent;
+});
 
 interface WordManagerProps {
     words: Word[];
@@ -14,10 +58,47 @@ export default function WordManagerMarkdown({
     onAdd,
     onEdit,
     onDelete,
-}: WordManagerProps) {
-    const [selectedWord, setSelectedWord] = useState<Word | null>(null);
+}: WordManagerProps) {    const [selectedWord, setSelectedWord] = useState<Word | null>(null);
     const [showAdd, setShowAdd] = useState(false);
     const [editTarget, setEditTarget] = useState<Word | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [enableFullHighlight, setEnableFullHighlight] = useState(false);
+
+    // 优化的搜索函数 - 提前退出和缓存
+    const searchInWord = useCallback((word: Word, term: string): boolean => {
+        if (!term) return true;
+        
+        const lowerTerm = term.toLowerCase();
+        
+        // 基本字段搜索 - 提前退出
+        if (word.name.toLowerCase().includes(lowerTerm)) return true;
+        if (word.category.toLowerCase().includes(lowerTerm)) return true;
+        if (word.level.toLowerCase().includes(lowerTerm)) return true;
+        if (word.partsOfSpeech.toLowerCase().includes(lowerTerm)) return true;
+        if (word.pronunciation.toLowerCase().includes(lowerTerm)) return true;
+        
+        // 标签搜索
+        if (word.tags.some(tag => tag.toLowerCase().includes(lowerTerm))) return true;
+        
+        // 详细内容搜索 - 优化嵌套循环
+        for (const part of word.content) {
+            if (part.type.toLowerCase().includes(lowerTerm)) return true;
+            
+            for (const def of part.definitions) {
+                if (def.definition.toLowerCase().includes(lowerTerm)) return true;
+                
+                // 只在必要时搜索例句
+                for (const example of def.examples) {
+                    if (example.text.toLowerCase().includes(lowerTerm)) return true;
+                }
+            }
+        }
+        
+        return false;
+    }, []);    // 使用 useMemo 缓存过滤结果
+    const filteredWords = useMemo(() => {
+        return words.filter(word => searchInWord(word, searchTerm));
+    }, [words, searchTerm, searchInWord]);
 
     const [form, setForm] = useState<Word>({
         name: '',
@@ -31,7 +112,7 @@ export default function WordManagerMarkdown({
         content: [],
     });
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
         if (editTarget) {
             onEdit(form);
             setEditTarget(null);
@@ -52,10 +133,9 @@ export default function WordManagerMarkdown({
             content: [],
         });
         setShowAdd(false);
-        setSelectedWord(null);
-    };
+        setSelectedWord(null);    }, [editTarget, form, onEdit, onAdd]);
 
-    const handleEditClick = (word: Word) => {
+    const handleEditClick = useCallback((word: Word) => {
         setEditTarget(word);
         setForm({
             ...word,
@@ -63,16 +143,16 @@ export default function WordManagerMarkdown({
             content: JSON.parse(JSON.stringify(word.content)),
         });
         setShowAdd(true);
-    };
+    }, []);
 
-    const handleAddPart = () => {
+    const handleAddPart = useCallback(() => {
         setForm((f) => ({
             ...f,
             content: [...f.content, { type: '', definitions: [] }],
         }));
-    };
+    }, []);
 
-    const handleAddDefinition = (partIndex: number) => {
+    const handleAddDefinition = useCallback((partIndex: number) => {
         setForm((f) => {
             const content = [...f.content];
             content[partIndex].definitions.push({
@@ -81,9 +161,9 @@ export default function WordManagerMarkdown({
             });
             return { ...f, content };
         });
-    };
+    }, []);
 
-    const handleAddExample = (partIndex: number, defIndex: number) => {
+    const handleAddExample = useCallback((partIndex: number, defIndex: number) => {
         setForm((f) => {
             const content = [...f.content];
             content[partIndex].definitions[defIndex].examples.push({
@@ -91,7 +171,7 @@ export default function WordManagerMarkdown({
             });
             return { ...f, content };
         });
-    };
+    }, []);
     return (
         <div
             style={{
@@ -100,8 +180,58 @@ export default function WordManagerMarkdown({
                 padding: 20,
                 boxSizing: 'border-box',
             }}>
-            <h1>单词管理</h1>
-            <button onClick={() => setShowAdd(true)}>添加新单词</button>
+            <h1>单词管理</h1>            <div
+                style={{
+                    display: 'flex',
+                    gap: 10,
+                    marginBottom: 20,
+                    alignItems: 'center',
+                }}>
+                <input
+                    type="text"
+                    placeholder="搜索单词、分类、标签、发音或内容..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                        flex: 1,
+                        padding: '10px',
+                        border: '1px solid #ccc',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                    }}
+                />
+                
+                {searchTerm && (
+                    <label style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        fontSize: '14px',
+                        color: '#666',
+                        whiteSpace: 'nowrap'
+                    }}>
+                        <input
+                            type="checkbox"
+                            checked={enableFullHighlight}
+                            onChange={(e) => setEnableFullHighlight(e.target.checked)}
+                        />
+                        全部高亮
+                    </label>
+                )}
+                
+                <button
+                    onClick={() => setShowAdd(true)}
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#007acc',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                    }}>
+                    添加新单词
+                </button>
+            </div>
 
             {showAdd && (
                 <div
@@ -344,88 +474,140 @@ export default function WordManagerMarkdown({
                 </div>
             )}
 
-            <h2>现有单词</h2>
-            <div style={{ display: 'grid', gap: 10, marginTop: 20 }}>
-                {words.map((word) => (
-                    <div
-                        key={word.name}
+            <h2>
+                现有单词
+                {searchTerm && (
+                    <span
                         style={{
-                            padding: 15,
-                            border: '1px solid #ddd',
-                            borderRadius: 8,
+                            fontSize: '0.7em',
+                            color: '#666',
+                            marginLeft: '10px',
                         }}>
+                        (找到 {filteredWords.length} / {words.length} 个单词)
+                    </span>
+                )}
+            </h2>
+            <div style={{ display: 'grid', gap: 10, marginTop: 20 }}>
+                {filteredWords.length === 0 ? (
+                    <div
+                        style={{
+                            textAlign: 'center',
+                            color: '#666',
+                            padding: '40px',
+                            border: '1px dashed #ccc',
+                            borderRadius: '8px',
+                        }}>
+                        {searchTerm
+                            ? '没有找到匹配的单词'
+                            : '暂无单词，点击上方按钮添加'}
+                    </div>
+                ) : (
+                    filteredWords.map((word) => (
                         <div
+                            key={word.name}
                             style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                            }}>
-                            <h3>{word.name}</h3>
-                            <div>
-                                <button
-                                    onClick={() => handleEditClick(word)}
-                                    style={{ marginRight: 10 }}>
-                                    编辑
-                                </button>
-                                <button onClick={() => onDelete(word.name)}>
-                                    删除
-                                </button>
+                                padding: 15,
+                                border: '1px solid #ddd',
+                                borderRadius: 8,
+                            }}>                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}>
+                                <h3>
+                                    <HighlightText text={word.name} searchTerm={searchTerm} />
+                                </h3>
+                                <div>
+                                    <button
+                                        onClick={() => handleEditClick(word)}
+                                        style={{ marginRight: 10 }}>
+                                        编辑
+                                    </button>
+                                    <button onClick={() => onDelete(word.name)}>
+                                        删除
+                                    </button>
+                                </div>
+                            </div>
+                            <p>
+                                <strong>发音:</strong> {enableFullHighlight ? 
+                                    <HighlightText text={word.pronunciation} searchTerm={searchTerm} /> : 
+                                    word.pronunciation}
+                            </p>
+                            <p>
+                                <strong>分类:</strong> {enableFullHighlight ? 
+                                    <HighlightText text={word.category} searchTerm={searchTerm} /> : 
+                                    word.category}
+                            </p>
+                            <p>
+                                <strong>标签:</strong> {enableFullHighlight ? 
+                                    <HighlightText text={word.tags.join(', ')} searchTerm={searchTerm} /> : 
+                                    word.tags.join(', ')}
+                            </p>
+                            <p>
+                                <strong>等级:</strong> {enableFullHighlight ? 
+                                    <HighlightText text={word.level} searchTerm={searchTerm} /> : 
+                                    word.level}
+                            </p>
+                            <p>
+                                <strong>词性:</strong> {enableFullHighlight ? 
+                                    <HighlightText text={word.partsOfSpeech} searchTerm={searchTerm} /> : 
+                                    word.partsOfSpeech}
+                            </p>
+                            <p>
+                                <strong>查询次数:</strong> {word.queryCount}
+                            </p>                            <div style={{ marginTop: 10 }}>
+                                <strong>详细内容:</strong>
+                                {word.content.map((part, partIndex) => (
+                                    <div
+                                        key={partIndex}
+                                        style={{
+                                            marginLeft: 20,
+                                            marginTop: 5,
+                                        }}>
+                                        <strong>
+                                            {enableFullHighlight ? 
+                                                <HighlightText text={part.type} searchTerm={searchTerm} /> : 
+                                                part.type}
+                                        </strong>
+                                        {part.definitions.map(
+                                            (def, defIndex) => (
+                                                <div
+                                                    key={defIndex}
+                                                    style={{
+                                                        marginLeft: 20,
+                                                        marginTop: 3,
+                                                    }}>
+                                                    <div>
+                                                        • {enableFullHighlight ? 
+                                                            <HighlightText text={def.definition} searchTerm={searchTerm} /> : 
+                                                            def.definition}
+                                                    </div>
+                                                    {def.examples.map(
+                                                        (example, exIndex) => (
+                                                            <div
+                                                                key={exIndex}
+                                                                style={{
+                                                                    marginLeft: 20,
+                                                                    fontStyle:
+                                                                        'italic',
+                                                                    color: '#666',
+                                                                }}>
+                                                                - {enableFullHighlight ? 
+                                                                    <HighlightText text={example.text} searchTerm={searchTerm} /> : 
+                                                                    example.text}
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            ),
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                        <p>
-                            <strong>发音:</strong> {word.pronunciation}
-                        </p>
-                        <p>
-                            <strong>分类:</strong> {word.category}
-                        </p>
-                        <p>
-                            <strong>标签:</strong> {word.tags.join(', ')}
-                        </p>
-                        <p>
-                            <strong>等级:</strong> {word.level}
-                        </p>
-                        <p>
-                            <strong>词性:</strong> {word.partsOfSpeech}
-                        </p>
-                        <p>
-                            <strong>查询次数:</strong> {word.queryCount}
-                        </p>
-
-                        <div style={{ marginTop: 10 }}>
-                            <strong>详细内容:</strong>
-                            {word.content.map((part, partIndex) => (
-                                <div
-                                    key={partIndex}
-                                    style={{ marginLeft: 20, marginTop: 5 }}>
-                                    <strong>{part.type}</strong>
-                                    {part.definitions.map((def, defIndex) => (
-                                        <div
-                                            key={defIndex}
-                                            style={{
-                                                marginLeft: 20,
-                                                marginTop: 3,
-                                            }}>
-                                            <div>• {def.definition}</div>
-                                            {def.examples.map(
-                                                (example, exIndex) => (
-                                                    <div
-                                                        key={exIndex}
-                                                        style={{
-                                                            marginLeft: 20,
-                                                            fontStyle: 'italic',
-                                                            color: '#666',
-                                                        }}>
-                                                        - {example.text}
-                                                    </div>
-                                                ),
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
         </div>
     );
