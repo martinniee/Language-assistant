@@ -328,7 +328,10 @@ export class MarkdownWordStorage {
                 ) {
                     const tagsStr = line.replace(/^-\s*标签:/, '').trim();
                     word.tags = tagsStr
-                        ? tagsStr.split(',').map((t) => t.trim())
+                        ? tagsStr
+                              .split(',')
+                              .map((t) => t.trim())
+                              .filter((t) => t.length > 0)
                         : [];
                 } else if (
                     line.startsWith('-   等级:') ||
@@ -550,7 +553,9 @@ export class MarkdownWordStorage {
             markdown += `- 发音: ${word.pronunciation}\n`;
             markdown += `- 词汇: ${word.vocabulary}\n`;
             markdown += `- 分类: ${word.category}\n`;
-            markdown += `- 标签: ${word.tags.join(',')}\n`;
+            markdown += `- 标签: ${word.tags
+                .filter((tag) => tag && tag.trim())
+                .join(',')}\n`;
             markdown += `- 等级: ${word.level}\n`;
             markdown += `- 词性: ${word.partsOfSpeech}\n`;
             markdown += `- 内容:\n`;

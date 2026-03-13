@@ -762,7 +762,7 @@ export default function WordManagerMarkdown({
         return sortedWords.slice(startIndex, endIndex);
     }, [sortedWords, currentPage, itemsPerPage]); // 总页数
     const totalPages = Math.ceil(sortedWords.length / itemsPerPage);
-    const [form, setForm] = useState<Word>(createEmptyWord);
+    const [form, setForm] = useState<Word>(createEmptyWord());
     const handleSubmit = useCallback(() => {
         // 清除之前的错误消息
         setErrorMessage('');
@@ -2207,7 +2207,8 @@ export default function WordManagerMarkdown({
                                         ...form,
                                         tags: e.target.value
                                             .split(',')
-                                            .map((t) => t.trim()),
+                                            .map((t) => t.trim())
+                                            .filter((t) => t.length > 0),
                                     })
                                 }
                                 style={{
