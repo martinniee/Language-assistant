@@ -214,7 +214,7 @@ export class MarkdownWordStorage {
             if (
                 wordName.startsWith('#') ||
                 wordName === '' ||
-                wordName === '单词词汇表' ||
+                wordName === 'Words' ||
                 wordName.includes('%%')
             ) {
                 continue;
@@ -503,7 +503,7 @@ export class MarkdownWordStorage {
             }
         }
 
-        let markdown = '# 单词词汇表\n\n';
+        let markdown = '# Words\n\n';
 
         markdown += '%%data-start%%\n\n';
 
@@ -589,7 +589,7 @@ export class MarkdownWordStorage {
             if (!file || !(file instanceof TFile)) {
                 // 文件不存在，创建包含数据标记的空文件
                 const emptyContent =
-                    '# 单词词汇表\n\n%%data-start%%\n\n%%data-end%%\n';
+                    '# Words\n\n%%data-start%%\n\n%%data-end%%\n';
                 await this.vault.create(this.wordsFilePath, emptyContent);
                 return { words: [], duplicates: [] };
             }

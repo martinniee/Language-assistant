@@ -1,4 +1,4 @@
-import { Plugin, Notice, WorkspaceLeaf, ItemView, addIcon } from 'obsidian';
+import { Plugin, Notice, WorkspaceLeaf, ItemView, addIcon, PluginSettingTab, App, Setting } from 'obsidian';
 import { createRoot } from 'react-dom/client';
 import * as React from 'react';
 import MainApp from './MainApp';
@@ -7,6 +7,16 @@ import type { Word } from './MarkdownWordStorage';
 
 const VIEW_TYPE_WORD_MANAGER = 'word-manager-view';
 
+// 插件设置接口
+interface LanguageAssistantSettings {
+    wordsFilePath: string; // 单词文件路径
+}
+
+// 默认设置
+const DEFAULT_SETTINGS: LanguageAssistantSettings = {
+    wordsFilePath: 'words.md', // 默认在根目录
+};
+
 // 添加一个简单的图标（可自定义 SVG）
 addIcon(
     'word-book',
@@ -14,12 +24,21 @@ addIcon(
 );
 
 export default class LanguageAssistantPlugin extends Plugin {
+    settings!: LanguageAssistantSettings;
+
     async onload() {
         console.log('Language Assistant Obsidian 插件已加载');
+        
+        // 加载设置
+        await this.loadSettings();
+
         this.registerView(
             VIEW_TYPE_WORD_MANAGER,
-            (leaf) => new WordManagerView(leaf),
+            (leaf) => new WordManagerView(leaf, this),
         );
+        
+        // 添加设置选项卡
+        this.addSettingTab(new LanguageAssistantSettingTab(this.app, this));
         this.addCommand({
             id: 'roll-dice',
             name: '🎲 Roll a Dice',
@@ -36,7 +55,14 @@ export default class LanguageAssistantPlugin extends Plugin {
         // 添加 ribon 按钮
         this.addRibbonIcon('word-book', '单词管理', () => {
             this.openWordManagerLeaf();
-        });
+        });    }
+
+    async loadSettings() {
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    }
+
+    async saveSettings() {
+        await this.saveData(this.settings);
     }
 
     onunload() {
@@ -61,11 +87,20 @@ class WordManagerView extends ItemView {
     private wordStorage: MarkdownWordStorage;
     private words: Word[] = [];
     private renderKey: number = 0; // 添加渲染键用于强制刷新
+    private plugin: LanguageAssistantPlugin;
 
-    constructor(leaf: WorkspaceLeaf) {
+    constructor(leaf: WorkspaceLeaf, plugin: LanguageAssistantPlugin) {
         super(leaf);
-        // 初始化 Markdown 存储器，指向 vault 根目录的 words.md
-        this.wordStorage = new MarkdownWordStorage(this.app.vault);
+        this.plugin = plugin;
+        // 使用插件设置中的文件路径初始化 Markdown 存储器
+        this.wordStorage = new MarkdownWordStorage(this.app.vault, plugin.settings.wordsFilePath);    }
+
+    // 更新存储文件路径
+    public updateStoragePath(newPath: string) {
+        console.log(`📁 更新存储路径: ${this.plugin.settings.wordsFilePath} → ${newPath}`);
+        this.wordStorage = new MarkdownWordStorage(this.app.vault, newPath);
+        // 重新加载数据
+        this.onOpen();
     }
 
     // 生成 UUID
@@ -76,15 +111,18 @@ class WordManagerView extends ItemView {
             '-' +
             Date.now().toString(36)
         );
-    } // 跳转到 words.md 文件中的指定单词位置
+    }
+    
+    // 跳转到单词文件中的指定单词位置
     private async jumpToWordInMarkdown(wordId: string): Promise<void> {
         try {
             console.log('🔍 正在跳转到单词ID:', wordId);
 
-            // 获取 words.md 文件
-            const tFile = this.app.vault.getFileByPath('words.md');
+            // 使用设置中的文件路径
+            const filePath = this.plugin.settings.wordsFilePath;
+            const tFile = this.app.vault.getFileByPath(filePath);
             if (!tFile) {
-                new Notice('❌ 未找到 words.md 文件');
+                new Notice(`❌ 未找到文件: ${filePath}`);
                 return;
             }
 
@@ -347,13 +385,409 @@ class WordManagerView extends ItemView {
             new Notice('❌ 删除单词失败，请查看控制台错误信息'); // 发生错误时也要刷新界面
             this.forceRefreshUI();
         }
-    }
-
-    async onClose() {
+    }    async onClose() {
         console.log('📴 关闭单词管理界面');
         if (this.root) {
             this.root.unmount();
             this.root = null;
         }
+    }
+}
+
+// 设置选项卡类
+class LanguageAssistantSettingTab extends PluginSettingTab {
+    plugin: LanguageAssistantPlugin;
+
+    constructor(app: App, plugin: LanguageAssistantPlugin) {
+        super(app, plugin);
+        this.plugin = plugin;
+    }
+
+    display(): void {
+        const { containerEl } = this;
+
+        containerEl.empty();
+
+        // 标题
+        containerEl.createEl('h2', { text: '📚 Language Assistant 设置' });        // 存储位置设置（带自动补全功能）
+        this.createPathInputWithSuggestion(containerEl);
+
+        // 路径示例说明
+        const exampleEl = containerEl.createEl('div', {
+            cls: 'setting-item-description',
+        });
+        exampleEl.innerHTML = `
+            <strong>🔒 隐私保护示例：</strong><br>
+            • <code>words.md</code> - 存储在根目录（默认）<br>
+            • <code>private/words.md</code> - 存储在私有文件夹<br>
+            • <code>.hidden/vocabulary.md</code> - 存储在隐藏文件夹<br>
+            • <code>documents/language/my-words.md</code> - 存储在深层目录<br>
+            <br>
+            <strong>💡 提示：</strong>使用文件夹可以更好地组织和保护您的单词数据
+        `;
+
+        // 当前状态显示
+        const statusEl = containerEl.createEl('div', {
+            cls: 'setting-item',
+        });
+        statusEl.innerHTML = `
+            <div class="setting-item-info">
+                <div class="setting-item-name">📊 当前状态</div>
+                <div class="setting-item-description">
+                    <strong>存储路径：</strong><code>${this.plugin.settings.wordsFilePath}</code><br>
+                    <strong>完整路径：</strong><code>vault/${this.plugin.settings.wordsFilePath}</code>
+                </div>
+            </div>
+        `;
+
+        // 操作按钮区域
+        const actionsEl = containerEl.createEl('div', {
+            cls: 'setting-item',
+        });
+        
+        const actionsInfo = actionsEl.createEl('div', {
+            cls: 'setting-item-info',
+        });
+        actionsInfo.createEl('div', {
+            cls: 'setting-item-name',
+            text: '🔧 快速操作'
+        });
+
+        const actionsControl = actionsEl.createEl('div', {
+            cls: 'setting-item-control',
+        });
+
+        // 检查文件是否存在按钮
+        const checkButton = actionsControl.createEl('button', {
+            text: '🔍 检查文件',
+            cls: 'mod-cta',
+        });
+        checkButton.onclick = async () => {
+            const filePath = this.plugin.settings.wordsFilePath;
+            const file = this.app.vault.getFileByPath(filePath);
+            
+            if (file) {
+                new Notice(`✅ 文件存在: ${filePath}`);
+                console.log('📂 文件信息:', file);
+            } else {
+                new Notice(`❓ 文件不存在: ${filePath}，将在首次添加单词时自动创建`);
+            }
+        };
+
+        // 重置为默认路径按钮
+        const resetButton = actionsControl.createEl('button', {
+            text: '🔄 重置默认',
+            cls: 'mod-warning',
+        });
+        resetButton.style.marginLeft = '10px';
+        resetButton.onclick = async () => {
+            if (confirm('确定要重置存储路径为默认值 (words.md) 吗？')) {
+                this.plugin.settings.wordsFilePath = DEFAULT_SETTINGS.wordsFilePath;
+                await this.plugin.saveSettings();
+                
+                // 刷新设置页面
+                this.display();
+                
+                // 更新所有现有的视图
+                this.plugin.app.workspace.getLeavesOfType(VIEW_TYPE_WORD_MANAGER).forEach(leaf => {
+                    if (leaf.view instanceof WordManagerView) {
+                        leaf.view.updateStoragePath(DEFAULT_SETTINGS.wordsFilePath);
+                    }
+                });
+                
+                new Notice(`✅ 存储路径已重置为默认值: ${DEFAULT_SETTINGS.wordsFilePath}`);
+            }
+        };
+
+        // 安全提示
+        const warningEl = containerEl.createEl('div', {
+            cls: 'setting-item-description',
+        });
+        warningEl.style.marginTop = '20px';
+        warningEl.style.padding = '10px';
+        warningEl.style.backgroundColor = '#fff3cd';
+        warningEl.style.border = '1px solid #ffeaa7';
+        warningEl.style.borderRadius = '4px';
+        warningEl.innerHTML = `
+            <strong>⚠️ 重要提示：</strong><br>
+            • 更改存储路径不会自动迁移现有数据<br>
+            • 如需迁移，请手动复制文件到新位置<br>
+            • 建议先备份现有单词数据<br>
+            • 文件夹路径不存在时会自动创建
+        `;
+    }
+
+    /**
+     * 创建带自动补全功能的路径输入框
+     */
+    private createPathInputWithSuggestion(containerEl: HTMLElement): void {
+        const setting = new Setting(containerEl)
+            .setName('📁 存储文件路径')
+            .setDesc('设置单词数据的存储位置（支持自动补全）');
+
+        const inputContainer = setting.controlEl.createEl('div', {
+            cls: 'path-input-container',
+        });
+        inputContainer.style.position = 'relative';
+        inputContainer.style.width = '100%';
+
+        // 创建输入框
+        const input = inputContainer.createEl('input', {
+            type: 'text',
+            placeholder: '输入文件路径... (如: words.md)',
+            value: this.plugin.settings.wordsFilePath,
+        });
+        input.style.width = '100%';
+        input.style.paddingRight = '30px';
+
+        // 创建建议下拉列表容器
+        const suggestionContainer = inputContainer.createEl('div', {
+            cls: 'suggestion-container',
+        });
+        suggestionContainer.style.position = 'absolute';
+        suggestionContainer.style.top = '100%';
+        suggestionContainer.style.left = '0';
+        suggestionContainer.style.right = '0';
+        suggestionContainer.style.backgroundColor = 'var(--background-primary)';
+        suggestionContainer.style.border = '1px solid var(--background-modifier-border)';
+        suggestionContainer.style.borderRadius = '4px';
+        suggestionContainer.style.maxHeight = '200px';
+        suggestionContainer.style.overflowY = 'auto';
+        suggestionContainer.style.zIndex = '1000';
+        suggestionContainer.style.display = 'none';
+        suggestionContainer.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+
+        // 当前选中的建议索引
+        let selectedIndex = -1;
+        let suggestions: string[] = [];        // 获取建议列表
+        const getSuggestions = (query: string): string[] => {
+            if (!query) return [];
+
+            const allFiles = this.app.vault.getFiles();
+            const allFolders = this.app.vault.getAllLoadedFiles()
+                .filter(file => file.hasOwnProperty('children')) // 这是文件夹的特征
+                .map(folder => folder.path);
+
+            const queryLower = query.toLowerCase();
+            const suggestions: string[] = [];
+
+            // 添加现有的.md文件建议
+            allFiles
+                .filter(file => file.path.toLowerCase().includes(queryLower))
+                .forEach(file => {
+                    if (file.extension === 'md') {
+                        suggestions.push(file.path);
+                    }
+                });
+
+            // 添加文件夹建议（用户可以在文件夹中创建新文件）
+            allFolders
+                .filter(folderPath => folderPath.toLowerCase().includes(queryLower))
+                .forEach(folderPath => {
+                    // 建议在文件夹中创建.md文件
+                    const suggestedPath = folderPath + '/words.md';
+                    if (!suggestions.includes(suggestedPath)) {
+                        suggestions.push(suggestedPath);
+                    }
+                });
+
+            // 如果输入看起来像一个路径，添加直接建议
+            if (query.includes('/') || query.endsWith('.md')) {
+                if (!suggestions.includes(query) && query.endsWith('.md')) {
+                    suggestions.unshift(query);
+                }
+            } else if (query) {
+                // 为简单查询添加.md扩展名建议
+                const mdSuggestion = query.endsWith('.md') ? query : query + '.md';
+                if (!suggestions.includes(mdSuggestion)) {
+                    suggestions.unshift(mdSuggestion);
+                }
+            }
+
+            return suggestions.slice(0, 8); // 限制建议数量
+        };
+
+        // 渲染建议列表
+        const renderSuggestions = (suggestionList: string[]): void => {
+            suggestionContainer.empty();
+            suggestions = suggestionList;
+            selectedIndex = -1;
+
+            if (suggestions.length === 0) {
+                suggestionContainer.style.display = 'none';
+                return;
+            }
+
+            suggestions.forEach((suggestion, index) => {
+                const item = suggestionContainer.createEl('div', {
+                    cls: 'suggestion-item',
+                    text: suggestion,
+                });
+                
+                item.style.padding = '8px 12px';
+                item.style.cursor = 'pointer';
+                item.style.borderBottom = '1px solid var(--background-modifier-border-hover)';
+
+                // 高亮匹配部分
+                const query = input.value.toLowerCase();
+                if (query) {
+                    const text = suggestion;
+                    const index = text.toLowerCase().indexOf(query);
+                    if (index !== -1) {
+                        const beforeMatch = text.substring(0, index);
+                        const match = text.substring(index, index + query.length);
+                        const afterMatch = text.substring(index + query.length);
+                        
+                        item.innerHTML = `${beforeMatch}<strong style="color: var(--accent-color)">${match}</strong>${afterMatch}`;
+                    }
+                }
+
+                // 添加文件状态指示器
+                const file = this.app.vault.getAbstractFileByPath(suggestion);
+                const statusIndicator = item.createEl('span', {
+                    cls: 'suggestion-status',
+                });
+                statusIndicator.style.float = 'right';
+                statusIndicator.style.fontSize = '12px';
+                statusIndicator.style.opacity = '0.7';
+                
+                if (file) {
+                    statusIndicator.textContent = '✓ 存在';
+                    statusIndicator.style.color = '#22c55e';
+                } else {
+                    statusIndicator.textContent = '+ 新建';
+                    statusIndicator.style.color = '#3b82f6';
+                }
+
+                item.addEventListener('mouseenter', () => {
+                    selectedIndex = index;
+                    updateSelection();
+                });
+
+                item.addEventListener('click', () => {
+                    selectSuggestion(suggestion);
+                });
+            });
+
+            suggestionContainer.style.display = 'block';
+        };
+
+        // 更新选中状态
+        const updateSelection = (): void => {
+            const items = suggestionContainer.querySelectorAll('.suggestion-item');
+            items.forEach((item, index) => {
+                if (index === selectedIndex) {
+                    (item as HTMLElement).style.backgroundColor = 'var(--background-modifier-hover)';
+                } else {
+                    (item as HTMLElement).style.backgroundColor = 'transparent';
+                }
+            });
+        };
+
+        // 选择建议
+        const selectSuggestion = async (suggestion: string): Promise<void> => {
+            input.value = suggestion;
+            suggestionContainer.style.display = 'none';
+            
+            // 验证并保存路径
+            if (this.validatePath(suggestion)) {
+                this.plugin.settings.wordsFilePath = suggestion;
+                await this.plugin.saveSettings();
+                
+                // 更新所有现有的视图
+                this.plugin.app.workspace.getLeavesOfType(VIEW_TYPE_WORD_MANAGER).forEach(leaf => {
+                    if (leaf.view instanceof WordManagerView) {
+                        leaf.view.updateStoragePath(suggestion);
+                    }
+                });
+                
+                new Notice(`✅ 存储路径已更新为: ${suggestion}`);
+                
+                // 刷新设置页面以显示新状态
+                this.display();
+            }
+        };
+
+        // 输入事件处理
+        input.addEventListener('input', (e) => {
+            const query = (e.target as HTMLInputElement).value;
+            const suggestionList = getSuggestions(query);
+            renderSuggestions(suggestionList);
+        });
+
+        // 键盘导航
+        input.addEventListener('keydown', (e) => {
+            if (suggestionContainer.style.display === 'none') return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
+                    updateSelection();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    updateSelection();
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+                        selectSuggestion(suggestions[selectedIndex]);
+                    } else {
+                        // 直接验证并保存当前输入
+                        const currentPath = input.value;
+                        if (this.validatePath(currentPath)) {
+                            selectSuggestion(currentPath);
+                        }
+                    }
+                    break;
+                case 'Escape':
+                    suggestionContainer.style.display = 'none';
+                    selectedIndex = -1;
+                    break;
+            }
+        });
+
+        // 失去焦点时隐藏建议
+        input.addEventListener('blur', () => {
+            // 延迟隐藏，以便点击建议项能正常工作
+            setTimeout(() => {
+                suggestionContainer.style.display = 'none';
+            }, 200);
+        });
+
+        // 获得焦点时显示建议
+        input.addEventListener('focus', () => {
+            const query = input.value;
+            if (query) {
+                const suggestionList = getSuggestions(query);
+                renderSuggestions(suggestionList);
+            }
+        });
+    }
+
+    /**
+     * 验证路径是否有效
+     */
+    private validatePath(path: string): boolean {
+        if (!path || path.trim() === '') {
+            new Notice('❌ 路径不能为空');
+            return false;
+        }
+        
+        if (!path.endsWith('.md')) {
+            new Notice('❌ 文件必须以 .md 结尾');
+            return false;
+        }
+        
+        // 检查路径中是否包含非法字符
+        const invalidChars = /[<>:"|?*]/;
+        if (invalidChars.test(path)) {
+            new Notice('❌ 路径包含非法字符');
+            return false;
+        }
+        
+        return true;
     }
 }

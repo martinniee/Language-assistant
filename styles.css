@@ -1,0 +1,126 @@
+/* Language Assistant Plugin Styles */
+
+/* Path input container */
+.path-input-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Suggestion container */
+.suggestion-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    margin-top: 2px;
+}
+
+/* Suggestion item */
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--background-modifier-border-hover);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.1s ease;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+/* Suggestion status indicator */
+.suggestion-status {
+    font-size: 12px;
+    opacity: 0.7;
+    font-weight: 500;
+}
+
+/* Enhanced input styling */
+.path-input-container input[type='text'] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+    font-family: var(--font-interface);
+    transition: border-color 0.1s ease;
+}
+
+.path-input-container input[type='text']:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.path-input-container input[type='text']:focus + .suggestion-container {
+    display: block;
+}
+
+/* Dark theme adjustments */
+.theme-dark .suggestion-container {
+    border-color: var(--background-modifier-border);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Animation for suggestion container */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.suggestion-container[style*='display: block'] {
+    animation: slideDown 0.15s ease-out;
+}
+
+/* Highlight matching text */
+.suggestion-item strong {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* Status indicators with better colors */
+.suggestion-status[style*='color: #22c55e'] {
+    color: var(--text-success) !important;
+}
+
+.suggestion-status[style*='color: #3b82f6'] {
+    color: var(--text-accent) !important;
+}
+
+/* Scrollbar styling for suggestion container */
+.suggestion-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.suggestion-container::-webkit-scrollbar-track {
+    background: var(--background-secondary);
+}
+
+.suggestion-container::-webkit-scrollbar-thumb {
+    background: var(--background-modifier-border);
+    border-radius: 3px;
+}
+
+.suggestion-container::-webkit-scrollbar-thumb:hover {
+    background: var(--background-modifier-border-hover);
+}
