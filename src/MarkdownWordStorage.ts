@@ -432,21 +432,26 @@ export class MarkdownWordStorage {
         markdown += '%%data-start%%\n\n';
 
         for (const word of words) {
-            markdown += `## ${word.name}\n\n`;            // 写入元数据（新格式）- 包含所有SRS字段
+            markdown += `## ${word.name}\n\n`; // 写入元数据（新格式）- 包含所有SRS字段
             const metadata = {
                 id: word.metadata.id,
                 createBy: word.metadata.createBy,
                 lastUpdate: word.metadata.lastUpdate,
                 weight: word.metadata.weight,
                 queryCount: word.metadata.queryCount || 0,
-                
+
                 // SRS 间隔学习字段
                 srsLevel: word.metadata.srsLevel,
                 nextReviewDate: word.metadata.nextReviewDate,
                 lastReviewDate: word.metadata.lastReviewDate,
                 reviewCount: word.metadata.reviewCount,
-                correctCount: word.metadata.correctCount,                ease: word.metadata.ease ? Math.round(word.metadata.ease * 1000) / 1000 : undefined, // 保留3位小数
-                interval: word.metadata.interval ? Math.round(word.metadata.interval) : undefined, // 保留整数
+                correctCount: word.metadata.correctCount,
+                ease: word.metadata.ease
+                    ? Math.round(word.metadata.ease * 1000) / 1000
+                    : undefined, // 保留3位小数
+                interval: word.metadata.interval
+                    ? Math.round(word.metadata.interval)
+                    : undefined, // 保留整数
             };
 
             // 过滤掉undefined的字段

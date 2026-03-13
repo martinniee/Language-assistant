@@ -413,20 +413,39 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                         gap: '15px',
                         flexWrap: 'wrap',
                     }}>
+                    {' '}
                     {!showAnswer ? (
                         <button
                             onClick={() => setShowAnswer(true)}
                             style={{
-                                padding: '15px 40px',
-                                fontSize: '16px',
-                                fontWeight: 'bold',
+                                padding: '18px 48px',
+                                fontSize: '17px',
+                                fontWeight: '600',
                                 backgroundColor: '#1976d2',
                                 color: 'white',
                                 border: 'none',
-                                borderRadius: '25px',
+                                borderRadius: '32px',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s',
-                                boxShadow: '0 4px 12px rgba(25,118,210,0.3)',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 4px 16px rgba(25,118,210,0.25)',
+                                minHeight: '56px',
+                                letterSpacing: '0.5px',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#1565c0';
+                                e.currentTarget.style.transform =
+                                    'translateY(-2px)';
+                                e.currentTarget.style.boxShadow =
+                                    '0 6px 20px rgba(25,118,210,0.35)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#1976d2';
+                                e.currentTarget.style.transform =
+                                    'translateY(0)';
+                                e.currentTarget.style.boxShadow =
+                                    '0 4px 16px rgba(25,118,210,0.25)';
                             }}>
                             显示答案
                         </button>
@@ -437,32 +456,62 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                                     handleReviewAnswer(ReviewResult.AGAIN)
                                 }
                                 style={{
-                                    padding: '15px 25px',
-                                    fontSize: '16px',
+                                    padding: '16px 28px',
+                                    fontSize: '15px',
                                     fontWeight: '600',
                                     backgroundColor: '#f44336',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '20px',
+                                    borderRadius: '24px',
                                     cursor: 'pointer',
-                                    transition: 'all 0.3s',
+                                    transition: 'all 0.3s ease',
+                                    minHeight: '52px',
+                                    minWidth: '100px',
+                                    letterSpacing: '0.3px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#d32f2f';
+                                    e.currentTarget.style.transform =
+                                        'translateY(-1px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#f44336';
+                                    e.currentTarget.style.transform =
+                                        'translateY(0)';
                                 }}>
                                 陌生
-                            </button>
+                            </button>{' '}
                             <button
                                 onClick={() =>
                                     handleReviewAnswer(ReviewResult.HARD)
                                 }
                                 style={{
-                                    padding: '15px 25px',
-                                    fontSize: '16px',
+                                    padding: '16px 28px',
+                                    fontSize: '15px',
                                     fontWeight: '600',
                                     backgroundColor: '#ff9800',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '20px',
+                                    borderRadius: '24px',
                                     cursor: 'pointer',
-                                    transition: 'all 0.3s',
+                                    transition: 'all 0.3s ease',
+                                    minHeight: '52px',
+                                    minWidth: '100px',
+                                    letterSpacing: '0.3px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#f57c00';
+                                    e.currentTarget.style.transform =
+                                        'translateY(-1px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#ff9800';
+                                    e.currentTarget.style.transform =
+                                        'translateY(0)';
                                 }}>
                                 模糊
                             </button>
@@ -471,15 +520,30 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                                     handleReviewAnswer(ReviewResult.GOOD)
                                 }
                                 style={{
-                                    padding: '15px 25px',
-                                    fontSize: '16px',
+                                    padding: '16px 28px',
+                                    fontSize: '15px',
                                     fontWeight: '600',
                                     backgroundColor: '#4caf50',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '20px',
+                                    borderRadius: '24px',
                                     cursor: 'pointer',
-                                    transition: 'all 0.3s',
+                                    transition: 'all 0.3s ease',
+                                    minHeight: '52px',
+                                    minWidth: '100px',
+                                    letterSpacing: '0.3px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#388e3c';
+                                    e.currentTarget.style.transform =
+                                        'translateY(-1px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#4caf50';
+                                    e.currentTarget.style.transform =
+                                        'translateY(0)';
                                 }}>
                                 熟悉
                             </button>
@@ -488,15 +552,30 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                                     handleReviewAnswer(ReviewResult.EASY)
                                 }
                                 style={{
-                                    padding: '15px 25px',
-                                    fontSize: '16px',
+                                    padding: '16px 28px',
+                                    fontSize: '15px',
                                     fontWeight: '600',
                                     backgroundColor: '#2196f3',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '20px',
+                                    borderRadius: '24px',
                                     cursor: 'pointer',
-                                    transition: 'all 0.3s',
+                                    transition: 'all 0.3s ease',
+                                    minHeight: '52px',
+                                    minWidth: '100px',
+                                    letterSpacing: '0.3px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#1976d2';
+                                    e.currentTarget.style.transform =
+                                        'translateY(-1px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor =
+                                        '#2196f3';
+                                    e.currentTarget.style.transform =
+                                        'translateY(0)';
                                 }}>
                                 简单
                             </button>
@@ -631,25 +710,43 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
     }, [isStudying, showAnswer, currentCard]);
-
     if (isStudying) {
         return (
-            <div style={{ padding: '30px' }}>
+            <div
+                style={{
+                    padding: '32px 40px',
+                    minHeight: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}>
                 {session && session.currentIndex < session.totalCards
                     ? renderStudyCard()
                     : renderSessionComplete()}
-
                 <div style={{ textAlign: 'center', marginTop: '30px' }}>
                     <button
                         onClick={endStudySession}
                         style={{
-                            padding: '10px 20px',
-                            fontSize: '14px',
-                            backgroundColor: '#666',
+                            padding: '14px 32px',
+                            fontSize: '15px',
+                            fontWeight: '500',
+                            backgroundColor: '#6c757d',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '20px',
+                            borderRadius: '28px',
                             cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            minHeight: '48px',
+                            letterSpacing: '0.3px',
+                            outline: 'none',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#5a6268';
+                            e.currentTarget.style.transform =
+                                'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#6c757d';
+                            e.currentTarget.style.transform = 'translateY(0)';
                         }}>
                         结束学习
                     </button>
@@ -657,26 +754,38 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
             </div>
         );
     }
-
     return (
-        <div style={{ padding: '30px' }}>
+        <div
+            style={{
+                padding: '32px 40px',
+                minHeight: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+            }}>
             {renderStudyStats()}
 
             {/* 开始学习区域 */}
             <div
                 style={{
                     backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                    padding: '40px',
+                    borderRadius: '20px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                    padding: '48px 56px',
                     textAlign: 'center',
-                    maxWidth: '600px',
+                    maxWidth: '700px',
                     margin: '0 auto',
+                    border: '1px solid #f1f3f4',
                 }}>
-                <h2 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>
+                <h2
+                    style={{
+                        margin: '0 0 16px 0',
+                        color: '#1f2937',
+                        fontSize: '28px',
+                        fontWeight: '700',
+                        letterSpacing: '-0.5px',
+                    }}>
                     开始间隔学习
                 </h2>
-
                 <p
                     style={{
                         color: '#666',
@@ -686,15 +795,15 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                     {stats.dueToday > 0
                         ? `今天有 ${stats.dueToday} 个单词需要复习`
                         : '🎉 今天的学习已完成！'}
-                </p>
-
-                <div style={{ marginBottom: '30px' }}>
+                </p>{' '}
+                <div style={{ marginBottom: '40px' }}>
                     <label
                         style={{
                             display: 'block',
-                            marginBottom: '10px',
-                            fontSize: '14px',
-                            color: '#555',
+                            marginBottom: '12px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            color: '#374151',
                         }}>
                         学习数量上限:
                     </label>
@@ -704,11 +813,23 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                             setStudyLimit(parseInt(e.target.value))
                         }
                         style={{
-                            padding: '10px',
-                            fontSize: '14px',
-                            border: '1px solid #ddd',
-                            borderRadius: '8px',
-                            backgroundColor: '#fff',
+                            padding: '14px 20px',
+                            fontSize: '15px',
+                            fontWeight: '500',
+                            border: '2px solid #e5e7eb',
+                            borderRadius: '12px',
+                            backgroundColor: '#ffffff',
+                            color: '#374151',
+                            outline: 'none',
+                            cursor: 'pointer',
+                            transition: 'border-color 0.3s ease',
+                            minWidth: '160px',
+                        }}
+                        onFocus={(e) => {
+                            e.currentTarget.style.borderColor = '#1976d2';
+                        }}
+                        onBlur={(e) => {
+                            e.currentTarget.style.borderColor = '#e5e7eb';
                         }}>
                         <option value={10}>10 张卡片</option>
                         <option value={20}>20 张卡片</option>
@@ -716,25 +837,44 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                         <option value={100}>100 张卡片</option>
                     </select>
                 </div>
-
                 <button
                     onClick={startStudySession}
                     disabled={stats.dueToday === 0}
                     style={{
-                        padding: '15px 40px',
+                        padding: '20px 60px',
                         fontSize: '18px',
-                        fontWeight: 'bold',
+                        fontWeight: '700',
                         backgroundColor:
-                            stats.dueToday > 0 ? '#1976d2' : '#ccc',
-                        color: 'white',
+                            stats.dueToday > 0 ? '#1976d2' : '#e0e0e0',
+                        color: stats.dueToday > 0 ? 'white' : '#9e9e9e',
                         border: 'none',
-                        borderRadius: '25px',
+                        borderRadius: '40px',
                         cursor: stats.dueToday > 0 ? 'pointer' : 'not-allowed',
-                        transition: 'all 0.3s',
+                        transition: 'all 0.3s ease',
                         boxShadow:
                             stats.dueToday > 0
-                                ? '0 4px 12px rgba(25,118,210,0.3)'
+                                ? '0 6px 20px rgba(25,118,210,0.3)'
                                 : 'none',
+                        minHeight: '64px',
+                        letterSpacing: '0.5px',
+                        outline: 'none',
+                    }}
+                    onMouseEnter={(e) => {
+                        if (stats.dueToday > 0) {
+                            e.currentTarget.style.backgroundColor = '#1565c0';
+                            e.currentTarget.style.transform =
+                                'translateY(-2px)';
+                            e.currentTarget.style.boxShadow =
+                                '0 8px 25px rgba(25,118,210,0.4)';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (stats.dueToday > 0) {
+                            e.currentTarget.style.backgroundColor = '#1976d2';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow =
+                                '0 6px 20px rgba(25,118,210,0.3)';
+                        }
                     }}>
                     {stats.dueToday > 0 ? '开始学习' : '暂无待学习单词'}
                 </button>

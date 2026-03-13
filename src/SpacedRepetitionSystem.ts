@@ -217,7 +217,8 @@ export class SRSAlgorithm {
                     nextReviewDate = this.addDays(new Date(), newInterval);
                     newSrsLevel = currentLevel + 1;
                 }
-                break;        }
+                break;
+        }
 
         // 确保难度因子在合理范围内并格式化数值
         newEase = Math.max(1.3, Math.min(2.5, newEase));
