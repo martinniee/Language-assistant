@@ -15,17 +15,47 @@ export interface PartOfSpeech {
     definitions: Definition[];
 }
 
-export interface Word {
+export interface WordMetadata {
     id: string; // 唯一标识符 (UUID)
+    createBy?: string; // 创建者
+    lastUpdate?: string; // 最后更新时间
+    weight?: number; // 权重或重要性
+    queryCount?: number; // 查询次数
+    [key: string]: any; // 支持扩展字段
+}
+
+export interface Word {
+    // 元数据（技术字段）
+    metadata: WordMetadata;
+
+    // 内容数据（用户可见字段）
     name: string; // 单词名称
     pronunciation: string; // 发音
     vocabulary: string; // 词汇
     category: string; // 分类
     tags: string[]; // 标签数组
     level: string; // 等级
-    queryCount: number; // 查询次数
     partsOfSpeech: string; // 词性概述
     content: PartOfSpeech[]; // 详细内容
+}
+
+// 为向后兼容而提供的工具类
+export class WordHelper {
+    static getId(word: Word): string {
+        return word.metadata.id;
+    }
+
+    static getQueryCount(word: Word): number {
+        return word.metadata.queryCount || 0;
+    }
+
+    static setId(word: Word, id: string): void {
+        word.metadata.id = id;
+    }
+
+    static setQueryCount(word: Word, count: number): void {
+        word.metadata.queryCount = count;
+    }
 }
 
 export interface DuplicateInfo {
@@ -96,30 +126,64 @@ export class MarkdownWordStorage {
             ) {
                 continue;
             }
+
             const word: Word = {
-                id: '', // 暂时为空，后面会设置
+                metadata: {
+                    id: '', // 暂时为空，后面会设置
+                    queryCount: 0,
+                },
                 name: wordName,
                 pronunciation: '',
                 vocabulary: '',
                 category: '',
                 tags: [],
                 level: '',
-                queryCount: 0,
                 partsOfSpeech: '',
                 content: [],
             };
 
-            let contentStartIndex = -1; // 解析字段
+            let contentStartIndex = -1;
+
+            // 解析字段
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
 
-                if (
+                // 解析新的元数据格式 %%meta{...}%%
+                if (line.startsWith('%%meta') && line.endsWith('%%')) {
+                    try {
+                        const metaStr = line
+                            .replace(/^%%meta/, '')
+                            .replace(/%%$/, '');
+                        const metadata = JSON.parse(metaStr);
+                        word.metadata = {
+                            id: metadata.id || '',
+                            createBy: metadata.createBy,
+                            lastUpdate: metadata.lastUpdate,
+                            weight: metadata.weight,
+                            queryCount: metadata.queryCount || 0,
+                            ...metadata,
+                        };
+                    } catch (error) {
+                        console.warn('解析元数据失败:', line, error);
+                    }
+                }
+                // 向后兼容：解析旧格式的ID字段
+                else if (
                     line.startsWith('-   ID:') ||
                     line.startsWith('- ID:') ||
                     line.startsWith('-   id:') ||
                     line.startsWith('- id:')
                 ) {
-                    word.id = line.replace(/^-\s*(ID|id):/, '').trim();
+                    word.metadata.id = line.replace(/^-\s*(ID|id):/, '').trim();
+                }
+                // 向后兼容：解析查询次数
+                else if (
+                    line.startsWith('-   查询次数:') ||
+                    line.startsWith('- 查询次数:')
+                ) {
+                    word.metadata.queryCount =
+                        parseInt(line.replace(/^-\s*查询次数:/, '').trim()) ||
+                        0;
                 } else if (
                     line.startsWith('-   发音:') ||
                     line.startsWith('- 发音:')
@@ -149,13 +213,6 @@ export class MarkdownWordStorage {
                 ) {
                     word.level = line.replace(/^-\s*等级:/, '').trim();
                 } else if (
-                    line.startsWith('-   查询次数:') ||
-                    line.startsWith('- 查询次数:')
-                ) {
-                    word.queryCount =
-                        parseInt(line.replace(/^-\s*查询次数:/, '').trim()) ||
-                        0;
-                } else if (
                     line.startsWith('-   词性:') ||
                     line.startsWith('- 词性:')
                 ) {
@@ -167,14 +224,16 @@ export class MarkdownWordStorage {
                     contentStartIndex = i + 1;
                     break;
                 }
-            } // 解析内容部分（如果存在）
+            }
+
+            // 解析内容部分（如果存在）
             if (contentStartIndex >= 0) {
                 word.content = this.parseContent(lines, contentStartIndex);
             }
 
             // 如果没有 ID，生成一个新的
-            if (!word.id) {
-                word.id = this.generateId();
+            if (!word.metadata.id) {
+                word.metadata.id = this.generateId();
             }
 
             words.push(word);
@@ -285,15 +344,34 @@ export class MarkdownWordStorage {
     wordsToMarkdown(words: Word[]): string {
         let markdown = '# 单词词汇表\n\n';
         markdown += '%%data-start%%\n\n';
+
         for (const word of words) {
-            markdown += `## ${word.name}\n`;
-            markdown += `- ID: ${word.id}\n`;
+            markdown += `## ${word.name}\n\n`;
+
+            // 写入元数据（新格式）
+            const metadata = {
+                id: word.metadata.id,
+                createBy: word.metadata.createBy,
+                lastUpdate: word.metadata.lastUpdate,
+                weight: word.metadata.weight,
+                queryCount: word.metadata.queryCount || 0,
+            };
+
+            // 过滤掉undefined的字段
+            const filteredMetadata = Object.fromEntries(
+                Object.entries(metadata).filter(
+                    ([_, value]) => value !== undefined,
+                ),
+            );
+
+            markdown += `%%meta${JSON.stringify(filteredMetadata)}%%\n\n`;
+
+            // 写入内容字段
             markdown += `- 发音: ${word.pronunciation}\n`;
             markdown += `- 词汇: ${word.vocabulary}\n`;
             markdown += `- 分类: ${word.category}\n`;
             markdown += `- 标签: ${word.tags.join(',')}\n`;
             markdown += `- 等级: ${word.level}\n`;
-            markdown += `- 查询次数: ${word.queryCount}\n`;
             markdown += `- 词性: ${word.partsOfSpeech}\n`;
             markdown += `- 内容:\n`;
 

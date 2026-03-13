@@ -1,6 +1,26 @@
 // @ts-ignore
 import React, { useState, useMemo, useCallback } from 'react';
-import { Word } from './MarkdownWordStorage';
+import { Word, WordHelper } from './MarkdownWordStorage';
+
+// 辅助函数来处理新的Word接口
+const createEmptyWord = (): Word => ({
+    metadata: {
+        id: '',
+        queryCount: 0,
+    },
+    name: '',
+    pronunciation: '',
+    vocabulary: '',
+    category: '',
+    tags: [],
+    level: '',
+    partsOfSpeech: '',
+    content: [],
+});
+
+const getWordId = (word: Word): string => WordHelper.getId(word);
+const getWordQueryCount = (word: Word): number =>
+    WordHelper.getQueryCount(word);
 
 interface WordManagerProps {
     words: Word[];
@@ -346,7 +366,7 @@ const WordListItem: React.FC<{
                         color: '#666',
                         textAlign: 'center',
                     }}>
-                    {word.queryCount}
+                    {word.metadata.queryCount || 0}
                 </div>
 
                 {/* 等级 */}
@@ -602,7 +622,6 @@ export default function WordManagerMarkdown({
 
         sorted.sort((a, b) => {
             let compareResult = 0;
-
             switch (sortBy) {
                 case 'name':
                     compareResult = a.name.localeCompare(b.name);
@@ -611,7 +630,7 @@ export default function WordManagerMarkdown({
                     compareResult = a.category.localeCompare(b.category);
                     break;
                 case 'queryCount':
-                    compareResult = a.queryCount - b.queryCount;
+                    compareResult = getWordQueryCount(a) - getWordQueryCount(b);
                     break;
                 case 'date':
                     // 假设按字母顺序作为时间替代（实际项目中应该有时间戳字段）
@@ -632,22 +651,9 @@ export default function WordManagerMarkdown({
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         return sortedWords.slice(startIndex, endIndex);
-    }, [sortedWords, currentPage, itemsPerPage]);
-
-    // 总页数
+    }, [sortedWords, currentPage, itemsPerPage]); // 总页数
     const totalPages = Math.ceil(sortedWords.length / itemsPerPage);
-    const [form, setForm] = useState<Word>({
-        id: '',
-        name: '',
-        pronunciation: '',
-        vocabulary: '',
-        category: '',
-        tags: [],
-        level: '',
-        queryCount: 0,
-        partsOfSpeech: '',
-        content: [],
-    });
+    const [form, setForm] = useState<Word>(createEmptyWord);
     const handleSubmit = useCallback(() => {
         // 清除之前的错误消息
         setErrorMessage('');
@@ -671,33 +677,30 @@ export default function WordManagerMarkdown({
             return;
         }
         if (editTarget) {
-            // 编辑时保留原有ID
+            // 编辑时保留原有元数据
             onEdit(
-                { ...form, name: trimmedName, id: editTarget.id },
+                {
+                    ...form,
+                    name: trimmedName,
+                    metadata: {
+                        ...editTarget.metadata,
+                        ...form.metadata,
+                    },
+                },
                 editTarget,
             );
             setEditTarget(null);
         } else {
             // 添加新单词时，让后端生成ID
-            onAdd({ ...form, name: trimmedName, id: '' });
+            onAdd({ ...form, name: trimmedName });
         }
 
         // 重置表单和错误消息
-        setForm({
-            id: '',
-            name: '',
-            pronunciation: '',
-            vocabulary: '',
-            category: '',
-            tags: [],
-            level: '',
-            queryCount: 0,
-            partsOfSpeech: '',
-            content: [],
-        });
+        setForm(createEmptyWord());
         setErrorMessage('');
         setShowAdd(false);
     }, [editTarget, form, onEdit, onAdd, words]);
+
     const handleEditClick = useCallback((word: Word) => {
         setEditTarget(word);
         setForm({
@@ -782,7 +785,10 @@ export default function WordManagerMarkdown({
             // 创建更新后的单词对象，查询次数+1
             const updatedWord: Word = {
                 ...word,
-                queryCount: word.queryCount + 1,
+                metadata: {
+                    ...word.metadata,
+                    queryCount: (word.metadata.queryCount || 0) + 1,
+                },
             };
 
             // 更新当前单词状态
@@ -1417,7 +1423,7 @@ export default function WordManagerMarkdown({
                                             handleViewWord(word)
                                         }
                                         onJumpToSource={() =>
-                                            onJumpToSource(word.id)
+                                            onJumpToSource(getWordId(word))
                                         }
                                         enableFullHighlight={
                                             enableFullHighlight
@@ -1434,7 +1440,7 @@ export default function WordManagerMarkdown({
                                             handleViewWord(word)
                                         }
                                         onJumpToSource={() =>
-                                            onJumpToSource(word.id)
+                                            onJumpToSource(getWordId(word))
                                         }
                                         enableFullHighlight={
                                             enableFullHighlight
@@ -1631,10 +1637,10 @@ export default function WordManagerMarkdown({
                                 <p>
                                     <strong>词性:</strong>{' '}
                                     {currentWord.partsOfSpeech}
-                                </p>
+                                </p>{' '}
                                 <p>
                                     <strong>查询次数:</strong>{' '}
-                                    {currentWord.queryCount}
+                                    {getWordQueryCount(currentWord)}
                                 </p>
                             </div>
                         </div>
@@ -1995,18 +2001,7 @@ export default function WordManagerMarkdown({
                                     setShowAdd(false);
                                     setEditTarget(null);
                                     setErrorMessage(''); // 清除错误消息
-                                    setForm({
-                                        id: '',
-                                        name: '',
-                                        pronunciation: '',
-                                        vocabulary: '',
-                                        category: '',
-                                        tags: [],
-                                        level: '',
-                                        queryCount: 0,
-                                        partsOfSpeech: '',
-                                        content: [],
-                                    });
+                                    setForm(createEmptyWord());
                                 }}>
                                 取消
                             </button>

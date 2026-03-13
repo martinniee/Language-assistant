@@ -93,11 +93,12 @@ class WordManagerView extends ItemView {
             // 查找包含指定ID的行
             let targetLine = -1;
             let foundWordName = '';
-
             for (let i = 0; i < lines.length; i++) {
+                // 支持新格式 %%meta{"id":"xxx"}%% 和旧格式 ID: xxx
                 if (
-                    lines[i].includes(`ID: ${wordId}`) ||
-                    lines[i].includes(`id: ${wordId}`)
+                    lines[i].includes(`"id":"${wordId}"`) || // 新格式
+                    lines[i].includes(`ID: ${wordId}`) || // 旧格式
+                    lines[i].includes(`id: ${wordId}`) // 旧格式小写
                 ) {
                     // 找到单词标题行（通常在ID行前面几行）
                     for (let j = i; j >= Math.max(0, i - 10); j--) {
@@ -221,12 +222,10 @@ class WordManagerView extends ItemView {
                     `❌ 单词 "${word.name}" 已存在！请使用编辑功能或选择不同名称`,
                 );
                 return;
-            }
-
-            // 如果没有ID，生成一个新的
-            if (!word.id) {
-                word.id = this.generateId();
-                console.log('🆔 为新单词生成ID:', word.id);
+            } // 如果没有ID，生成一个新的
+            if (!word.metadata.id) {
+                word.metadata.id = this.generateId();
+                console.log('🆔 为新单词生成ID:', word.metadata.id);
             }
 
             // 添加到本地数组
