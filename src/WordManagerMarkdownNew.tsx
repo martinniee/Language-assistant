@@ -779,6 +779,40 @@ export default function WordManagerMarkdown({
         [],
     );
 
+    // 删除功能的回调函数
+    const handleRemovePart = useCallback((partIndex: number) => {
+        setForm((f) => {
+            const content = [...f.content];
+            content.splice(partIndex, 1);
+            return { ...f, content };
+        });
+    }, []);
+
+    const handleRemoveDefinition = useCallback(
+        (partIndex: number, defIndex: number) => {
+            setForm((f) => {
+                const content = [...f.content];
+                content[partIndex].definitions.splice(defIndex, 1);
+                return { ...f, content };
+            });
+        },
+        [],
+    );
+
+    const handleRemoveExample = useCallback(
+        (partIndex: number, defIndex: number, exIndex: number) => {
+            setForm((f) => {
+                const content = [...f.content];
+                content[partIndex].definitions[defIndex].examples.splice(
+                    exIndex,
+                    1,
+                );
+                return { ...f, content };
+            });
+        },
+        [],
+    );
+
     // 页面模式切换函数 - 添加查询次数+1功能
     const handleViewWord = useCallback(
         (word: Word) => {
@@ -1860,7 +1894,7 @@ export default function WordManagerMarkdown({
                                 }}
                             />
                         </div>
-                        <h4>详细内容</h4>
+                        <h4>详细内容</h4>{' '}
                         {form.content.map((part, partIndex) => (
                             <div
                                 key={partIndex}
@@ -1870,7 +1904,13 @@ export default function WordManagerMarkdown({
                                     border: '1px solid #ddd',
                                     borderRadius: 4,
                                 }}>
-                                <div style={{ marginBottom: 10 }}>
+                                <div
+                                    style={{
+                                        marginBottom: 10,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 10,
+                                    }}>
                                     <label>词性:</label>
                                     <input
                                         type="text"
@@ -1881,10 +1921,31 @@ export default function WordManagerMarkdown({
                                                 e.target.value;
                                             setForm({ ...form, content });
                                         }}
-                                        style={{ marginLeft: 10, padding: 5 }}
+                                        style={{
+                                            marginLeft: 10,
+                                            padding: 5,
+                                            flex: 1,
+                                        }}
                                     />
-                                </div>
-
+                                    {form.content.length > 1 && (
+                                        <button
+                                            onClick={() =>
+                                                handleRemovePart(partIndex)
+                                            }
+                                            style={{
+                                                padding: '4px 8px',
+                                                fontSize: '12px',
+                                                backgroundColor: '#ffe6e6',
+                                                border: '1px solid #ffb3b3',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                color: '#cc0000',
+                                            }}
+                                            title="删除该词性">
+                                            删除词性
+                                        </button>
+                                    )}
+                                </div>{' '}
                                 {part.definitions.map((def, defIndex) => (
                                     <div
                                         key={defIndex}
@@ -1893,7 +1954,13 @@ export default function WordManagerMarkdown({
                                             paddingLeft: 20,
                                             borderLeft: '2px solid #eee',
                                         }}>
-                                        <div style={{ marginBottom: 5 }}>
+                                        <div
+                                            style={{
+                                                marginBottom: 5,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 10,
+                                            }}>
                                             <label>定义:</label>
                                             <input
                                                 type="text"
@@ -1916,11 +1983,32 @@ export default function WordManagerMarkdown({
                                                 style={{
                                                     marginLeft: 10,
                                                     padding: 5,
-                                                    width: '100%',
+                                                    flex: 1,
                                                 }}
                                             />
-                                        </div>
-
+                                            {part.definitions.length > 1 && (
+                                                <button
+                                                    onClick={() =>
+                                                        handleRemoveDefinition(
+                                                            partIndex,
+                                                            defIndex,
+                                                        )
+                                                    }
+                                                    style={{
+                                                        padding: '2px 6px',
+                                                        fontSize: '11px',
+                                                        backgroundColor:
+                                                            '#ffe6e6',
+                                                        border: '1px solid #ffb3b3',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer',
+                                                        color: '#cc0000',
+                                                    }}
+                                                    title="删除该定义">
+                                                    删除
+                                                </button>
+                                            )}
+                                        </div>{' '}
                                         {def.examples.map(
                                             (example, exIndex) => (
                                                 <div
@@ -1928,6 +2016,9 @@ export default function WordManagerMarkdown({
                                                     style={{
                                                         margin: '5px 0',
                                                         paddingLeft: 20,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 10,
                                                     }}>
                                                     <label>例句:</label>
                                                     <input
@@ -1953,13 +2044,39 @@ export default function WordManagerMarkdown({
                                                         style={{
                                                             marginLeft: 10,
                                                             padding: 5,
-                                                            width: '100%',
+                                                            flex: 1,
                                                         }}
                                                     />
+                                                    {def.examples.length >
+                                                        0 && (
+                                                        <button
+                                                            onClick={() =>
+                                                                handleRemoveExample(
+                                                                    partIndex,
+                                                                    defIndex,
+                                                                    exIndex,
+                                                                )
+                                                            }
+                                                            style={{
+                                                                padding:
+                                                                    '1px 4px',
+                                                                fontSize:
+                                                                    '10px',
+                                                                backgroundColor:
+                                                                    '#ffe6e6',
+                                                                border: '1px solid #ffb3b3',
+                                                                borderRadius:
+                                                                    '3px',
+                                                                cursor: 'pointer',
+                                                                color: '#cc0000',
+                                                            }}
+                                                            title="删除该例句">
+                                                            ×
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ),
                                         )}
-
                                         <button
                                             onClick={() =>
                                                 handleAddExample(
@@ -1972,7 +2089,6 @@ export default function WordManagerMarkdown({
                                         </button>
                                     </div>
                                 ))}
-
                                 <button
                                     onClick={() =>
                                         handleAddDefinition(partIndex)
