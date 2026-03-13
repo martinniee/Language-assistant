@@ -204,6 +204,203 @@ const WordCard: React.FC<{
     },
 );
 
+// 列表视图单词组件
+const WordListItem: React.FC<{
+    word: Word;
+    searchTerm: string;
+    onEdit: () => void;
+    onDelete: () => void;
+    onViewDetail: () => void;
+    enableFullHighlight: boolean;
+}> = React.memo(
+    ({
+        word,
+        searchTerm,
+        onEdit,
+        onDelete,
+        onViewDetail,
+        enableFullHighlight,
+    }) => {
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '12px 15px',
+                    border: '1px solid #ddd',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    backgroundColor: '#fff',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f8f9fa';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#fff';
+                }}
+                onClick={onViewDetail}>
+                {/* 单词名称 */}
+                <div style={{ flex: '0 0 200px', fontWeight: 'bold' }}>
+                    <HighlightText
+                        text={word.name}
+                        searchTerm={searchTerm}
+                    />
+                </div>
+
+                {/* 发音 */}
+                <div
+                    style={{
+                        flex: '0 0 180px',
+                        fontSize: '14px',
+                        color: '#666',
+                    }}>
+                    {enableFullHighlight ? (
+                        <HighlightText
+                            text={word.pronunciation}
+                            searchTerm={searchTerm}
+                        />
+                    ) : (
+                        word.pronunciation
+                    )}
+                </div>
+
+                {/* 分类 */}
+                <div style={{ flex: '0 0 120px', fontSize: '14px' }}>
+                    <span
+                        style={{
+                            padding: '2px 8px',
+                            backgroundColor: '#e3f2fd',
+                            color: '#1976d2',
+                            borderRadius: 12,
+                            fontSize: '12px',
+                        }}>
+                        {enableFullHighlight ? (
+                            <HighlightText
+                                text={word.category}
+                                searchTerm={searchTerm}
+                            />
+                        ) : (
+                            word.category
+                        )}
+                    </span>
+                </div>
+
+                {/* 标签 */}
+                <div style={{ flex: '1', fontSize: '14px' }}>
+                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        {word.tags.slice(0, 3).map((tag, index) => (
+                            <span
+                                key={index}
+                                style={{
+                                    padding: '2px 6px',
+                                    backgroundColor: '#f1f8e9',
+                                    color: '#689f38',
+                                    borderRadius: 10,
+                                    fontSize: '11px',
+                                }}>
+                                {enableFullHighlight ? (
+                                    <HighlightText
+                                        text={tag}
+                                        searchTerm={searchTerm}
+                                    />
+                                ) : (
+                                    tag
+                                )}
+                            </span>
+                        ))}
+                        {word.tags.length > 3 && (
+                            <span style={{ fontSize: '11px', color: '#999' }}>
+                                +{word.tags.length - 3}
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* 查询次数 */}
+                <div
+                    style={{
+                        flex: '0 0 80px',
+                        fontSize: '14px',
+                        color: '#666',
+                        textAlign: 'center',
+                    }}>
+                    {word.queryCount}
+                </div>
+
+                {/* 等级 */}
+                <div
+                    style={{
+                        flex: '0 0 60px',
+                        fontSize: '12px',
+                        textAlign: 'center',
+                    }}>
+                    <span
+                        style={{
+                            padding: '2px 6px',
+                            backgroundColor:
+                                word.level === '高级'
+                                    ? '#ffebee'
+                                    : word.level === '中级'
+                                    ? '#fff3e0'
+                                    : '#e8f5e8',
+                            color:
+                                word.level === '高级'
+                                    ? '#c62828'
+                                    : word.level === '中级'
+                                    ? '#ef6c00'
+                                    : '#2e7d32',
+                            borderRadius: 8,
+                            fontSize: '11px',
+                        }}>
+                        {word.level}
+                    </span>
+                </div>
+
+                {/* 操作按钮 */}
+                <div
+                    style={{
+                        flex: '0 0 120px',
+                        display: 'flex',
+                        gap: 5,
+                        justifyContent: 'flex-end',
+                    }}>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit();
+                        }}
+                        style={{
+                            padding: '4px 8px',
+                            fontSize: '12px',
+                            backgroundColor: '#f0f0f0',
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                        }}>
+                        编辑
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete();
+                        }}
+                        style={{
+                            padding: '4px 8px',
+                            fontSize: '12px',
+                            backgroundColor: '#ffe6e6',
+                            border: '1px solid #ffb3b3',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                        }}>
+                        删除
+                    </button>
+                </div>
+            </div>
+        );
+    },
+);
+
 interface WordManagerProps {
     words: Word[];
     onAdd: (word: Word) => void;
@@ -224,12 +421,23 @@ export default function WordManagerMarkdown({
     const [viewMode, setViewMode] = useState<'list' | 'detail' | 'filter'>(
         'list',
     );
-    const [currentWord, setCurrentWord] = useState<Word | null>(null);
-
-    // 新增：标签和分类过滤状态
+    const [currentWord, setCurrentWord] = useState<Word | null>(null); // 新增：标签和分类过滤状态
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+    const [selectedPartsOfSpeech, setSelectedPartsOfSpeech] = useState<
+        string[]
+    >([]);
     const [showFilters, setShowFilters] = useState(false);
+
+    // 新增：展示功能状态
+    const [displayMode, setDisplayMode] = useState<'list' | 'grid'>('grid');
+    const [sortBy, setSortBy] = useState<
+        'name' | 'date' | 'queryCount' | 'category'
+    >('name');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(12);
 
     // 优化的搜索函数 - 提前退出和缓存
     const searchInWord = useCallback((word: Word, term: string): boolean => {
@@ -276,7 +484,6 @@ export default function WordManagerMarkdown({
         });
         return Array.from(tagSet).sort();
     }, [words]);
-
     const allCategories = useMemo(() => {
         const categorySet = new Set<string>();
         words.forEach((word) => {
@@ -285,7 +492,24 @@ export default function WordManagerMarkdown({
         return Array.from(categorySet).sort();
     }, [words]);
 
-    // 综合过滤函数：搜索 + 标签 + 分类
+    // 提取所有唯一的等级
+    const allLevels = useMemo(() => {
+        const levelSet = new Set<string>();
+        words.forEach((word) => {
+            if (word.level.trim()) levelSet.add(word.level.trim());
+        });
+        return Array.from(levelSet).sort();
+    }, [words]);
+
+    // 提取所有唯一的词性
+    const allPartsOfSpeech = useMemo(() => {
+        const partsOfSpeechSet = new Set<string>();
+        words.forEach((word) => {
+            if (word.partsOfSpeech.trim())
+                partsOfSpeechSet.add(word.partsOfSpeech.trim());
+        });
+        return Array.from(partsOfSpeechSet).sort();
+    }, [words]); // 综合过滤函数：搜索 + 标签 + 分类 + 等级 + 词性
     const applyFilters = useCallback(
         (word: Word): boolean => {
             // 搜索过滤
@@ -305,15 +529,72 @@ export default function WordManagerMarkdown({
                     return false;
             }
 
+            // 等级过滤
+            if (selectedLevels.length > 0) {
+                if (!selectedLevels.includes(word.level.trim())) return false;
+            }
+
+            // 词性过滤
+            if (selectedPartsOfSpeech.length > 0) {
+                if (!selectedPartsOfSpeech.includes(word.partsOfSpeech.trim()))
+                    return false;
+            }
+
             return true;
         },
-        [searchInWord, searchTerm, selectedTags, selectedCategories],
-    );
-
-    // 使用 useMemo 缓存过滤结果
+        [
+            searchInWord,
+            searchTerm,
+            selectedTags,
+            selectedCategories,
+            selectedLevels,
+            selectedPartsOfSpeech,
+        ],
+    ); // 使用 useMemo 缓存过滤结果
     const filteredWords = useMemo(() => {
         return words.filter(applyFilters);
     }, [words, applyFilters]);
+
+    // 排序逻辑
+    const sortedWords = useMemo(() => {
+        const sorted = [...filteredWords];
+
+        sorted.sort((a, b) => {
+            let compareResult = 0;
+
+            switch (sortBy) {
+                case 'name':
+                    compareResult = a.name.localeCompare(b.name);
+                    break;
+                case 'category':
+                    compareResult = a.category.localeCompare(b.category);
+                    break;
+                case 'queryCount':
+                    compareResult = a.queryCount - b.queryCount;
+                    break;
+                case 'date':
+                    // 假设按字母顺序作为时间替代（实际项目中应该有时间戳字段）
+                    compareResult = a.name.localeCompare(b.name);
+                    break;
+                default:
+                    compareResult = 0;
+            }
+
+            return sortOrder === 'asc' ? compareResult : -compareResult;
+        });
+
+        return sorted;
+    }, [filteredWords, sortBy, sortOrder]);
+
+    // 分页逻辑
+    const paginatedWords = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return sortedWords.slice(startIndex, endIndex);
+    }, [sortedWords, currentPage, itemsPerPage]);
+
+    // 总页数
+    const totalPages = Math.ceil(sortedWords.length / itemsPerPage);
 
     const [form, setForm] = useState<Word>({
         name: '',
@@ -365,7 +646,6 @@ export default function WordManagerMarkdown({
             prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
         );
     }, []);
-
     const handleCategoryToggle = useCallback((category: string) => {
         setSelectedCategories((prev) =>
             prev.includes(category)
@@ -374,9 +654,27 @@ export default function WordManagerMarkdown({
         );
     }, []);
 
+    const handleLevelToggle = useCallback((level: string) => {
+        setSelectedLevels((prev) =>
+            prev.includes(level)
+                ? prev.filter((l) => l !== level)
+                : [...prev, level],
+        );
+    }, []);
+
+    const handlePartsOfSpeechToggle = useCallback((partsOfSpeech: string) => {
+        setSelectedPartsOfSpeech((prev) =>
+            prev.includes(partsOfSpeech)
+                ? prev.filter((p) => p !== partsOfSpeech)
+                : [...prev, partsOfSpeech],
+        );
+    }, []);
+
     const clearAllFilters = useCallback(() => {
         setSelectedTags([]);
         setSelectedCategories([]);
+        setSelectedLevels([]);
+        setSelectedPartsOfSpeech([]);
         setSearchTerm('');
     }, []);
 
@@ -408,7 +706,9 @@ export default function WordManagerMarkdown({
             });
         },
         [],
-    ); // 页面模式切换函数 - 添加查询次数+1功能
+    );
+
+    // 页面模式切换函数 - 添加查询次数+1功能
     const handleViewWord = useCallback(
         (word: Word) => {
             // 创建更新后的单词对象，查询次数+1
@@ -492,6 +792,7 @@ export default function WordManagerMarkdown({
                                 borderRadius: '6px',
                                 cursor: 'pointer',
                             }}>
+                            {' '}
                             添加新单词
                         </button>
                         <button
@@ -507,13 +808,182 @@ export default function WordManagerMarkdown({
                                 cursor: 'pointer',
                             }}>
                             筛选{' '}
-                            {selectedTags.length + selectedCategories.length >
+                            {selectedTags.length +
+                                selectedCategories.length +
+                                selectedLevels.length +
+                                selectedPartsOfSpeech.length >
                                 0 &&
                                 `(${
                                     selectedTags.length +
-                                    selectedCategories.length
+                                    selectedCategories.length +
+                                    selectedLevels.length +
+                                    selectedPartsOfSpeech.length
                                 })`}
                         </button>
+                    </div>
+                    {/* 展示控制栏 */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: 15,
+                            padding: '10px 15px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: 6,
+                            border: '1px solid #e9ecef',
+                        }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                gap: 15,
+                                alignItems: 'center',
+                            }}>
+                            {/* 视图模式切换 */}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 5,
+                                }}>
+                                <span
+                                    style={{ fontSize: '14px', color: '#555' }}>
+                                    视图:
+                                </span>
+                                <button
+                                    onClick={() => setDisplayMode('grid')}
+                                    style={{
+                                        padding: '6px 10px',
+                                        fontSize: '12px',
+                                        backgroundColor:
+                                            displayMode === 'grid'
+                                                ? '#007acc'
+                                                : '#fff',
+                                        color:
+                                            displayMode === 'grid'
+                                                ? '#fff'
+                                                : '#333',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                    }}>
+                                    网格
+                                </button>
+                                <button
+                                    onClick={() => setDisplayMode('list')}
+                                    style={{
+                                        padding: '6px 10px',
+                                        fontSize: '12px',
+                                        backgroundColor:
+                                            displayMode === 'list'
+                                                ? '#007acc'
+                                                : '#fff',
+                                        color:
+                                            displayMode === 'list'
+                                                ? '#fff'
+                                                : '#333',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                    }}>
+                                    列表
+                                </button>
+                            </div>
+
+                            {/* 排序选择 */}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 5,
+                                }}>
+                                <span
+                                    style={{ fontSize: '14px', color: '#555' }}>
+                                    排序:
+                                </span>
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) =>
+                                        setSortBy(e.target.value as any)
+                                    }
+                                    style={{
+                                        padding: '6px 8px',
+                                        fontSize: '12px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        backgroundColor: '#fff',
+                                    }}>
+                                    <option value="name">名称</option>
+                                    <option value="category">分类</option>
+                                    <option value="queryCount">查询次数</option>
+                                    <option value="date">时间</option>
+                                </select>
+                                <button
+                                    onClick={() =>
+                                        setSortOrder(
+                                            sortOrder === 'asc'
+                                                ? 'desc'
+                                                : 'asc',
+                                        )
+                                    }
+                                    style={{
+                                        padding: '6px 8px',
+                                        fontSize: '12px',
+                                        backgroundColor: '#fff',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                    }}>
+                                    {sortOrder === 'asc' ? '↑' : '↓'}
+                                </button>
+                            </div>
+
+                            {/* 每页显示数量 */}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 5,
+                                }}>
+                                <span
+                                    style={{ fontSize: '14px', color: '#555' }}>
+                                    每页:
+                                </span>
+                                <select
+                                    value={itemsPerPage}
+                                    onChange={(e) => {
+                                        setItemsPerPage(Number(e.target.value));
+                                        setCurrentPage(1);
+                                    }}
+                                    style={{
+                                        padding: '6px 8px',
+                                        fontSize: '12px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        backgroundColor: '#fff',
+                                    }}>
+                                    <option value={6}>6</option>
+                                    <option value={12}>12</option>
+                                    <option value={24}>24</option>
+                                    <option value={48}>48</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* 结果统计 */}
+                        <div style={{ fontSize: '14px', color: '#666' }}>
+                            显示{' '}
+                            {Math.min(
+                                (currentPage - 1) * itemsPerPage + 1,
+                                sortedWords.length,
+                            )}
+                            -
+                            {Math.min(
+                                currentPage * itemsPerPage,
+                                sortedWords.length,
+                            )}{' '}
+                            / 共 {sortedWords.length} 个单词
+                        </div>
                     </div>
                     {/* 过滤器面板 */}
                     {showFilters && (
@@ -548,7 +1018,6 @@ export default function WordManagerMarkdown({
                                     清除所有
                                 </button>
                             </div>
-
                             {/* 分类过滤 */}
                             {allCategories.length > 0 && (
                                 <div style={{ marginBottom: 15 }}>
@@ -602,11 +1071,10 @@ export default function WordManagerMarkdown({
                                         ))}
                                     </div>
                                 </div>
-                            )}
-
+                            )}{' '}
                             {/* 标签过滤 */}
                             {allTags.length > 0 && (
-                                <div>
+                                <div style={{ marginBottom: 15 }}>
                                     <div
                                         style={{
                                             fontSize: '14px',
@@ -655,31 +1123,202 @@ export default function WordManagerMarkdown({
                                     </div>
                                 </div>
                             )}
+                            {/* 等级过滤 */}
+                            {allLevels.length > 0 && (
+                                <div style={{ marginBottom: 15 }}>
+                                    <div
+                                        style={{
+                                            fontSize: '14px',
+                                            fontWeight: 'bold',
+                                            marginBottom: 8,
+                                            color: '#555',
+                                        }}>
+                                        等级筛选:
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 6,
+                                        }}>
+                                        {allLevels.map((level) => (
+                                            <button
+                                                key={level}
+                                                onClick={() =>
+                                                    handleLevelToggle(level)
+                                                }
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    fontSize: '12px',
+                                                    backgroundColor:
+                                                        selectedLevels.includes(
+                                                            level,
+                                                        )
+                                                            ? '#ffc107'
+                                                            : '#fff',
+                                                    color: selectedLevels.includes(
+                                                        level,
+                                                    )
+                                                        ? '#000'
+                                                        : '#333',
+                                                    border: '1px solid #ccc',
+                                                    borderRadius: '15px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s',
+                                                }}>
+                                                {level}
+                                                {selectedLevels.includes(
+                                                    level,
+                                                ) && ' ✓'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {/* 词性过滤 */}
+                            {allPartsOfSpeech.length > 0 && (
+                                <div>
+                                    <div
+                                        style={{
+                                            fontSize: '14px',
+                                            fontWeight: 'bold',
+                                            marginBottom: 8,
+                                            color: '#555',
+                                        }}>
+                                        词性筛选:
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 6,
+                                        }}>
+                                        {allPartsOfSpeech.map(
+                                            (partsOfSpeech) => (
+                                                <button
+                                                    key={partsOfSpeech}
+                                                    onClick={() =>
+                                                        handlePartsOfSpeechToggle(
+                                                            partsOfSpeech,
+                                                        )
+                                                    }
+                                                    style={{
+                                                        padding: '6px 12px',
+                                                        fontSize: '12px',
+                                                        backgroundColor:
+                                                            selectedPartsOfSpeech.includes(
+                                                                partsOfSpeech,
+                                                            )
+                                                                ? '#6f42c1'
+                                                                : '#fff',
+                                                        color: selectedPartsOfSpeech.includes(
+                                                            partsOfSpeech,
+                                                        )
+                                                            ? '#fff'
+                                                            : '#333',
+                                                        border: '1px solid #ccc',
+                                                        borderRadius: '15px',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s',
+                                                    }}>
+                                                    {partsOfSpeech}
+                                                    {selectedPartsOfSpeech.includes(
+                                                        partsOfSpeech,
+                                                    ) && ' ✓'}
+                                                </button>
+                                            ),
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}{' '}
                     <h2>
                         现有单词
                         {(searchTerm ||
                             selectedTags.length > 0 ||
-                            selectedCategories.length > 0) && (
+                            selectedCategories.length > 0 ||
+                            selectedLevels.length > 0 ||
+                            selectedPartsOfSpeech.length > 0) && (
                             <span
                                 style={{
                                     fontSize: '0.7em',
                                     color: '#666',
                                     marginLeft: '10px',
                                 }}>
-                                (找到 {filteredWords.length} / {words.length}{' '}
+                                (找到 {sortedWords.length} / {words.length}{' '}
                                 个单词
                                 {selectedTags.length > 0 &&
                                     ` | 标签: ${selectedTags.join(', ')}`}
                                 {selectedCategories.length > 0 &&
                                     ` | 分类: ${selectedCategories.join(', ')}`}
+                                {selectedLevels.length > 0 &&
+                                    ` | 等级: ${selectedLevels.join(', ')}`}
+                                {selectedPartsOfSpeech.length > 0 &&
+                                    ` | 词性: ${selectedPartsOfSpeech.join(
+                                        ', ',
+                                    )}`}
                                 )
                             </span>
                         )}
                     </h2>
-                    <div style={{ display: 'grid', gap: 10, marginTop: 20 }}>
-                        {filteredWords.length === 0 ? (
+                    {/* 列表视图表头 */}
+                    {displayMode === 'list' && paginatedWords.length > 0 && (
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '10px 15px',
+                                backgroundColor: '#f8f9fa',
+                                border: '1px solid #dee2e6',
+                                borderRadius: '6px 6px 0 0',
+                                fontWeight: 'bold',
+                                fontSize: '14px',
+                                color: '#495057',
+                            }}>
+                            <div style={{ flex: '0 0 200px' }}>单词名称</div>
+                            <div style={{ flex: '0 0 180px' }}>发音</div>
+                            <div style={{ flex: '0 0 120px' }}>分类</div>
+                            <div style={{ flex: '1' }}>标签</div>
+                            <div
+                                style={{
+                                    flex: '0 0 80px',
+                                    textAlign: 'center',
+                                }}>
+                                查询次数
+                            </div>
+                            <div
+                                style={{
+                                    flex: '0 0 60px',
+                                    textAlign: 'center',
+                                }}>
+                                等级
+                            </div>
+                            <div
+                                style={{
+                                    flex: '0 0 120px',
+                                    textAlign: 'center',
+                                }}>
+                                操作
+                            </div>
+                        </div>
+                    )}
+                    {/* 单词展示区域 */}
+                    <div
+                        style={{
+                            display: displayMode === 'grid' ? 'grid' : 'block',
+                            gap: displayMode === 'grid' ? 15 : 0,
+                            gridTemplateColumns:
+                                displayMode === 'grid'
+                                    ? 'repeat(auto-fill, minmax(300px, 1fr))'
+                                    : 'none',
+                            marginTop:
+                                displayMode === 'list' &&
+                                paginatedWords.length > 0
+                                    ? 0
+                                    : 20,
+                        }}>
+                        {paginatedWords.length === 0 ? (
                             <div
                                 style={{
                                     textAlign: 'center',
@@ -687,25 +1326,166 @@ export default function WordManagerMarkdown({
                                     padding: '40px',
                                     border: '1px dashed #ccc',
                                     borderRadius: '8px',
+                                    gridColumn: '1 / -1',
                                 }}>
-                                {searchTerm
-                                    ? '没有找到匹配的单词'
-                                    : '暂无单词，点击上方按钮添加'}
+                                {sortedWords.length === 0
+                                    ? searchTerm ||
+                                      selectedTags.length > 0 ||
+                                      selectedCategories.length > 0
+                                        ? '没有找到匹配的单词'
+                                        : '暂无单词，点击上方按钮添加'
+                                    : '没有更多单词了，请返回上一页'}
                             </div>
                         ) : (
-                            filteredWords.map((word) => (
-                                <WordCard
-                                    key={word.name}
-                                    word={word}
-                                    searchTerm={searchTerm}
-                                    onEdit={() => handleEditClick(word)}
-                                    onDelete={() => onDelete(word.name)}
-                                    onViewDetail={() => handleViewWord(word)}
-                                    enableFullHighlight={enableFullHighlight}
-                                />
-                            ))
+                            paginatedWords.map((word) =>
+                                displayMode === 'grid' ? (
+                                    <WordCard
+                                        key={word.name}
+                                        word={word}
+                                        searchTerm={searchTerm}
+                                        onEdit={() => handleEditClick(word)}
+                                        onDelete={() => onDelete(word.name)}
+                                        onViewDetail={() =>
+                                            handleViewWord(word)
+                                        }
+                                        enableFullHighlight={
+                                            enableFullHighlight
+                                        }
+                                    />
+                                ) : (
+                                    <WordListItem
+                                        key={word.name}
+                                        word={word}
+                                        searchTerm={searchTerm}
+                                        onEdit={() => handleEditClick(word)}
+                                        onDelete={() => onDelete(word.name)}
+                                        onViewDetail={() =>
+                                            handleViewWord(word)
+                                        }
+                                        enableFullHighlight={
+                                            enableFullHighlight
+                                        }
+                                    />
+                                ),
+                            )
                         )}
                     </div>
+                    {/* 分页控件 */}
+                    {totalPages > 1 && (
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                gap: 10,
+                                marginTop: 20,
+                                padding: '15px 0',
+                            }}>
+                            <button
+                                onClick={() =>
+                                    setCurrentPage(Math.max(1, currentPage - 1))
+                                }
+                                disabled={currentPage === 1}
+                                style={{
+                                    padding: '8px 12px',
+                                    fontSize: '14px',
+                                    backgroundColor:
+                                        currentPage === 1 ? '#f8f9fa' : '#fff',
+                                    color:
+                                        currentPage === 1
+                                            ? '#6c757d'
+                                            : '#495057',
+                                    border: '1px solid #dee2e6',
+                                    borderRadius: '4px',
+                                    cursor:
+                                        currentPage === 1
+                                            ? 'not-allowed'
+                                            : 'pointer',
+                                }}>
+                                ← 上一页
+                            </button>
+
+                            <div style={{ display: 'flex', gap: 5 }}>
+                                {[...Array(totalPages)].map((_, index) => {
+                                    const page = index + 1;
+                                    const isCurrentPage = page === currentPage;
+                                    const showPage =
+                                        Math.abs(page - currentPage) <= 2 ||
+                                        page === 1 ||
+                                        page === totalPages;
+
+                                    if (!showPage) {
+                                        if (
+                                            page === currentPage - 3 ||
+                                            page === currentPage + 3
+                                        ) {
+                                            return (
+                                                <span
+                                                    key={page}
+                                                    style={{
+                                                        padding: '8px 4px',
+                                                        color: '#6c757d',
+                                                    }}>
+                                                    ...
+                                                </span>
+                                            );
+                                        }
+                                        return null;
+                                    }
+
+                                    return (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            style={{
+                                                padding: '8px 12px',
+                                                fontSize: '14px',
+                                                backgroundColor: isCurrentPage
+                                                    ? '#007acc'
+                                                    : '#fff',
+                                                color: isCurrentPage
+                                                    ? '#fff'
+                                                    : '#495057',
+                                                border: '1px solid #dee2e6',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                minWidth: '40px',
+                                            }}>
+                                            {page}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() =>
+                                    setCurrentPage(
+                                        Math.min(totalPages, currentPage + 1),
+                                    )
+                                }
+                                disabled={currentPage === totalPages}
+                                style={{
+                                    padding: '8px 12px',
+                                    fontSize: '14px',
+                                    backgroundColor:
+                                        currentPage === totalPages
+                                            ? '#f8f9fa'
+                                            : '#fff',
+                                    color:
+                                        currentPage === totalPages
+                                            ? '#6c757d'
+                                            : '#495057',
+                                    border: '1px solid #dee2e6',
+                                    borderRadius: '4px',
+                                    cursor:
+                                        currentPage === totalPages
+                                            ? 'not-allowed'
+                                            : 'pointer',
+                                }}>
+                                下一页 →
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
 

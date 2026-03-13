@@ -193,12 +193,12 @@
                                 id="fullHighlight" />
                             全部高亮
                         </label>
-                        <button class="btn">添加新单词</button>
-                        <button
+                        <button class="btn">添加新单词</button>                        <button
                             class="btn-secondary"
                             onclick="toggleFilters()"
                             id="filterBtn">
                             筛选 <span id="filterCount"></span>
+                        </button>
                         </button>
                     </div>
 
@@ -249,10 +249,8 @@
                                 ">
                                 <!-- 分类按钮将由JavaScript动态生成 -->
                             </div>
-                        </div>
-
-                        <!-- 标签过滤 -->
-                        <div>
+                        </div>                        <!-- 标签过滤 -->
+                        <div style="margin-bottom: 15px">
                             <div
                                 style="
                                     font-size: 14px;
@@ -272,9 +270,51 @@
                                 <!-- 标签按钮将由JavaScript动态生成 -->
                             </div>
                         </div>
-                    </div>
 
-                    <h2>
+                        <!-- 等级过滤 -->
+                        <div style="margin-bottom: 15px">
+                            <div
+                                style="
+                                    font-size: 14px;
+                                    font-weight: bold;
+                                    margin-bottom: 8px;
+                                    color: #555;
+                                ">
+                                等级筛选:
+                            </div>
+                            <div
+                                id="levelFilters"
+                                style="
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    gap: 6px;
+                                ">
+                                <!-- 等级按钮将由JavaScript动态生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 词性过滤 -->
+                        <div>
+                            <div
+                                style="
+                                    font-size: 14px;
+                                    font-weight: bold;
+                                    margin-bottom: 8px;
+                                    color: #555;
+                                ">
+                                词性筛选:
+                            </div>
+                            <div
+                                id="partsOfSpeechFilters"
+                                style="
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    gap: 6px;
+                                ">
+                                <!-- 词性按钮将由JavaScript动态生成 -->
+                            </div>
+                        </div>
+                    </div><h2>
                         现有单词
                         <span
                             style="
@@ -282,12 +322,95 @@
                                 color: #666;
                                 margin-left: 10px;
                             ">
-                            (2 个单词)
+                            (8 个单词)
                         </span>
                     </h2>
+                    
+                    <!-- 展示控制栏 -->
+                    <div style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 15px;
+                        padding: 10px 15px;
+                        background-color: #f8f9fa;
+                        border-radius: 6px;
+                        border: 1px solid #e9ecef;
+                    ">
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <!-- 视图模式切换 -->
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 14px; color: #555;">视图:</span>
+                                <button id="gridViewBtn" onclick="switchToGrid()" style="
+                                    padding: 6px 10px;
+                                    font-size: 12px;
+                                    background-color: #007acc;
+                                    color: #fff;
+                                    border: 1px solid #ccc;
+                                    border-radius: 4px;
+                                    cursor: pointer;
+                                ">网格</button>
+                                <button id="listViewBtn" onclick="switchToList()" style="
+                                    padding: 6px 10px;
+                                    font-size: 12px;
+                                    background-color: #fff;
+                                    color: #333;
+                                    border: 1px solid #ccc;
+                                    border-radius: 4px;
+                                    cursor: pointer;
+                                ">列表</button>
+                            </div>
+                            
+                            <!-- 排序选择 -->
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 14px; color: #555;">排序:</span>
+                                <select id="sortSelect" style="
+                                    padding: 6px 8px;
+                                    font-size: 12px;
+                                    border: 1px solid #ccc;
+                                    border-radius: 4px;
+                                    background-color: #fff;
+                                ">
+                                    <option value="name">名称</option>
+                                    <option value="category">分类</option>
+                                    <option value="queryCount">查询次数</option>
+                                </select>
+                                <button onclick="toggleSortOrder()" style="
+                                    padding: 6px 8px;
+                                    font-size: 12px;
+                                    background-color: #fff;
+                                    border: 1px solid #ccc;
+                                    border-radius: 4px;
+                                    cursor: pointer;
+                                ">↑</button>
+                            </div>
+                            
+                            <!-- 每页显示数量 -->
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 14px; color: #555;">每页:</span>
+                                <select style="
+                                    padding: 6px 8px;
+                                    font-size: 12px;
+                                    border: 1px solid #ccc;
+                                    border-radius: 4px;
+                                    background-color: #fff;
+                                ">
+                                    <option value="6">6</option>
+                                    <option value="12" selected>12</option>
+                                    <option value="24">24</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- 结果统计 -->
+                        <div style="font-size: 14px; color: #666;">
+                            显示 1-8 / 共 8 个单词
+                        </div>
+                    </div>
                 </div>
 
-                <div class="word-grid">
+                <!-- 网格视图 -->
+                <div class="word-grid" id="gridView">
                     <div
                         class="word-card"
                         onclick="showDetailView()">
@@ -585,20 +708,36 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <script>
+        </div>        <script>
             // 模拟查询次数
             let currentQueryCount = 0;
+              // 展示功能状态
+            let currentViewMode = 'grid'; // 'grid' 或 'list'
+            let selectedCategories = [];
+            let selectedTags = [];
+            let selectedLevels = [];
+            let selectedPartsOfSpeech = [];
+
+            // 示例数据 - 增强版本
+            const wordsData = [
+                { name: 'hello', category: '日常用语', tags: ['基础', '问候'], level: '初级', partsOfSpeech: '感叹词', queryCount: 0 },
+                { name: 'world', category: '基础词汇', tags: ['基础', '地理'], level: '初级', partsOfSpeech: '名词', queryCount: 0 },
+                { name: 'learn', category: '动词', tags: ['基础', '动作'], level: '中级', partsOfSpeech: '动词', queryCount: 3 },
+                { name: 'beautiful', category: '形容词', tags: ['颜色', '基础'], level: '中级', partsOfSpeech: '形容词', queryCount: 5 },
+                { name: 'algorithm', category: '名词', tags: ['技术', '高级'], level: '高级', partsOfSpeech: '名词', queryCount: 12 },
+                { name: 'programming', category: '科技', tags: ['科技', '编程', '工作'], level: '高级', partsOfSpeech: '名词', queryCount: 15 },
+                { name: 'sophisticated', category: '形容词', tags: ['描述', '高级', '复杂'], level: '高级', partsOfSpeech: '形容词', queryCount: 8 },
+                { name: 'friendship', category: '日常用语', tags: ['关系', '情感', '积极'], level: '中级', partsOfSpeech: '名词', queryCount: 2 }
+            ];
 
             function showDetailView() {
                 // 增加查询次数
                 currentQueryCount++;
-                document.getElementById('queryCount').textContent =
-                    currentQueryCount;
-
+                document.getElementById('queryCount').textContent = currentQueryCount;
+                
                 // 显示提示信息
                 showNotification('查询次数 +1，当前次数：' + currentQueryCount);
-
+                
                 document.getElementById('listView').style.display = 'none';
                 document.getElementById('detailView').style.display = 'block';
             }
@@ -608,9 +747,188 @@
                 document.getElementById('detailView').style.display = 'none';
             }
 
+            // 视图模式切换
+            function switchToGrid() {
+                currentViewMode = 'grid';
+                document.getElementById('gridView').style.display = 'grid';
+                document.getElementById('listViewCards').style.display = 'none';
+                
+                // 更新按钮状态
+                document.getElementById('gridViewBtn').style.backgroundColor = '#007acc';
+                document.getElementById('gridViewBtn').style.color = '#fff';
+                document.getElementById('listViewBtn').style.backgroundColor = '#fff';
+                document.getElementById('listViewBtn').style.color = '#333';
+            }
+
+            function switchToList() {
+                currentViewMode = 'list';
+                document.getElementById('gridView').style.display = 'none';
+                document.getElementById('listViewCards').style.display = 'block';
+                
+                // 更新按钮状态
+                document.getElementById('listViewBtn').style.backgroundColor = '#007acc';
+                document.getElementById('listViewBtn').style.color = '#fff';
+                document.getElementById('gridViewBtn').style.backgroundColor = '#fff';
+                document.getElementById('gridViewBtn').style.color = '#333';
+            }
+
+            // 排序功能
+            let sortOrder = 'asc';
+            function toggleSortOrder() {
+                sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+                event.target.textContent = sortOrder === 'asc' ? '↑' : '↓';
+                // 这里可以添加实际的排序逻辑
+                showNotification(`排序方式已切换为${sortOrder === 'asc' ? '升序' : '降序'}`);
+            }
+
+            // 过滤器功能
+            function toggleFilters() {
+                const panel = document.getElementById('filterPanel');
+                const btn = document.getElementById('filterBtn');
+                const isVisible = panel.style.display !== 'none';
+                
+                panel.style.display = isVisible ? 'none' : 'block';
+                btn.style.backgroundColor = isVisible ? '#f0f0f0' : '#e0e0e0';
+                
+                if (!isVisible) {
+                    initializeFilters();
+                }
+            }
+
+            function initializeFilters() {
+                // 提取所有唯一分类和标签
+                const categories = [...new Set(wordsData.map(word => word.category))].sort();
+                const allTags = [...new Set(wordsData.flatMap(word => word.tags))].sort();
+
+                // 生成分类按钮
+                const categoryContainer = document.getElementById('categoryFilters');
+                categoryContainer.innerHTML = '';
+                categories.forEach(category => {
+                    const btn = document.createElement('button');
+                    btn.textContent = category;
+                    btn.onclick = () => toggleCategoryFilter(category, btn);
+                    btn.style.cssText = `
+                        padding: 6px 12px;
+                        font-size: 12px;
+                        background-color: #fff;
+                        color: #333;
+                        border: 1px solid #ccc;
+                        border-radius: 15px;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    `;
+                    categoryContainer.appendChild(btn);
+                });
+
+                // 生成标签按钮
+                const tagContainer = document.getElementById('tagFilters');
+                tagContainer.innerHTML = '';
+                allTags.forEach(tag => {
+                    const btn = document.createElement('button');
+                    btn.textContent = tag;
+                    btn.onclick = () => toggleTagFilter(tag, btn);
+                    btn.style.cssText = `
+                        padding: 6px 12px;
+                        font-size: 12px;
+                        background-color: #fff;
+                        color: #333;
+                        border: 1px solid #ccc;
+                        border-radius: 15px;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    `;
+                    tagContainer.appendChild(btn);
+                });
+            }
+
+            function toggleCategoryFilter(category, btn) {
+                const index = selectedCategories.indexOf(category);
+                if (index > -1) {
+                    selectedCategories.splice(index, 1);
+                    btn.style.backgroundColor = '#fff';
+                    btn.style.color = '#333';
+                    btn.textContent = category;
+                } else {
+                    selectedCategories.push(category);
+                    btn.style.backgroundColor = '#007acc';
+                    btn.style.color = '#fff';
+                    btn.textContent = category + ' ✓';
+                }
+                updateFilterCount();
+                applyFilters();
+            }
+
+            function toggleTagFilter(tag, btn) {
+                const index = selectedTags.indexOf(tag);
+                if (index > -1) {
+                    selectedTags.splice(index, 1);
+                    btn.style.backgroundColor = '#fff';
+                    btn.style.color = '#333';
+                    btn.textContent = tag;
+                } else {
+                    selectedTags.push(tag);
+                    btn.style.backgroundColor = '#28a745';
+                    btn.style.color = '#fff';
+                    btn.textContent = tag + ' ✓';
+                }
+                updateFilterCount();
+                applyFilters();
+            }
+
+            function clearAllFilters() {
+                selectedCategories = [];
+                selectedTags = [];
+                updateFilterCount();
+                
+                // 重置按钮状态
+                document.querySelectorAll('#categoryFilters button, #tagFilters button').forEach(btn => {
+                    btn.style.backgroundColor = '#fff';
+                    btn.style.color = '#333';
+                    btn.textContent = btn.textContent.replace(' ✓', '');
+                });
+                
+                applyFilters();
+                showNotification('已清除所有过滤条件');
+            }
+
+            function updateFilterCount() {
+                const count = selectedCategories.length + selectedTags.length;
+                const countSpan = document.getElementById('filterCount');
+                countSpan.textContent = count > 0 ? `(${count})` : '';
+            }
+
+            function applyFilters() {
+                const cards = document.querySelectorAll('.word-card');
+                let visibleCount = 0;
+                
+                cards.forEach(card => {
+                    const category = card.getAttribute('data-category') || card.querySelector('.word-info:nth-child(3)').textContent.replace('分类:', '').trim();
+                    const tagsText = card.querySelector('.word-info:nth-child(4)').textContent.replace('标签:', '').trim();
+                    const tags = tagsText.split(',').map(t => t.trim());
+                    
+                    let shouldShow = true;
+                    
+                    // 分类过滤
+                    if (selectedCategories.length > 0 && !selectedCategories.includes(category)) {
+                        shouldShow = false;
+                    }
+                    
+                    // 标签过滤
+                    if (selectedTags.length > 0 && !selectedTags.some(tag => tags.includes(tag))) {
+                        shouldShow = false;
+                    }
+                    
+                    card.style.display = shouldShow ? 'block' : 'none';
+                    if (shouldShow) visibleCount++;
+                });
+                
+                // 更新结果统计
+                const totalCards = cards.length;
+                document.querySelector('.detail-grid + div').textContent = `显示 1-${visibleCount} / 共 ${totalCards} 个单词`;
+            }
+
             // 显示通知的辅助函数
             function showNotification(message) {
-                // 创建通知元素
                 const notification = document.createElement('div');
                 notification.textContent = message;
                 notification.style.cssText = `
@@ -626,8 +944,7 @@
                     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
                     animation: slideIn 0.3s ease;
                 `;
-
-                // 添加CSS动画
+                
                 if (!document.getElementById('notificationStyles')) {
                     const style = document.createElement('style');
                     style.id = 'notificationStyles';
@@ -643,22 +960,22 @@
                     `;
                     document.head.appendChild(style);
                 }
-
+                
                 document.body.appendChild(notification);
-
-                // 3秒后自动消失
+                
                 setTimeout(() => {
                     notification.style.animation = 'slideOut 0.3s ease';
                     setTimeout(() => {
-                        document.body.removeChild(notification);
+                        if (notification.parentNode) {
+                            document.body.removeChild(notification);
+                        }
                     }, 300);
                 }, 3000);
             }
 
             // 搜索高亮演示
             const searchInput = document.querySelector('.search-input');
-            const fullHighlightCheckbox =
-                document.getElementById('fullHighlight');
+            const fullHighlightCheckbox = document.getElementById('fullHighlight');
 
             searchInput.addEventListener('input', function (e) {
                 const term = e.target.value.toLowerCase();
@@ -669,23 +986,39 @@
                     if (!term || text.includes(term)) {
                         card.style.display = 'block';
 
-                        // 简单的高亮演示
                         if (term && text.includes(term)) {
                             const wordName = card.querySelector('.word-name');
-                            if (
-                                wordName.textContent
-                                    .toLowerCase()
-                                    .includes(term)
-                            ) {
-                                wordName.innerHTML =
-                                    wordName.textContent.replace(
-                                        new RegExp(`(${term})`, 'gi'),
-                                        '<span class="highlight">$1</span>',
-                                    );
+                            if (wordName.textContent.toLowerCase().includes(term)) {
+                                wordName.innerHTML = wordName.textContent.replace(
+                                    new RegExp(`(${term})`, 'gi'),
+                                    '<span class="highlight">$1</span>',
+                                );
                             }
                         }
                     } else {
                         card.style.display = 'none';
+                    }
+                });
+            });
+
+            // 页面加载完成后初始化
+            document.addEventListener('DOMContentLoaded', function() {
+                // 为每个卡片添加必要的属性
+                const cards = document.querySelectorAll('.word-card');
+                const dataMapping = {
+                    'hello': { category: '日常用语', tags: '基础,问候' },
+                    'world': { category: '基础词汇', tags: '基础,地理' },
+                    'learn': { category: '动词', tags: '基础,动作' },
+                    'beautiful': { category: '形容词', tags: '颜色,基础' },
+                    'algorithm': { category: '名词', tags: '技术,高级' }
+                };
+
+                cards.forEach(card => {
+                    const wordName = card.querySelector('.word-name').textContent;
+                    const data = dataMapping[wordName];
+                    if (data) {
+                        card.setAttribute('data-category', data.category);
+                        card.setAttribute('data-tags', data.tags);
                     }
                 });
             });
