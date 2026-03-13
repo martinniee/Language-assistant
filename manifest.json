@@ -1,0 +1,10 @@
+{
+    "id": "language-assistant-plugin",
+    "name": "Language Assistant",
+    "version": "0.0.1",
+    "minAppVersion": "0.15.0",
+    "description": "一个用于演示的 Obsidian Hello World 骰子插件。",
+    "author": "Your Name",
+    "authorUrl": "https://github.com/yourname",
+    "main": "main.js"
+}
