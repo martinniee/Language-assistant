@@ -324,7 +324,7 @@
                             <div>
                                 <p><strong>标签:</strong> 基础, 问候</p>
                                 <p><strong>词性:</strong> 感叹词、名词</p>
-                                <p><strong>查询次数:</strong> 0</p>
+                                <p><strong>查询次数:</strong> <span id="queryCount">0</span></p>
                             </div>
                         </div>
 
@@ -372,10 +372,18 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <script>
+        </div>        <script>
+            // 模拟查询次数
+            let currentQueryCount = 0;
+            
             function showDetailView() {
+                // 增加查询次数
+                currentQueryCount++;
+                document.getElementById('queryCount').textContent = currentQueryCount;
+                
+                // 显示提示信息
+                showNotification('查询次数 +1，当前次数：' + currentQueryCount);
+                
                 document.getElementById('listView').style.display = 'none';
                 document.getElementById('detailView').style.display = 'block';
             }
@@ -383,6 +391,53 @@
             function showListView() {
                 document.getElementById('listView').style.display = 'block';
                 document.getElementById('detailView').style.display = 'none';
+            }
+
+            // 显示通知的辅助函数
+            function showNotification(message) {
+                // 创建通知元素
+                const notification = document.createElement('div');
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 4px;
+                    z-index: 1001;
+                    font-size: 14px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    animation: slideIn 0.3s ease;
+                `;
+                
+                // 添加CSS动画
+                if (!document.getElementById('notificationStyles')) {
+                    const style = document.createElement('style');
+                    style.id = 'notificationStyles';
+                    style.textContent = `
+                        @keyframes slideIn {
+                            from { transform: translateX(100%); opacity: 0; }
+                            to { transform: translateX(0); opacity: 1; }
+                        }
+                        @keyframes slideOut {
+                            from { transform: translateX(0); opacity: 1; }
+                            to { transform: translateX(100%); opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                document.body.appendChild(notification);
+                
+                // 3秒后自动消失
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
             }
 
             // 搜索高亮演示

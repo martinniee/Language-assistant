@@ -336,13 +336,21 @@ export default function WordManagerMarkdown({
             });
         },
         [],
-    );
-
-    // 页面模式切换函数
+    );    // 页面模式切换函数 - 添加查询次数+1功能
     const handleViewWord = useCallback((word: Word) => {
-        setCurrentWord(word);
+        // 创建更新后的单词对象，查询次数+1
+        const updatedWord: Word = {
+            ...word,
+            queryCount: word.queryCount + 1
+        };
+        
+        // 更新当前单词状态
+        setCurrentWord(updatedWord);
         setViewMode('detail');
-    }, []);
+        
+        // 同步更新到数据存储中
+        onEdit(updatedWord);
+    }, [onEdit]);
 
     const handleBackToList = useCallback(() => {
         setViewMode('list');
