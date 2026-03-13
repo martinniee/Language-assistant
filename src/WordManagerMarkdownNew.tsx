@@ -221,8 +221,15 @@ export default function WordManagerMarkdown({
     const [editTarget, setEditTarget] = useState<Word | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [enableFullHighlight, setEnableFullHighlight] = useState(false);
-    const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+    const [viewMode, setViewMode] = useState<'list' | 'detail' | 'filter'>(
+        'list',
+    );
     const [currentWord, setCurrentWord] = useState<Word | null>(null);
+
+    // 新增：标签和分类过滤状态
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [showFilters, setShowFilters] = useState(false);
 
     // 优化的搜索函数 - 提前退出和缓存
     const searchInWord = useCallback((word: Word, term: string): boolean => {
@@ -256,12 +263,57 @@ export default function WordManagerMarkdown({
                 }
             }
         }
-
         return false;
-    }, []); // 使用 useMemo 缓存过滤结果
+    }, []);
+
+    // 提取所有唯一的标签和分类
+    const allTags = useMemo(() => {
+        const tagSet = new Set<string>();
+        words.forEach((word) => {
+            word.tags.forEach((tag) => {
+                if (tag.trim()) tagSet.add(tag.trim());
+            });
+        });
+        return Array.from(tagSet).sort();
+    }, [words]);
+
+    const allCategories = useMemo(() => {
+        const categorySet = new Set<string>();
+        words.forEach((word) => {
+            if (word.category.trim()) categorySet.add(word.category.trim());
+        });
+        return Array.from(categorySet).sort();
+    }, [words]);
+
+    // 综合过滤函数：搜索 + 标签 + 分类
+    const applyFilters = useCallback(
+        (word: Word): boolean => {
+            // 搜索过滤
+            if (!searchInWord(word, searchTerm)) return false;
+
+            // 标签过滤
+            if (selectedTags.length > 0) {
+                const hasSelectedTag = selectedTags.some((selectedTag) =>
+                    word.tags.some((wordTag) => wordTag.trim() === selectedTag),
+                );
+                if (!hasSelectedTag) return false;
+            }
+
+            // 分类过滤
+            if (selectedCategories.length > 0) {
+                if (!selectedCategories.includes(word.category.trim()))
+                    return false;
+            }
+
+            return true;
+        },
+        [searchInWord, searchTerm, selectedTags, selectedCategories],
+    );
+
+    // 使用 useMemo 缓存过滤结果
     const filteredWords = useMemo(() => {
-        return words.filter((word) => searchInWord(word, searchTerm));
-    }, [words, searchTerm, searchInWord]);
+        return words.filter(applyFilters);
+    }, [words, applyFilters]);
 
     const [form, setForm] = useState<Word>({
         name: '',
@@ -297,7 +349,6 @@ export default function WordManagerMarkdown({
         });
         setShowAdd(false);
     }, [editTarget, form, onEdit, onAdd]);
-
     const handleEditClick = useCallback((word: Word) => {
         setEditTarget(word);
         setForm({
@@ -306,6 +357,27 @@ export default function WordManagerMarkdown({
             content: JSON.parse(JSON.stringify(word.content)),
         });
         setShowAdd(true);
+    }, []);
+
+    // 标签和分类过滤处理函数
+    const handleTagToggle = useCallback((tag: string) => {
+        setSelectedTags((prev) =>
+            prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+        );
+    }, []);
+
+    const handleCategoryToggle = useCallback((category: string) => {
+        setSelectedCategories((prev) =>
+            prev.includes(category)
+                ? prev.filter((c) => c !== category)
+                : [...prev, category],
+        );
+    }, []);
+
+    const clearAllFilters = useCallback(() => {
+        setSelectedTags([]);
+        setSelectedCategories([]);
+        setSearchTerm('');
     }, []);
 
     const handleAddPart = useCallback(() => {
@@ -336,21 +408,24 @@ export default function WordManagerMarkdown({
             });
         },
         [],
-    );    // 页面模式切换函数 - 添加查询次数+1功能
-    const handleViewWord = useCallback((word: Word) => {
-        // 创建更新后的单词对象，查询次数+1
-        const updatedWord: Word = {
-            ...word,
-            queryCount: word.queryCount + 1
-        };
-        
-        // 更新当前单词状态
-        setCurrentWord(updatedWord);
-        setViewMode('detail');
-        
-        // 同步更新到数据存储中
-        onEdit(updatedWord);
-    }, [onEdit]);
+    ); // 页面模式切换函数 - 添加查询次数+1功能
+    const handleViewWord = useCallback(
+        (word: Word) => {
+            // 创建更新后的单词对象，查询次数+1
+            const updatedWord: Word = {
+                ...word,
+                queryCount: word.queryCount + 1,
+            };
+
+            // 更新当前单词状态
+            setCurrentWord(updatedWord);
+            setViewMode('detail');
+
+            // 同步更新到数据存储中
+            onEdit(updatedWord);
+        },
+        [onEdit],
+    );
 
     const handleBackToList = useCallback(() => {
         setViewMode('list');
@@ -367,7 +442,6 @@ export default function WordManagerMarkdown({
             {viewMode === 'list' && (
                 <>
                     <h1>单词管理</h1>
-
                     <div
                         style={{
                             display: 'flex',
@@ -388,7 +462,6 @@ export default function WordManagerMarkdown({
                                 fontSize: '14px',
                             }}
                         />
-
                         {searchTerm && (
                             <label
                                 style={{
@@ -408,8 +481,7 @@ export default function WordManagerMarkdown({
                                 />
                                 全部高亮
                             </label>
-                        )}
-
+                        )}{' '}
                         <button
                             onClick={() => setShowAdd(true)}
                             style={{
@@ -422,11 +494,174 @@ export default function WordManagerMarkdown({
                             }}>
                             添加新单词
                         </button>
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            style={{
+                                padding: '10px 15px',
+                                backgroundColor: showFilters
+                                    ? '#f0f0f0'
+                                    : '#e8e8e8',
+                                color: '#333',
+                                border: '1px solid #ccc',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                            }}>
+                            筛选{' '}
+                            {selectedTags.length + selectedCategories.length >
+                                0 &&
+                                `(${
+                                    selectedTags.length +
+                                    selectedCategories.length
+                                })`}
+                        </button>
                     </div>
+                    {/* 过滤器面板 */}
+                    {showFilters && (
+                        <div
+                            style={{
+                                marginBottom: 20,
+                                padding: 15,
+                                border: '1px solid #ddd',
+                                borderRadius: 8,
+                                backgroundColor: '#f9f9f9',
+                            }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginBottom: 15,
+                                }}>
+                                <h3 style={{ margin: 0, fontSize: '16px' }}>
+                                    过滤选项
+                                </h3>
+                                <button
+                                    onClick={clearAllFilters}
+                                    style={{
+                                        padding: '6px 12px',
+                                        fontSize: '12px',
+                                        backgroundColor: '#fff',
+                                        border: '1px solid #ddd',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                    }}>
+                                    清除所有
+                                </button>
+                            </div>
 
+                            {/* 分类过滤 */}
+                            {allCategories.length > 0 && (
+                                <div style={{ marginBottom: 15 }}>
+                                    <div
+                                        style={{
+                                            fontSize: '14px',
+                                            fontWeight: 'bold',
+                                            marginBottom: 8,
+                                            color: '#555',
+                                        }}>
+                                        分类筛选:
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 6,
+                                        }}>
+                                        {allCategories.map((category) => (
+                                            <button
+                                                key={category}
+                                                onClick={() =>
+                                                    handleCategoryToggle(
+                                                        category,
+                                                    )
+                                                }
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    fontSize: '12px',
+                                                    backgroundColor:
+                                                        selectedCategories.includes(
+                                                            category,
+                                                        )
+                                                            ? '#007acc'
+                                                            : '#fff',
+                                                    color: selectedCategories.includes(
+                                                        category,
+                                                    )
+                                                        ? '#fff'
+                                                        : '#333',
+                                                    border: '1px solid #ccc',
+                                                    borderRadius: '15px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s',
+                                                }}>
+                                                {category}
+                                                {selectedCategories.includes(
+                                                    category,
+                                                ) && ' ✓'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 标签过滤 */}
+                            {allTags.length > 0 && (
+                                <div>
+                                    <div
+                                        style={{
+                                            fontSize: '14px',
+                                            fontWeight: 'bold',
+                                            marginBottom: 8,
+                                            color: '#555',
+                                        }}>
+                                        标签筛选:
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 6,
+                                        }}>
+                                        {allTags.map((tag) => (
+                                            <button
+                                                key={tag}
+                                                onClick={() =>
+                                                    handleTagToggle(tag)
+                                                }
+                                                style={{
+                                                    padding: '6px 12px',
+                                                    fontSize: '12px',
+                                                    backgroundColor:
+                                                        selectedTags.includes(
+                                                            tag,
+                                                        )
+                                                            ? '#28a745'
+                                                            : '#fff',
+                                                    color: selectedTags.includes(
+                                                        tag,
+                                                    )
+                                                        ? '#fff'
+                                                        : '#333',
+                                                    border: '1px solid #ccc',
+                                                    borderRadius: '15px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s',
+                                                }}>
+                                                {tag}
+                                                {selectedTags.includes(tag) &&
+                                                    ' ✓'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}{' '}
                     <h2>
                         现有单词
-                        {searchTerm && (
+                        {(searchTerm ||
+                            selectedTags.length > 0 ||
+                            selectedCategories.length > 0) && (
                             <span
                                 style={{
                                     fontSize: '0.7em',
@@ -434,11 +669,15 @@ export default function WordManagerMarkdown({
                                     marginLeft: '10px',
                                 }}>
                                 (找到 {filteredWords.length} / {words.length}{' '}
-                                个单词)
+                                个单词
+                                {selectedTags.length > 0 &&
+                                    ` | 标签: ${selectedTags.join(', ')}`}
+                                {selectedCategories.length > 0 &&
+                                    ` | 分类: ${selectedCategories.join(', ')}`}
+                                )
                             </span>
                         )}
                     </h2>
-
                     <div style={{ display: 'grid', gap: 10, marginTop: 20 }}>
                         {filteredWords.length === 0 ? (
                             <div

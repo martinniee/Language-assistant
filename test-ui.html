@@ -194,6 +194,84 @@
                             全部高亮
                         </label>
                         <button class="btn">添加新单词</button>
+                        <button
+                            class="btn-secondary"
+                            onclick="toggleFilters()"
+                            id="filterBtn">
+                            筛选 <span id="filterCount"></span>
+                        </button>
+                    </div>
+
+                    <!-- 过滤器面板 -->
+                    <div
+                        id="filterPanel"
+                        style="
+                            display: none;
+                            margin-bottom: 20px;
+                            padding: 15px;
+                            border: 1px solid #ddd;
+                            border-radius: 8px;
+                            background-color: #f9f9f9;
+                        ">
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-bottom: 15px;
+                            ">
+                            <h3 style="margin: 0; font-size: 16px">过滤选项</h3>
+                            <button
+                                class="btn-secondary"
+                                onclick="clearAllFilters()"
+                                style="padding: 6px 12px; font-size: 12px">
+                                清除所有
+                            </button>
+                        </div>
+
+                        <!-- 分类过滤 -->
+                        <div style="margin-bottom: 15px">
+                            <div
+                                style="
+                                    font-size: 14px;
+                                    font-weight: bold;
+                                    margin-bottom: 8px;
+                                    color: #555;
+                                ">
+                                分类筛选:
+                            </div>
+                            <div
+                                id="categoryFilters"
+                                style="
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    gap: 6px;
+                                ">
+                                <!-- 分类按钮将由JavaScript动态生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 标签过滤 -->
+                        <div>
+                            <div
+                                style="
+                                    font-size: 14px;
+                                    font-weight: bold;
+                                    margin-bottom: 8px;
+                                    color: #555;
+                                ">
+                                标签筛选:
+                            </div>
+                            <div
+                                id="tagFilters"
+                                style="
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    gap: 6px;
+                                ">
+                                <!-- 标签按钮将由JavaScript动态生成 -->
+                            </div>
+                        </div>
                     </div>
 
                     <h2>
@@ -295,6 +373,138 @@
                             </span>
                         </div>
                     </div>
+
+                    <!-- 新增更多示例单词 -->
+                    <div
+                        class="word-card"
+                        onclick="showDetailView()"
+                        data-category="动词"
+                        data-tags="基础,动作">
+                        <div class="word-header">
+                            <h3 class="word-name">learn</h3>
+                            <div class="word-actions">
+                                <button
+                                    class="btn-secondary"
+                                    onclick="event.stopPropagation()">
+                                    编辑
+                                </button>
+                                <button
+                                    class="btn-secondary"
+                                    onclick="event.stopPropagation()"
+                                    style="
+                                        background-color: #ffe6e6;
+                                        border-color: #ffb3b3;
+                                    ">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                        <div class="word-info">
+                            <strong>发音:</strong> /lɜːrn/
+                        </div>
+                        <div class="word-info"><strong>分类:</strong> 动词</div>
+                        <div class="word-info">
+                            <strong>标签:</strong> 基础, 动作
+                        </div>
+                        <div class="word-footer">
+                            <span>等级: 中级</span>
+                            <span
+                                style="
+                                    color: #007acc;
+                                    text-decoration: underline;
+                                "
+                                >点击查看详情 →</span
+                            >
+                        </div>
+                    </div>
+
+                    <div
+                        class="word-card"
+                        onclick="showDetailView()"
+                        data-category="形容词"
+                        data-tags="颜色,基础">
+                        <div class="word-header">
+                            <h3 class="word-name">beautiful</h3>
+                            <div class="word-actions">
+                                <button
+                                    class="btn-secondary"
+                                    onclick="event.stopPropagation()">
+                                    编辑
+                                </button>
+                                <button
+                                    class="btn-secondary"
+                                    onclick="event.stopPropagation()"
+                                    style="
+                                        background-color: #ffe6e6;
+                                        border-color: #ffb3b3;
+                                    ">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                        <div class="word-info">
+                            <strong>发音:</strong> /ˈbjuːtɪfʊl/
+                        </div>
+                        <div class="word-info">
+                            <strong>分类:</strong> 形容词
+                        </div>
+                        <div class="word-info">
+                            <strong>标签:</strong> 颜色, 基础
+                        </div>
+                        <div class="word-footer">
+                            <span>等级: 中级</span>
+                            <span
+                                style="
+                                    color: #007acc;
+                                    text-decoration: underline;
+                                "
+                                >点击查看详情 →</span
+                            >
+                        </div>
+                    </div>
+
+                    <div
+                        class="word-card"
+                        onclick="showDetailView()"
+                        data-category="名词"
+                        data-tags="技术,高级">
+                        <div class="word-header">
+                            <h3 class="word-name">algorithm</h3>
+                            <div class="word-actions">
+                                <button
+                                    class="btn-secondary"
+                                    onclick="event.stopPropagation()">
+                                    编辑
+                                </button>
+                                <button
+                                    class="btn-secondary"
+                                    onclick="event.stopPropagation()"
+                                    style="
+                                        background-color: #ffe6e6;
+                                        border-color: #ffb3b3;
+                                    ">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                        <div class="word-info">
+                            <strong>发音:</strong> /ˈælɡərɪðəm/
+                        </div>
+                        <div class="word-info"><strong>分类:</strong> 名词</div>
+                        <div class="word-info">
+                            <strong>标签:</strong> 技术, 高级
+                        </div>
+                        <div class="word-footer">
+                            <span>等级: 高级</span>
+                            <span
+                                style="
+                                    color: #007acc;
+                                    text-decoration: underline;
+                                "
+                                >点击查看详情 →</span
+                            >
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -324,7 +534,10 @@
                             <div>
                                 <p><strong>标签:</strong> 基础, 问候</p>
                                 <p><strong>词性:</strong> 感叹词、名词</p>
-                                <p><strong>查询次数:</strong> <span id="queryCount">0</span></p>
+                                <p>
+                                    <strong>查询次数:</strong>
+                                    <span id="queryCount">0</span>
+                                </p>
                             </div>
                         </div>
 
@@ -372,18 +585,20 @@
                     </div>
                 </div>
             </div>
-        </div>        <script>
+        </div>
+        <script>
             // 模拟查询次数
             let currentQueryCount = 0;
-            
+
             function showDetailView() {
                 // 增加查询次数
                 currentQueryCount++;
-                document.getElementById('queryCount').textContent = currentQueryCount;
-                
+                document.getElementById('queryCount').textContent =
+                    currentQueryCount;
+
                 // 显示提示信息
                 showNotification('查询次数 +1，当前次数：' + currentQueryCount);
-                
+
                 document.getElementById('listView').style.display = 'none';
                 document.getElementById('detailView').style.display = 'block';
             }
@@ -411,7 +626,7 @@
                     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
                     animation: slideIn 0.3s ease;
                 `;
-                
+
                 // 添加CSS动画
                 if (!document.getElementById('notificationStyles')) {
                     const style = document.createElement('style');
@@ -428,9 +643,9 @@
                     `;
                     document.head.appendChild(style);
                 }
-                
+
                 document.body.appendChild(notification);
-                
+
                 // 3秒后自动消失
                 setTimeout(() => {
                     notification.style.animation = 'slideOut 0.3s ease';
