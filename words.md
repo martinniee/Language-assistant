@@ -138,9 +138,34 @@
 -   查询次数: 1
 -   词性: 形容词
 -   内容:
+    -   形容词 - 非凡的；特别的 - This is an extraordinary achievement. (这是一个非凡的成就) - She has extraordinary abilities. (她有非凡的能力)
+
+## hello
+
+-   发音: /həˈloʊ/
+-   词汇: hello
+-   分类: 日常用语
+-   标签: 基础,问候,重复测试
+-   等级: 初级
+-   查询次数: 3
+-   词性: 感叹词
+-   内容:
+    -   感叹词
+        -   更新版本的问候语
+            -   Hello everyone! (大家好！)
+
+## beautiful
+
+-   发音: /ˈbjuːtɪfəl/
+-   词汇: beautiful
+-   分类: 形容词
+-   标签: 描述,外观,重复测试
+-   等级: 中级
+-   查询次数: 8
+-   词性: 形容词
+-   内容:
     -   形容词
-        -   非凡的；特别的
-            -   This is an extraordinary achievement. (这是一个非凡的成就)
-            -   She has extraordinary abilities. (她有非凡的能力)
+        -   美丽的（更新版本）
+            -   What a beautiful day! (多么美好的一天！)
 
 %%data-end%%

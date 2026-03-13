@@ -27,6 +27,16 @@ export interface Word {
     content: PartOfSpeech[]; // 详细内容
 }
 
+export interface DuplicateInfo {
+    name: string;
+    count: number;
+}
+
+export interface ParseResult {
+    words: Word[];
+    duplicates: DuplicateInfo[];
+}
+
 export class MarkdownWordStorage {
     private vault: Vault;
     private wordsFilePath: string;
@@ -35,7 +45,7 @@ export class MarkdownWordStorage {
         this.vault = vault;
         this.wordsFilePath = wordsFilePath;
     } // 解析 markdown 内容为单词数组
-    parseMarkdownToWords(content: string): Word[] {
+    parseMarkdownToWords(content: string): ParseResult {
         const words: Word[] = [];
 
         // 提取数据区域内容
@@ -147,11 +157,68 @@ export class MarkdownWordStorage {
             if (contentStartIndex >= 0) {
                 word.content = this.parseContent(lines, contentStartIndex);
             }
-
             words.push(word);
+        } // 去重逻辑：按单词名称去重，保留最后出现的单词
+        const uniqueWords: Word[] = [];
+        const seenNames = new Set<string>();
+        const duplicates: { name: string; count: number }[] = [];
+        const duplicateDetails: string[] = [];
+
+        // 首先统计重复单词
+        const nameCountMap = new Map<string, number>();
+        words.forEach((word) => {
+            const normalizedName = word.name.toLowerCase().trim();
+            nameCountMap.set(
+                normalizedName,
+                (nameCountMap.get(normalizedName) || 0) + 1,
+            );
+        });
+
+        // 记录重复的单词
+        nameCountMap.forEach((count, name) => {
+            if (count > 1) {
+                duplicates.push({ name, count });
+            }
+        });
+
+        // 从后往前遍历，保留最后出现的单词
+        for (let i = words.length - 1; i >= 0; i--) {
+            const word = words[i];
+            const normalizedName = word.name.toLowerCase().trim();
+
+            if (!seenNames.has(normalizedName)) {
+                seenNames.add(normalizedName);
+                uniqueWords.unshift(word); // 插入到开头保持原有顺序
+            } else {
+                // 记录被跳过的重复单词
+                duplicateDetails.push(`跳过重复单词: "${word.name}"`);
+            }
         }
 
-        return words;
+        // 输出详细的重复信息
+        if (duplicates.length > 0) {
+            console.warn(`⚠️ 数据解析发现重复单词！`);
+            console.warn(`📊 重复统计:`);
+            duplicates.forEach((dup) => {
+                console.warn(`   - "${dup.name}" 出现了 ${dup.count} 次`);
+            });
+            console.warn(`🧹 去重处理: 保留了每个单词的最后出现版本`);
+            console.warn(`📝 详细信息:`);
+            duplicateDetails.forEach((detail) => {
+                console.warn(`   ${detail}`);
+            });
+        }
+
+        console.log(
+            `✅ 解析完成: 原始单词数量=${words.length}, 去重后数量=${uniqueWords.length}`,
+        );
+        if (duplicates.length > 0) {
+            console.log(
+                `🔄 共去除了 ${words.length - uniqueWords.length} 个重复单词`,
+            );
+        }
+
+        return { words: uniqueWords, duplicates };
     } // 解析内容部分的嵌套结构
     private parseContent(lines: string[], startIndex: number): PartOfSpeech[] {
         const content: PartOfSpeech[] = [];
@@ -228,6 +295,12 @@ export class MarkdownWordStorage {
         return markdown;
     } // 读取 words.md 文件
     async loadWords(): Promise<Word[]> {
+        const result = await this.loadWordsWithDuplicateInfo();
+        return result.words;
+    }
+
+    // 读取 words.md 文件并返回重复信息
+    async loadWordsWithDuplicateInfo(): Promise<ParseResult> {
         try {
             const file = this.vault.getAbstractFileByPath(this.wordsFilePath);
             if (!file || !(file instanceof TFile)) {
@@ -235,14 +308,14 @@ export class MarkdownWordStorage {
                 const emptyContent =
                     '# 单词词汇表\n\n%%data-start%%\n\n%%data-end%%\n';
                 await this.vault.create(this.wordsFilePath, emptyContent);
-                return [];
+                return { words: [], duplicates: [] };
             }
 
             const content = await this.vault.read(file);
             return this.parseMarkdownToWords(content);
         } catch (error) {
             console.error('读取单词文件失败:', error);
-            return [];
+            return { words: [], duplicates: [] };
         }
     }
 

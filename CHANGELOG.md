@@ -1,6 +1,82 @@
-# 功能更新日志 - v1.1.0
+# 功能更新日志 - v1.2.0
 
 ## 🆕 新增功能
+
+### 单词去重功能 ✅
+
+**功能描述**: 实现全面的单词去重逻辑，防止添加重复的单词名称，确保数据的唯一性和完整性。
+
+**实现细节**:
+
+**1. 前端验证去重**:
+
+-   在添加新单词时检查是否已存在同名单词
+-   在编辑单词名称时检查新名称是否与其他单词冲突
+-   实时显示错误提示，输入框变红标识
+-   支持大小写不敏感的重复检查
+
+**2. 插件层去重**:
+
+-   添加单词时的服务器端验证
+-   编辑单词时支持名称变更的去重检查
+-   自动显示用户友好的提示消息
+
+**3. 数据解析去重**:
+
+-   从文件解析时自动去重，保留最后出现的单词
+-   避免因手动编辑文件导致的数据重复问题
+-   **🆕 详细重复提示**: 控制台显示重复单词统计信息
+-   **🆕 用户通知**: 弹窗提示发现的重复单词名称
+
+**代码变更**:
+
+```tsx
+// 前端去重检查
+const isDuplicate = words.some(
+    (word) =>
+        word.name.toLowerCase() === trimmedName.toLowerCase() &&
+        (!editTarget || word.name !== editTarget.name),
+);
+
+if (isDuplicate) {
+    setErrorMessage(`单词 "${trimmedName}" 已存在，请使用不同的名称`);
+    return;
+}
+```
+
+**新增: 详细重复信息提示**:
+
+```typescript
+// 数据解析层 - 详细重复统计
+if (duplicates.length > 0) {
+    console.warn(`⚠️ 数据解析发现重复单词！`);
+    console.warn(`📊 重复统计:`);
+    duplicates.forEach((dup) => {
+        console.warn(`   - "${dup.name}" 出现了 ${dup.count} 次`);
+    });
+    console.warn(`🧹 去重处理: 保留了每个单词的最后出现版本`);
+}
+
+// 插件层 - 用户友好提示
+if (parseResult.duplicates.length > 0) {
+    const duplicateNames = parseResult.duplicates
+        .map((d) => `"${d.name}"`)
+        .join(', ');
+    new Notice(
+        `⚠️ 发现重复单词: ${duplicateNames}。已自动去重，保留了最新版本。`,
+        8000,
+    );
+}
+```
+
+**用户体验优化**:
+
+-   ⚠️ 实时错误提示，防止重复提交
+-   🔴 输入框变红标识，视觉反馈清晰
+-   📝 自动清理错误状态，用户体验流畅
+-   🚫 多层防护，确保数据完整性
+
+## 🔧 功能改进
 
 ### 智能查询统计功能 ✅
 

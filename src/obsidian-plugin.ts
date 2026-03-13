@@ -74,18 +74,37 @@ class WordManagerView extends ItemView {
     getDisplayText() {
         return '单词管理';
     }
-
     async onOpen() {
         console.log('🔄 正在加载单词数据...');
         try {
-            // 从 words.md 文件加载现有单词数据
-            this.words = await this.wordStorage.loadWords();
+            // 从 words.md 文件加载现有单词数据，包含重复信息
+            const parseResult =
+                await this.wordStorage.loadWordsWithDuplicateInfo();
+            this.words = parseResult.words;
             console.log(`✅ 成功加载 ${this.words.length} 个单词`);
+
+            // 显示重复信息给用户
+            if (parseResult.duplicates.length > 0) {
+                const duplicateNames = parseResult.duplicates
+                    .map((d) => `"${d.name}"`)
+                    .join(', ');
+                new Notice(
+                    `⚠️ 发现重复单词: ${duplicateNames}。已自动去重，保留了最新版本。`,
+                    8000,
+                );
+                console.warn(
+                    `⚠️ 发现 ${parseResult.duplicates.length} 个重复单词，详细信息请查看控制台`,
+                );
+            }
 
             if (this.words.length === 0) {
                 new Notice('📝 未找到单词数据，您可以开始添加新单词！');
             } else {
-                new Notice(`📚 加载了 ${this.words.length} 个单词`);
+                const message =
+                    parseResult.duplicates.length > 0
+                        ? `📚 加载了 ${this.words.length} 个单词 (已去重)`
+                        : `📚 加载了 ${this.words.length} 个单词`;
+                new Notice(message);
             }
         } catch (error) {
             console.error('❌ 加载单词失败:', error);
@@ -144,14 +163,31 @@ class WordManagerView extends ItemView {
             this.renderComponent();
         }
     }
-
-    private async handleEditWord(editedWord: Word) {
+    private async handleEditWord(editedWord: Word, originalWord?: Word) {
         console.log('✏️ 尝试编辑单词:', editedWord.name);
         try {
-            const index = this.words.findIndex(
-                (w) => w.name === editedWord.name,
-            );
+            // 如果提供了原始单词信息，使用原始单词名称查找
+            const searchName = originalWord
+                ? originalWord.name
+                : editedWord.name;
+            const index = this.words.findIndex((w) => w.name === searchName);
+
             if (index >= 0) {
+                // 如果单词名称发生变化，检查新名称是否重复
+                if (originalWord && editedWord.name !== originalWord.name) {
+                    const nameExists = this.words.some(
+                        (w) =>
+                            w.name.toLowerCase() ===
+                            editedWord.name.toLowerCase(),
+                    );
+                    if (nameExists) {
+                        new Notice(
+                            `❌ 单词 "${editedWord.name}" 已存在！请选择不同的名称`,
+                        );
+                        return;
+                    }
+                }
+
                 // 更新本地数组
                 this.words[index] = editedWord;
                 console.log('📝 单词已更新到本地数组，正在保存到文件...');
@@ -167,7 +203,7 @@ class WordManagerView extends ItemView {
                     `✅ 成功编辑单词 "${editedWord.name}" 并保存到 words.md`,
                 );
             } else {
-                new Notice(`❌ 未找到要编辑的单词 "${editedWord.name}"`);
+                new Notice(`❌ 未找到要编辑的单词 "${searchName}"`);
             }
         } catch (error) {
             console.error('❌ 编辑单词失败:', error);

@@ -5,7 +5,7 @@ import { Word } from './MarkdownWordStorage';
 interface WordManagerProps {
     words: Word[];
     onAdd: (word: Word) => void;
-    onEdit: (word: Word) => void;
+    onEdit: (word: Word, originalWord?: Word) => void;
     onDelete: (name: string) => void;
 }
 
@@ -404,7 +404,7 @@ const WordListItem: React.FC<{
 interface WordManagerProps {
     words: Word[];
     onAdd: (word: Word) => void;
-    onEdit: (word: Word) => void;
+    onEdit: (word: Word, originalWord?: Word) => void;
     onDelete: (name: string) => void;
 }
 
@@ -438,6 +438,9 @@ export default function WordManagerMarkdown({
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(12);
+
+    // 新增：错误提示状态
+    const [errorMessage, setErrorMessage] = useState('');
 
     // 优化的搜索函数 - 提前退出和缓存
     const searchInWord = useCallback((word: Word, term: string): boolean => {
@@ -607,16 +610,36 @@ export default function WordManagerMarkdown({
         partsOfSpeech: '',
         content: [],
     });
-
     const handleSubmit = useCallback(() => {
-        if (editTarget) {
-            onEdit(form);
-            setEditTarget(null);
-        } else {
-            onAdd(form);
+        // 清除之前的错误消息
+        setErrorMessage('');
+
+        // 验证单词名称不能为空
+        if (!form.name.trim()) {
+            setErrorMessage('单词名称不能为空');
+            return;
         }
 
-        // 重置表单
+        // 检查单词名称是否重复
+        const trimmedName = form.name.trim();
+        const isDuplicate = words.some(
+            (word) =>
+                word.name.toLowerCase() === trimmedName.toLowerCase() &&
+                (!editTarget || word.name !== editTarget.name),
+        );
+
+        if (isDuplicate) {
+            setErrorMessage(`单词 "${trimmedName}" 已存在，请使用不同的名称`);
+            return;
+        }
+        if (editTarget) {
+            onEdit({ ...form, name: trimmedName }, editTarget);
+            setEditTarget(null);
+        } else {
+            onAdd({ ...form, name: trimmedName });
+        }
+
+        // 重置表单和错误消息
         setForm({
             name: '',
             pronunciation: '',
@@ -628,8 +651,9 @@ export default function WordManagerMarkdown({
             partsOfSpeech: '',
             content: [],
         });
+        setErrorMessage('');
         setShowAdd(false);
-    }, [editTarget, form, onEdit, onAdd]);
+    }, [editTarget, form, onEdit, onAdd, words]);
     const handleEditClick = useCallback((word: Word) => {
         setEditTarget(word);
         setForm({
@@ -1657,24 +1681,41 @@ export default function WordManagerMarkdown({
                             overflow: 'auto',
                             width: '90%',
                         }}>
-                        <h3>{editTarget ? '编辑单词' : '添加单词'}</h3>
-
+                        <h3>{editTarget ? '编辑单词' : '添加单词'}</h3>{' '}
                         <div style={{ marginBottom: 10 }}>
                             <label>单词名称:</label>
                             <input
                                 type="text"
                                 value={form.name}
-                                onChange={(e) =>
-                                    setForm({ ...form, name: e.target.value })
-                                }
+                                onChange={(e) => {
+                                    setForm({ ...form, name: e.target.value });
+                                    // 输入时清除错误消息
+                                    if (errorMessage) {
+                                        setErrorMessage('');
+                                    }
+                                }}
                                 style={{
                                     marginLeft: 10,
                                     padding: 5,
                                     width: '200px',
+                                    border: errorMessage
+                                        ? '2px solid #ff4444'
+                                        : '1px solid #ccc',
                                 }}
                             />
+                            {errorMessage && (
+                                <div
+                                    style={{
+                                        color: '#ff4444',
+                                        fontSize: '12px',
+                                        marginTop: 5,
+                                        marginLeft: 10,
+                                        fontWeight: 'bold',
+                                    }}>
+                                    ⚠️ {errorMessage}
+                                </div>
+                            )}
                         </div>
-
                         <div style={{ marginBottom: 10 }}>
                             <label>发音:</label>
                             <input
@@ -1693,7 +1734,6 @@ export default function WordManagerMarkdown({
                                 }}
                             />
                         </div>
-
                         <div style={{ marginBottom: 10 }}>
                             <label>分类:</label>
                             <input
@@ -1712,7 +1752,6 @@ export default function WordManagerMarkdown({
                                 }}
                             />
                         </div>
-
                         <div style={{ marginBottom: 10 }}>
                             <label>标签 (逗号分隔):</label>
                             <input
@@ -1733,7 +1772,6 @@ export default function WordManagerMarkdown({
                                 }}
                             />
                         </div>
-
                         <div style={{ marginBottom: 10 }}>
                             <label>等级:</label>
                             <select
@@ -1748,7 +1786,6 @@ export default function WordManagerMarkdown({
                                 <option value="高级">高级</option>
                             </select>
                         </div>
-
                         <div style={{ marginBottom: 10 }}>
                             <label>词性概述:</label>
                             <input
@@ -1767,7 +1804,6 @@ export default function WordManagerMarkdown({
                                 }}
                             />
                         </div>
-
                         <h4>详细内容</h4>
                         {form.content.map((part, partIndex) => (
                             <div
@@ -1890,13 +1926,11 @@ export default function WordManagerMarkdown({
                                 </button>
                             </div>
                         ))}
-
                         <button
                             onClick={handleAddPart}
                             style={{ marginTop: 10 }}>
                             添加词性
                         </button>
-
                         <div style={{ marginTop: 20 }}>
                             <button
                                 onClick={handleSubmit}
@@ -1905,11 +1939,12 @@ export default function WordManagerMarkdown({
                                     padding: '10px 20px',
                                 }}>
                                 {editTarget ? '更新' : '添加'}
-                            </button>
+                            </button>{' '}
                             <button
                                 onClick={() => {
                                     setShowAdd(false);
                                     setEditTarget(null);
+                                    setErrorMessage(''); // 清除错误消息
                                     setForm({
                                         name: '',
                                         pronunciation: '',
