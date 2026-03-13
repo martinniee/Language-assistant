@@ -253,7 +253,13 @@ export default function WordManager({
                     style={{ width: 160 }}
                 />
             </div>
-            <div style={{ marginTop: 16 }}>
+            <div
+                style={{
+                    marginTop: 16,
+                    maxHeight: 340,
+                    overflowY: 'auto',
+                    paddingRight: 8,
+                }}>
                 <b>内容：</b>
                 {form.content.map((part, pi) => (
                     <div
@@ -261,85 +267,145 @@ export default function WordManager({
                         style={{
                             border: '1px solid #eee',
                             margin: 8,
-                            padding: 8,
-                            borderRadius: 4,
+                            padding: 12,
+                            borderRadius: 6,
+                            background: '#fff',
                         }}>
-                        <input
-                            placeholder="词性"
-                            value={part.partOfSpeech}
-                            onChange={(e) =>
-                                handlePartChange(pi, e.target.value)
-                            }
-                            style={{ marginRight: 8 }}
-                        />
-                        <button
-                            onClick={() => handleRemovePart(pi)}
-                            style={{ color: 'red', marginRight: 8 }}>
-                            删除词性
-                        </button>
-                        <button
-                            onClick={() => handleAddDefinition(pi)}
-                            style={{ marginRight: 8 }}>
-                            添加定义
-                        </button>
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                marginBottom: 8,
+                                gap: 8,
+                            }}>
+                            <input
+                                placeholder="词性"
+                                value={part.partOfSpeech}
+                                onChange={(e) =>
+                                    handlePartChange(pi, e.target.value)
+                                }
+                                style={{
+                                    marginRight: 8,
+                                    flex: 1,
+                                    minWidth: 100,
+                                }}
+                            />
+                            <button
+                                onClick={() => handleRemovePart(pi)}
+                                style={{ color: 'red', marginRight: 8 }}>
+                                删除词性
+                            </button>
+                            <button
+                                onClick={() => handleAddDefinition(pi)}
+                                style={{ marginRight: 8 }}>
+                                添加定义
+                            </button>
+                        </div>
                         {part.definitions.map((def, di) => (
                             <div
                                 key={di}
-                                style={{ marginLeft: 16, marginBottom: 4 }}>
-                                <input
-                                    placeholder="定义"
-                                    value={def.definition}
-                                    onChange={(e) =>
-                                        handleDefinitionChange(
-                                            pi,
-                                            di,
-                                            e.target.value,
-                                        )
-                                    }
-                                    style={{ marginRight: 8 }}
-                                />
-                                <button
-                                    onClick={() =>
-                                        handleRemoveDefinition(pi, di)
-                                    }
-                                    style={{ color: 'red', marginRight: 8 }}>
-                                    删除定义
-                                </button>
-                                <button
-                                    onClick={() => handleAddExample(pi, di)}
-                                    style={{ marginRight: 8 }}>
-                                    添加例句
-                                </button>
-                                {def.examples.map((ex, ei) => (
-                                    <span key={ei}>
-                                        <input
-                                            placeholder={`例句${ei + 1}`}
-                                            value={ex.text}
-                                            onChange={(e) =>
-                                                handleExampleChange(
-                                                    pi,
-                                                    di,
-                                                    ei,
-                                                    e.target.value,
-                                                )
-                                            }
-                                            style={{
-                                                marginRight: 8,
-                                                marginLeft: 8,
-                                            }}
-                                        />
-                                        <button
-                                            onClick={() =>
-                                                handleRemoveExample(pi, di, ei)
-                                            }
-                                            style={{
-                                                color: 'red',
-                                                marginRight: 8,
-                                            }}>
-                                            删除例句
-                                        </button>
-                                    </span>
-                                ))}
+                                style={{
+                                    marginLeft: 0,
+                                    marginBottom: 12,
+                                    padding: 8,
+                                    border: '1px solid #f0f0f0',
+                                    borderRadius: 4,
+                                    background: '#fafbfc',
+                                }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 8,
+                                        marginBottom: 8,
+                                    }}>
+                                    <input
+                                        placeholder="定义"
+                                        value={def.definition}
+                                        onChange={(e) =>
+                                            handleDefinitionChange(
+                                                pi,
+                                                di,
+                                                e.target.value,
+                                            )
+                                        }
+                                        style={{
+                                            marginRight: 8,
+                                            flex: 2,
+                                            minWidth: 120,
+                                        }}
+                                    />
+                                    <button
+                                        onClick={() =>
+                                            handleRemoveDefinition(pi, di)
+                                        }
+                                        style={{
+                                            color: 'red',
+                                            marginRight: 8,
+                                        }}>
+                                        删除定义
+                                    </button>
+                                    <button
+                                        onClick={() => handleAddExample(pi, di)}
+                                        style={{ marginRight: 8 }}>
+                                        添加例句
+                                    </button>
+                                </div>
+                                {def.examples.length > 0 && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: 8,
+                                        }}>
+                                        {def.examples.map((ex, ei) => (
+                                            <div
+                                                key={ei}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    background: '#fff',
+                                                    border: '1px solid #eee',
+                                                    borderRadius: 4,
+                                                    padding: '4px 8px',
+                                                    marginBottom: 4,
+                                                }}>
+                                                <input
+                                                    placeholder={`例句${
+                                                        ei + 1
+                                                    }`}
+                                                    value={ex.text}
+                                                    onChange={(e) =>
+                                                        handleExampleChange(
+                                                            pi,
+                                                            di,
+                                                            ei,
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    style={{
+                                                        marginRight: 8,
+                                                        minWidth: 180,
+                                                    }}
+                                                />
+                                                <button
+                                                    onClick={() =>
+                                                        handleRemoveExample(
+                                                            pi,
+                                                            di,
+                                                            ei,
+                                                        )
+                                                    }
+                                                    style={{
+                                                        color: 'red',
+                                                        fontSize: 13,
+                                                    }}>
+                                                    删除例句
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -406,6 +472,8 @@ export default function WordManager({
                         borderRadius: 10,
                         marginBottom: 24,
                         boxShadow: '0 1px 4px #eee',
+                        maxHeight: 420,
+                        overflowY: 'auto',
                     }}>
                     <button
                         onClick={() => setSelectedWord(null)}
