@@ -15,12 +15,30 @@ const createEmptyWord = (): Word => ({
     tags: [],
     level: '',
     partsOfSpeech: '',
-    content: [],
+    content: [
+        {
+            type: '',
+            definitions: [
+                {
+                    definition: '',
+                    examples: [],
+                },
+            ],
+        },
+    ],
 });
 
 const getWordId = (word: Word): string => WordHelper.getId(word);
 const getWordQueryCount = (word: Word): number =>
     WordHelper.getQueryCount(word);
+
+// 预定义词性选项 - 分组显示
+const PARTS_OF_SPEECH_GROUPS = {
+    基础词性: ['名词', '动词', '形容词', '副词'],
+    功能词性: ['介词', '代词', '连词', '感叹词'],
+    特殊词性: ['助动词', '情态动词', '数词', '冠词'],
+    动词形式: ['不定式', '动名词', '分词'],
+};
 
 interface WordManagerProps {
     words: Word[];
@@ -748,11 +766,21 @@ export default function WordManagerMarkdown({
         setSelectedPartsOfSpeech([]);
         setSearchTerm('');
     }, []);
-
     const handleAddPart = useCallback(() => {
         setForm((f) => ({
             ...f,
-            content: [...f.content, { type: '', definitions: [] }],
+            content: [
+                ...f.content,
+                {
+                    type: '',
+                    definitions: [
+                        {
+                            definition: '',
+                            examples: [],
+                        },
+                    ],
+                },
+            ],
         }));
     }, []);
 
@@ -1973,24 +2001,217 @@ export default function WordManagerMarkdown({
                                 <option value="中级">中级</option>
                                 <option value="高级">高级</option>
                             </select>
-                        </div>
+                        </div>{' '}
                         <div style={{ marginBottom: 10 }}>
                             <label>词性概述:</label>
-                            <input
-                                type="text"
-                                value={form.partsOfSpeech}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        partsOfSpeech: e.target.value,
-                                    })
-                                }
-                                style={{
-                                    marginLeft: 10,
-                                    padding: 5,
-                                    width: '200px',
-                                }}
-                            />
+                            <div style={{ marginLeft: 10, flex: 1 }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: 8,
+                                        marginBottom: 8,
+                                        minHeight: 32,
+                                        padding: 5,
+                                        border: '1px solid #ccc',
+                                        borderRadius: 4,
+                                        backgroundColor: '#f9f9f9',
+                                    }}>
+                                    {form.partsOfSpeech
+                                        .split(',')
+                                        .filter((p) => p.trim())
+                                        .map((selectedType, index) => (
+                                            <span
+                                                key={index}
+                                                style={{
+                                                    padding: '4px 8px',
+                                                    backgroundColor: '#e3f2fd',
+                                                    color: '#1976d2',
+                                                    borderRadius: 12,
+                                                    fontSize: '12px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                }}>
+                                                {selectedType.trim()}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const types =
+                                                            form.partsOfSpeech
+                                                                .split(',')
+                                                                .map((t) =>
+                                                                    t.trim(),
+                                                                )
+                                                                .filter(
+                                                                    (t) =>
+                                                                        t !==
+                                                                        selectedType.trim(),
+                                                                );
+                                                        setForm({
+                                                            ...form,
+                                                            partsOfSpeech:
+                                                                types.join(','),
+                                                        });
+                                                    }}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: '#1976d2',
+                                                        cursor: 'pointer',
+                                                        padding: '0 2px',
+                                                        fontSize: '14px',
+                                                        lineHeight: 1,
+                                                    }}>
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))}
+                                    {form.partsOfSpeech
+                                        .split(',')
+                                        .filter((p) => p.trim()).length ===
+                                        0 && (
+                                        <span
+                                            style={{
+                                                color: '#999',
+                                                fontSize: '14px',
+                                                padding: '4px',
+                                            }}>
+                                            点击下方选项添加词性
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* 分组显示词性选项 */}
+                                {Object.entries(PARTS_OF_SPEECH_GROUPS).map(
+                                    ([groupName, options]) => (
+                                        <div
+                                            key={groupName}
+                                            style={{ marginBottom: 12 }}>
+                                            <div
+                                                style={{
+                                                    fontSize: '13px',
+                                                    fontWeight: 'bold',
+                                                    color: '#555',
+                                                    marginBottom: 6,
+                                                    padding: '2px 0',
+                                                }}>
+                                                {groupName}:
+                                            </div>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexWrap: 'wrap',
+                                                    gap: 6,
+                                                    paddingLeft: 12,
+                                                }}>
+                                                {options.map((option) => {
+                                                    const isSelected =
+                                                        form.partsOfSpeech
+                                                            .split(',')
+                                                            .map((t) =>
+                                                                t.trim(),
+                                                            )
+                                                            .includes(option);
+                                                    return (
+                                                        <button
+                                                            key={option}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (
+                                                                    isSelected
+                                                                ) {
+                                                                    // 移除选中的词性
+                                                                    const types =
+                                                                        form.partsOfSpeech
+                                                                            .split(
+                                                                                ',',
+                                                                            )
+                                                                            .map(
+                                                                                (
+                                                                                    t,
+                                                                                ) =>
+                                                                                    t.trim(),
+                                                                            )
+                                                                            .filter(
+                                                                                (
+                                                                                    t,
+                                                                                ) =>
+                                                                                    t !==
+                                                                                    option,
+                                                                            );
+                                                                    setForm({
+                                                                        ...form,
+                                                                        partsOfSpeech:
+                                                                            types.join(
+                                                                                ',',
+                                                                            ),
+                                                                    });
+                                                                } else {
+                                                                    // 添加词性
+                                                                    const currentTypes =
+                                                                        form.partsOfSpeech
+                                                                            .split(
+                                                                                ',',
+                                                                            )
+                                                                            .map(
+                                                                                (
+                                                                                    t,
+                                                                                ) =>
+                                                                                    t.trim(),
+                                                                            )
+                                                                            .filter(
+                                                                                (
+                                                                                    t,
+                                                                                ) =>
+                                                                                    t !==
+                                                                                    '',
+                                                                            );
+                                                                    currentTypes.push(
+                                                                        option,
+                                                                    );
+                                                                    setForm({
+                                                                        ...form,
+                                                                        partsOfSpeech:
+                                                                            currentTypes.join(
+                                                                                ',',
+                                                                            ),
+                                                                    });
+                                                                }
+                                                            }}
+                                                            style={{
+                                                                padding:
+                                                                    '5px 10px',
+                                                                fontSize:
+                                                                    '12px',
+                                                                backgroundColor:
+                                                                    isSelected
+                                                                        ? '#1976d2'
+                                                                        : '#fff',
+                                                                color: isSelected
+                                                                    ? '#fff'
+                                                                    : '#333',
+                                                                border: '1px solid #ccc',
+                                                                borderRadius:
+                                                                    '12px',
+                                                                cursor: 'pointer',
+                                                                transition:
+                                                                    'all 0.2s',
+                                                                fontWeight:
+                                                                    isSelected
+                                                                        ? '500'
+                                                                        : 'normal',
+                                                            }}>
+                                                            {option}{' '}
+                                                            {isSelected && '✓'}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ),
+                                )}
+                            </div>
                         </div>
                         <h4>详细内容</h4>{' '}
                         {form.content.map((part, partIndex) => (
@@ -2009,9 +2230,9 @@ export default function WordManagerMarkdown({
                                         alignItems: 'center',
                                         gap: 10,
                                     }}>
-                                    <label>词性:</label>
-                                    <input
-                                        type="text"
+                                    {' '}
+                                    <label>词性:</label>{' '}
+                                    <select
                                         value={part.type}
                                         onChange={(e) => {
                                             const content = [...form.content];
@@ -2023,8 +2244,26 @@ export default function WordManagerMarkdown({
                                             marginLeft: 10,
                                             padding: 5,
                                             flex: 1,
-                                        }}
-                                    />
+                                            border: '1px solid #ccc',
+                                            borderRadius: 4,
+                                        }}>
+                                        <option value="">请选择词性</option>
+                                        {Object.entries(
+                                            PARTS_OF_SPEECH_GROUPS,
+                                        ).map(([groupName, options]) => (
+                                            <optgroup
+                                                key={groupName}
+                                                label={groupName}>
+                                                {options.map((option) => (
+                                                    <option
+                                                        key={option}
+                                                        value={option}>
+                                                        {option}
+                                                    </option>
+                                                ))}
+                                            </optgroup>
+                                        ))}
+                                    </select>
                                     {form.content.length > 1 && (
                                         <button
                                             onClick={() =>
