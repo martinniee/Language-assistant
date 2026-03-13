@@ -16,6 +16,7 @@ export interface PartOfSpeech {
 }
 
 export interface Word {
+    id: string; // 唯一标识符 (UUID)
     name: string; // 单词名称
     pronunciation: string; // 发音
     vocabulary: string; // 词汇
@@ -44,6 +45,16 @@ export class MarkdownWordStorage {
     constructor(vault: Vault, wordsFilePath: string = 'words.md') {
         this.vault = vault;
         this.wordsFilePath = wordsFilePath;
+    }
+
+    // 生成 UUID
+    private generateId(): string {
+        return (
+            'word-' +
+            Math.random().toString(36).substr(2, 9) +
+            '-' +
+            Date.now().toString(36)
+        );
     } // 解析 markdown 内容为单词数组
     parseMarkdownToWords(content: string): ParseResult {
         const words: Word[] = [];
@@ -85,8 +96,8 @@ export class MarkdownWordStorage {
             ) {
                 continue;
             }
-
             const word: Word = {
+                id: '', // 暂时为空，后面会设置
                 name: wordName,
                 pronunciation: '',
                 vocabulary: '',
@@ -98,13 +109,18 @@ export class MarkdownWordStorage {
                 content: [],
             };
 
-            let contentStartIndex = -1;
-
-            // 解析字段
+            let contentStartIndex = -1; // 解析字段
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
 
                 if (
+                    line.startsWith('-   ID:') ||
+                    line.startsWith('- ID:') ||
+                    line.startsWith('-   id:') ||
+                    line.startsWith('- id:')
+                ) {
+                    word.id = line.replace(/^-\s*(ID|id):/, '').trim();
+                } else if (
                     line.startsWith('-   发音:') ||
                     line.startsWith('- 发音:')
                 ) {
@@ -151,12 +167,16 @@ export class MarkdownWordStorage {
                     contentStartIndex = i + 1;
                     break;
                 }
-            }
-
-            // 解析内容部分（如果存在）
+            } // 解析内容部分（如果存在）
             if (contentStartIndex >= 0) {
                 word.content = this.parseContent(lines, contentStartIndex);
             }
+
+            // 如果没有 ID，生成一个新的
+            if (!word.id) {
+                word.id = this.generateId();
+            }
+
             words.push(word);
         } // 去重逻辑：按单词名称去重，保留最后出现的单词
         const uniqueWords: Word[] = [];
@@ -265,9 +285,9 @@ export class MarkdownWordStorage {
     wordsToMarkdown(words: Word[]): string {
         let markdown = '# 单词词汇表\n\n';
         markdown += '%%data-start%%\n\n';
-
         for (const word of words) {
             markdown += `## ${word.name}\n`;
+            markdown += `- ID: ${word.id}\n`;
             markdown += `- 发音: ${word.pronunciation}\n`;
             markdown += `- 词汇: ${word.vocabulary}\n`;
             markdown += `- 分类: ${word.category}\n`;

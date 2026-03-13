@@ -7,6 +7,7 @@ interface WordManagerProps {
     onAdd: (word: Word) => void;
     onEdit: (word: Word, originalWord?: Word) => void;
     onDelete: (name: string) => void;
+    onJumpToSource: (wordId: string) => void;
 }
 
 // 高亮文本组件 - 优化版本
@@ -55,6 +56,7 @@ const WordCard: React.FC<{
     onEdit: () => void;
     onDelete: () => void;
     onViewDetail: () => void;
+    onJumpToSource: () => void;
     enableFullHighlight: boolean;
 }> = React.memo(
     ({
@@ -63,6 +65,7 @@ const WordCard: React.FC<{
         onEdit,
         onDelete,
         onViewDetail,
+        onJumpToSource,
         enableFullHighlight,
     }) => {
         return (
@@ -108,6 +111,7 @@ const WordCard: React.FC<{
                                 borderRadius: '4px',
                                 cursor: 'pointer',
                             }}>
+                            {' '}
                             编辑
                         </button>
                         <button
@@ -124,6 +128,21 @@ const WordCard: React.FC<{
                                 cursor: 'pointer',
                             }}>
                             删除
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onJumpToSource();
+                            }}
+                            style={{
+                                padding: '4px 8px',
+                                fontSize: '12px',
+                                backgroundColor: '#e6f3ff',
+                                border: '1px solid #b3d9ff',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                            }}>
+                            跳转
                         </button>
                     </div>
                 </div>
@@ -211,6 +230,7 @@ const WordListItem: React.FC<{
     onEdit: () => void;
     onDelete: () => void;
     onViewDetail: () => void;
+    onJumpToSource: () => void;
     enableFullHighlight: boolean;
 }> = React.memo(
     ({
@@ -219,6 +239,7 @@ const WordListItem: React.FC<{
         onEdit,
         onDelete,
         onViewDetail,
+        onJumpToSource,
         enableFullHighlight,
     }) => {
         return (
@@ -379,7 +400,7 @@ const WordListItem: React.FC<{
                             cursor: 'pointer',
                         }}>
                         编辑
-                    </button>
+                    </button>{' '}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -395,6 +416,21 @@ const WordListItem: React.FC<{
                         }}>
                         删除
                     </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onJumpToSource();
+                        }}
+                        style={{
+                            padding: '4px 8px',
+                            fontSize: '12px',
+                            backgroundColor: '#e6f3ff',
+                            border: '1px solid #b3d9ff',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                        }}>
+                        跳转
+                    </button>
                 </div>
             </div>
         );
@@ -406,6 +442,7 @@ interface WordManagerProps {
     onAdd: (word: Word) => void;
     onEdit: (word: Word, originalWord?: Word) => void;
     onDelete: (name: string) => void;
+    onJumpToSource: (wordId: string) => void;
 }
 
 export default function WordManagerMarkdown({
@@ -413,6 +450,7 @@ export default function WordManagerMarkdown({
     onAdd,
     onEdit,
     onDelete,
+    onJumpToSource,
 }: WordManagerProps) {
     const [showAdd, setShowAdd] = useState(false);
     const [editTarget, setEditTarget] = useState<Word | null>(null);
@@ -598,8 +636,8 @@ export default function WordManagerMarkdown({
 
     // 总页数
     const totalPages = Math.ceil(sortedWords.length / itemsPerPage);
-
     const [form, setForm] = useState<Word>({
+        id: '',
         name: '',
         pronunciation: '',
         vocabulary: '',
@@ -633,14 +671,20 @@ export default function WordManagerMarkdown({
             return;
         }
         if (editTarget) {
-            onEdit({ ...form, name: trimmedName }, editTarget);
+            // 编辑时保留原有ID
+            onEdit(
+                { ...form, name: trimmedName, id: editTarget.id },
+                editTarget,
+            );
             setEditTarget(null);
         } else {
-            onAdd({ ...form, name: trimmedName });
+            // 添加新单词时，让后端生成ID
+            onAdd({ ...form, name: trimmedName, id: '' });
         }
 
         // 重置表单和错误消息
         setForm({
+            id: '',
             name: '',
             pronunciation: '',
             vocabulary: '',
@@ -1372,6 +1416,9 @@ export default function WordManagerMarkdown({
                                         onViewDetail={() =>
                                             handleViewWord(word)
                                         }
+                                        onJumpToSource={() =>
+                                            onJumpToSource(word.id)
+                                        }
                                         enableFullHighlight={
                                             enableFullHighlight
                                         }
@@ -1385,6 +1432,9 @@ export default function WordManagerMarkdown({
                                         onDelete={() => onDelete(word.name)}
                                         onViewDetail={() =>
                                             handleViewWord(word)
+                                        }
+                                        onJumpToSource={() =>
+                                            onJumpToSource(word.id)
                                         }
                                         enableFullHighlight={
                                             enableFullHighlight
@@ -1946,6 +1996,7 @@ export default function WordManagerMarkdown({
                                     setEditTarget(null);
                                     setErrorMessage(''); // 清除错误消息
                                     setForm({
+                                        id: '',
                                         name: '',
                                         pronunciation: '',
                                         vocabulary: '',

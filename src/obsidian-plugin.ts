@@ -60,11 +60,92 @@ class WordManagerView extends ItemView {
     root: ReturnType<typeof createRoot> | null = null;
     private wordStorage: MarkdownWordStorage;
     private words: Word[] = [];
-
     constructor(leaf: WorkspaceLeaf) {
         super(leaf);
         // 初始化 Markdown 存储器，指向 vault 根目录的 words.md
         this.wordStorage = new MarkdownWordStorage(this.app.vault);
+    }
+
+    // 生成 UUID
+    private generateId(): string {
+        return (
+            'word-' +
+            Math.random().toString(36).substr(2, 9) +
+            '-' +
+            Date.now().toString(36)
+        );
+    } // 跳转到 words.md 文件中的指定单词位置
+    private async jumpToWordInMarkdown(wordId: string): Promise<void> {
+        try {
+            console.log('🔍 正在跳转到单词ID:', wordId);
+
+            // 获取 words.md 文件
+            const tFile = this.app.vault.getFileByPath('words.md');
+            if (!tFile) {
+                new Notice('❌ 未找到 words.md 文件');
+                return;
+            }
+
+            // 读取文件内容
+            const content = await this.app.vault.read(tFile);
+            const lines = content.split('\n');
+
+            // 查找包含指定ID的行
+            let targetLine = -1;
+            let foundWordName = '';
+
+            for (let i = 0; i < lines.length; i++) {
+                if (
+                    lines[i].includes(`ID: ${wordId}`) ||
+                    lines[i].includes(`id: ${wordId}`)
+                ) {
+                    // 找到单词标题行（通常在ID行前面几行）
+                    for (let j = i; j >= Math.max(0, i - 10); j--) {
+                        if (lines[j].startsWith('#')) {
+                            targetLine = j;
+                            foundWordName = lines[j]
+                                .replace(/^#+\s*/, '')
+                                .trim();
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            if (targetLine >= 0) {
+                // 打开文件并跳转到指定行
+                const leaf = this.app.workspace.getLeaf(false);
+                if (leaf) {
+                    await leaf.openFile(tFile);
+
+                    // 等待一小段时间确保文件已打开
+                    setTimeout(() => {
+                        // 获取编辑器并跳转到行
+                        const view = leaf.view;
+                        if (view && 'editor' in view && view.editor) {
+                            const editor = view.editor as any;
+                            editor.setCursor({ line: targetLine, ch: 0 });
+                            editor.scrollIntoView({
+                                from: { line: targetLine, ch: 0 },
+                                to: { line: targetLine, ch: 0 },
+                            });
+                        }
+                    }, 100);
+
+                    new Notice(
+                        `✅ 已跳转到单词 "${foundWordName}" (行 ${
+                            targetLine + 1
+                        })`,
+                    );
+                }
+            } else {
+                new Notice(`❌ 在 words.md 中未找到ID为 ${wordId} 的单词`);
+            }
+        } catch (error) {
+            console.error('❌ 跳转失败:', error);
+            new Notice('❌ 跳转到markdown失败，请查看控制台');
+        }
     }
 
     getViewType() {
@@ -115,7 +196,6 @@ class WordManagerView extends ItemView {
         this.root = createRoot(this.containerEl);
         this.renderComponent();
     }
-
     private renderComponent() {
         if (this.root) {
             this.root.render(
@@ -124,11 +204,11 @@ class WordManagerView extends ItemView {
                     onAdd: this.handleAddWord.bind(this),
                     onEdit: this.handleEditWord.bind(this),
                     onDelete: this.handleDeleteWord.bind(this),
+                    onJumpToSource: this.jumpToWordInMarkdown.bind(this),
                 }),
             );
         }
     }
-
     private async handleAddWord(word: Word) {
         console.log('➕ 尝试添加新单词:', word.name);
         try {
@@ -141,6 +221,12 @@ class WordManagerView extends ItemView {
                     `❌ 单词 "${word.name}" 已存在！请使用编辑功能或选择不同名称`,
                 );
                 return;
+            }
+
+            // 如果没有ID，生成一个新的
+            if (!word.id) {
+                word.id = this.generateId();
+                console.log('🆔 为新单词生成ID:', word.id);
             }
 
             // 添加到本地数组
