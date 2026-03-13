@@ -604,10 +604,11 @@ export default function WordManagerMarkdown({
     >('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(12);
-
-    // 新增：错误提示状态
+    const [itemsPerPage, setItemsPerPage] = useState(12); // 新增：错误提示状态
     const [errorMessage, setErrorMessage] = useState('');
+
+    // 新增：新建标签输入状态
+    const [newTagInput, setNewTagInput] = useState('');
 
     // 优化的搜索函数 - 提前退出和缓存
     const searchInWord = useCallback((word: Word, term: string): boolean => {
@@ -802,14 +803,12 @@ export default function WordManagerMarkdown({
         } else {
             // 添加新单词时，让后端生成ID
             onAdd({ ...form, name: trimmedName });
-        }
-
-        // 重置表单和错误消息
+        } // 重置表单和错误消息
         setForm(createEmptyWord());
         setErrorMessage('');
+        setNewTagInput('');
         setShowAdd(false);
     }, [editTarget, form, onEdit, onAdd, words]);
-
     const handleEditClick = useCallback((word: Word) => {
         setEditTarget(word);
         setForm({
@@ -817,6 +816,7 @@ export default function WordManagerMarkdown({
             tags: [...word.tags],
             content: JSON.parse(JSON.stringify(word.content)),
         });
+        setNewTagInput(''); // 重置新标签输入
         setShowAdd(true);
     }, []);
 
@@ -2177,46 +2177,321 @@ export default function WordManagerMarkdown({
                                     padding: 5,
                                     width: '200px',
                                 }}
-                            />
+                            />{' '}
                         </div>
                         <div style={{ marginBottom: 10 }}>
                             <label>分类:</label>
-                            <input
-                                type="text"
-                                value={form.category}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        category: e.target.value,
-                                    })
-                                }
+                            <div
                                 style={{
                                     marginLeft: 10,
-                                    padding: 5,
-                                    width: '200px',
-                                }}
-                            />
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                }}>
+                                <select
+                                    value={
+                                        allCategories.includes(form.category)
+                                            ? form.category
+                                            : ''
+                                    }
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            setForm({
+                                                ...form,
+                                                category: e.target.value,
+                                            });
+                                        }
+                                    }}
+                                    style={{
+                                        padding: 5,
+                                        width: '150px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                    }}>
+                                    <option value="">选择已有分类</option>
+                                    {allCategories.map((category) => (
+                                        <option
+                                            key={category}
+                                            value={category}>
+                                            {category}
+                                        </option>
+                                    ))}
+                                </select>
+                                <span
+                                    style={{ color: '#666', fontSize: '12px' }}>
+                                    或
+                                </span>
+                                <input
+                                    type="text"
+                                    placeholder="新建分类"
+                                    value={form.category}
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            category: e.target.value,
+                                        })
+                                    }
+                                    style={{
+                                        padding: 5,
+                                        width: '150px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                    }}
+                                />
+                            </div>
                         </div>
-                        <div style={{ marginBottom: 10 }}>
-                            <label>标签 (逗号分隔):</label>
-                            <input
-                                type="text"
-                                value={form.tags.join(',')}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        tags: e.target.value
-                                            .split(',')
-                                            .map((t) => t.trim())
-                                            .filter((t) => t.length > 0),
-                                    })
-                                }
-                                style={{
-                                    marginLeft: 10,
-                                    padding: 5,
-                                    width: '300px',
-                                }}
-                            />
+                        <div style={{ marginBottom: 20 }}>
+                            <label>标签:</label>
+                            <div style={{ marginLeft: 10 }}>
+                                {/* 已选标签显示区域 */}
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: 6,
+                                        minHeight: 40,
+                                        padding: '8px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '6px',
+                                        backgroundColor: '#f9f9f9',
+                                        marginBottom: 10,
+                                    }}>
+                                    {form.tags.length === 0 ? (
+                                        <span
+                                            style={{
+                                                color: '#999',
+                                                fontSize: '14px',
+                                                padding: '4px',
+                                            }}>
+                                            请选择或添加标签
+                                        </span>
+                                    ) : (
+                                        form.tags.map((tag, index) => (
+                                            <span
+                                                key={index}
+                                                style={{
+                                                    padding: '4px 8px',
+                                                    backgroundColor: '#e3f2fd',
+                                                    color: '#1976d2',
+                                                    borderRadius: 12,
+                                                    fontSize: '12px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                }}>
+                                                {tag}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newTags =
+                                                            form.tags.filter(
+                                                                (_, i) =>
+                                                                    i !== index,
+                                                            );
+                                                        setForm({
+                                                            ...form,
+                                                            tags: newTags,
+                                                        });
+                                                    }}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: '#1976d2',
+                                                        cursor: 'pointer',
+                                                        padding: '0 2px',
+                                                        fontSize: '14px',
+                                                        lineHeight: 1,
+                                                    }}>
+                                                    ×
+                                                </button>
+                                            </span>
+                                        ))
+                                    )}
+                                </div>
+
+                                {/* 已有标签选择区域 */}
+                                {allTags.length > 0 && (
+                                    <div style={{ marginBottom: 12 }}>
+                                        <div
+                                            style={{
+                                                fontSize: '13px',
+                                                fontWeight: 'bold',
+                                                color: '#555',
+                                                marginBottom: 6,
+                                            }}>
+                                            📋 从已有标签中选择:
+                                        </div>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexWrap: 'wrap',
+                                                gap: 4,
+                                                maxHeight: '120px',
+                                                overflowY: 'auto',
+                                                padding: '4px',
+                                            }}>
+                                            {allTags
+                                                .filter(
+                                                    (tag) =>
+                                                        !form.tags.includes(
+                                                            tag,
+                                                        ),
+                                                )
+                                                .map((tag) => (
+                                                    <button
+                                                        key={tag}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (
+                                                                !form.tags.includes(
+                                                                    tag,
+                                                                )
+                                                            ) {
+                                                                setForm({
+                                                                    ...form,
+                                                                    tags: [
+                                                                        ...form.tags,
+                                                                        tag,
+                                                                    ],
+                                                                });
+                                                            }
+                                                        }}
+                                                        style={{
+                                                            padding: '4px 8px',
+                                                            fontSize: '12px',
+                                                            backgroundColor:
+                                                                '#f8f9fa',
+                                                            border: '1px solid #dee2e6',
+                                                            borderRadius:
+                                                                '12px',
+                                                            cursor: 'pointer',
+                                                            transition:
+                                                                'all 0.2s',
+                                                            color: '#495057',
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.backgroundColor =
+                                                                '#28a745';
+                                                            e.currentTarget.style.color =
+                                                                '#ffffff';
+                                                            e.currentTarget.style.borderColor =
+                                                                '#28a745';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.backgroundColor =
+                                                                '#f8f9fa';
+                                                            e.currentTarget.style.color =
+                                                                '#495057';
+                                                            e.currentTarget.style.borderColor =
+                                                                '#dee2e6';
+                                                        }}>
+                                                        + {tag}
+                                                    </button>
+                                                ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 新建标签输入区域 */}
+                                <div>
+                                    <div
+                                        style={{
+                                            fontSize: '13px',
+                                            fontWeight: 'bold',
+                                            color: '#555',
+                                            marginBottom: 6,
+                                        }}>
+                                        ✨ 添加新标签:
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            gap: 8,
+                                            alignItems: 'center',
+                                        }}>
+                                        <input
+                                            type="text"
+                                            placeholder="输入新标签名称"
+                                            value={newTagInput || ''}
+                                            onChange={(e) =>
+                                                setNewTagInput(e.target.value)
+                                            }
+                                            onKeyPress={(e) => {
+                                                if (
+                                                    e.key === 'Enter' &&
+                                                    newTagInput?.trim()
+                                                ) {
+                                                    const trimmedTag =
+                                                        newTagInput.trim();
+                                                    if (
+                                                        !form.tags.includes(
+                                                            trimmedTag,
+                                                        )
+                                                    ) {
+                                                        setForm({
+                                                            ...form,
+                                                            tags: [
+                                                                ...form.tags,
+                                                                trimmedTag,
+                                                            ],
+                                                        });
+                                                        setNewTagInput('');
+                                                    }
+                                                }
+                                            }}
+                                            style={{
+                                                padding: '6px 10px',
+                                                width: '180px',
+                                                border: '1px solid #ccc',
+                                                borderRadius: '4px',
+                                                fontSize: '13px',
+                                            }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (newTagInput?.trim()) {
+                                                    const trimmedTag =
+                                                        newTagInput.trim();
+                                                    if (
+                                                        !form.tags.includes(
+                                                            trimmedTag,
+                                                        )
+                                                    ) {
+                                                        setForm({
+                                                            ...form,
+                                                            tags: [
+                                                                ...form.tags,
+                                                                trimmedTag,
+                                                            ],
+                                                        });
+                                                        setNewTagInput('');
+                                                    }
+                                                }
+                                            }}
+                                            style={{
+                                                padding: '6px 12px',
+                                                fontSize: '12px',
+                                                backgroundColor: '#28a745',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor =
+                                                    '#218838';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor =
+                                                    '#28a745';
+                                            }}>
+                                            添加标签
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div style={{ marginBottom: 10 }}>
                             <label>等级:</label>
@@ -2684,6 +2959,7 @@ export default function WordManagerMarkdown({
                                     setShowAdd(false);
                                     setEditTarget(null);
                                     setErrorMessage(''); // 清除错误消息
+                                    setNewTagInput(''); // 清除新标签输入
                                     setForm(createEmptyWord());
                                 }}>
                                 取消
