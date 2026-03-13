@@ -1998,7 +1998,6 @@ export default function WordManagerMarkdown({
                         <h1 style={{ margin: '0 0 20px 0', color: '#333' }}>
                             {currentWord.name}
                         </h1>
-
                         <div
                             style={{
                                 display: 'grid',
@@ -2033,71 +2032,197 @@ export default function WordManagerMarkdown({
                                     {getWordQueryCount(currentWord)}
                                 </p>
                             </div>
-                        </div>
-
+                        </div>{' '}
                         <div style={{ marginTop: 30 }}>
                             <h3 style={{ marginBottom: 15, color: '#555' }}>
                                 详细内容
                             </h3>
-                            {currentWord.content.map((part, partIndex) => (
-                                <div
-                                    key={partIndex}
-                                    style={{
-                                        marginBottom: 25,
-                                        padding: 15,
-                                        backgroundColor: 'white',
-                                        borderRadius: 6,
-                                        border: '1px solid #ddd',
-                                    }}>
-                                    <h4
-                                        style={{
-                                            margin: '0 0 15px 0',
-                                            color: '#007acc',
-                                        }}>
-                                        {part.type}
-                                    </h4>
-                                    {part.definitions.map((def, defIndex) => (
-                                        <div
-                                            key={defIndex}
-                                            style={{
-                                                marginBottom: 15,
-                                                paddingLeft: 15,
-                                                borderLeft: '3px solid #e0e0e0',
-                                            }}>
+                            {currentWord.content &&
+                            currentWord.content.length > 0 ? (
+                                (() => {
+                                    // 更智能的内容过滤和显示逻辑
+                                    const validParts =
+                                        currentWord.content.filter((part) => {
+                                            // 有词性或有有效定义的部分都保留
+                                            return (
+                                                (part.type &&
+                                                    part.type.trim() !== '') ||
+                                                (part.definitions &&
+                                                    part.definitions.some(
+                                                        (def) =>
+                                                            def.definition &&
+                                                            def.definition.trim() !==
+                                                                '',
+                                                    ))
+                                            );
+                                        });
+
+                                    if (validParts.length === 0) {
+                                        return (
                                             <div
                                                 style={{
-                                                    marginBottom: 8,
-                                                    fontSize: '16px',
+                                                    padding: '20px',
+                                                    textAlign: 'center',
+                                                    color: '#999',
+                                                    fontSize: '14px',
+                                                    backgroundColor: 'white',
+                                                    border: '1px dashed #ccc',
+                                                    borderRadius: '6px',
                                                 }}>
-                                                <strong>定义:</strong>{' '}
-                                                {def.definition}
+                                                📝
+                                                暂无有效内容，点击"编辑单词"按钮添加词性、定义和例句
                                             </div>
-                                            {def.examples.length > 0 && (
-                                                <div>
-                                                    <strong>例句:</strong>
-                                                    {def.examples.map(
-                                                        (example, exIndex) => (
+                                        );
+                                    }
+
+                                    return validParts.map((part, partIndex) => (
+                                        <div
+                                            key={partIndex}
+                                            style={{
+                                                marginBottom: 25,
+                                                padding: 15,
+                                                backgroundColor: 'white',
+                                                borderRadius: 6,
+                                                border: '1px solid #ddd',
+                                            }}>
+                                            <h4
+                                                style={{
+                                                    margin: '0 0 15px 0',
+                                                    color: '#007acc',
+                                                }}>
+                                                {part.type &&
+                                                part.type.trim() !== ''
+                                                    ? part.type
+                                                    : '其他'}
+                                            </h4>
+
+                                            {part.definitions &&
+                                            part.definitions.length > 0 ? (
+                                                part.definitions.map(
+                                                    (def, defIndex) => {
+                                                        const hasDefinition =
+                                                            def.definition &&
+                                                            def.definition.trim() !==
+                                                                '';
+                                                        const validExamples =
+                                                            def.examples
+                                                                ? def.examples.filter(
+                                                                      (ex) =>
+                                                                          ex.text &&
+                                                                          ex.text.trim() !==
+                                                                              '',
+                                                                  )
+                                                                : [];
+
+                                                        // 如果既没有定义也没有例句，跳过
+                                                        if (
+                                                            !hasDefinition &&
+                                                            validExamples.length ===
+                                                                0
+                                                        ) {
+                                                            return null;
+                                                        }
+
+                                                        return (
                                                             <div
-                                                                key={exIndex}
+                                                                key={defIndex}
                                                                 style={{
-                                                                    marginLeft: 20,
-                                                                    marginTop: 5,
-                                                                    fontStyle:
-                                                                        'italic',
-                                                                    color: '#666',
-                                                                    fontSize:
-                                                                        '14px',
+                                                                    marginBottom: 15,
+                                                                    paddingLeft: 15,
+                                                                    borderLeft:
+                                                                        '3px solid #e0e0e0',
                                                                 }}>
-                                                                • {example.text}
+                                                                <div
+                                                                    style={{
+                                                                        marginBottom: 8,
+                                                                        fontSize:
+                                                                            '16px',
+                                                                    }}>
+                                                                    <strong>
+                                                                        定义:
+                                                                    </strong>{' '}
+                                                                    {hasDefinition ? (
+                                                                        def.definition
+                                                                    ) : (
+                                                                        <span
+                                                                            style={{
+                                                                                color: '#999',
+                                                                                fontStyle:
+                                                                                    'italic',
+                                                                            }}>
+                                                                            暂无定义
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+
+                                                                {validExamples.length >
+                                                                    0 && (
+                                                                    <div>
+                                                                        <strong>
+                                                                            例句:
+                                                                        </strong>
+                                                                        {validExamples.map(
+                                                                            (
+                                                                                example,
+                                                                                exIndex,
+                                                                            ) => (
+                                                                                <div
+                                                                                    key={
+                                                                                        exIndex
+                                                                                    }
+                                                                                    style={{
+                                                                                        marginLeft: 20,
+                                                                                        marginTop: 5,
+                                                                                        fontStyle:
+                                                                                            'italic',
+                                                                                        color: '#666',
+                                                                                        fontSize:
+                                                                                            '14px',
+                                                                                    }}>
+                                                                                    •{' '}
+                                                                                    {
+                                                                                        example.text
+                                                                                    }
+                                                                                </div>
+                                                                            ),
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                        ),
-                                                    )}
+                                                        );
+                                                    },
+                                                )
+                                            ) : (
+                                                <div
+                                                    style={{
+                                                        paddingLeft: 15,
+                                                        borderLeft:
+                                                            '3px solid #e0e0e0',
+                                                        color: '#999',
+                                                        fontStyle: 'italic',
+                                                        fontSize: '14px',
+                                                    }}>
+                                                    暂无定义和例句
                                                 </div>
                                             )}
                                         </div>
-                                    ))}
+                                    ));
+                                })()
+                            ) : (
+                                <div
+                                    style={{
+                                        padding: '20px',
+                                        textAlign: 'center',
+                                        color: '#999',
+                                        fontSize: '14px',
+                                        backgroundColor: 'white',
+                                        border: '1px dashed #ccc',
+                                        borderRadius: '6px',
+                                    }}>
+                                    📝
+                                    暂无详细内容，点击"编辑单词"按钮添加词性、定义和例句
                                 </div>
-                            ))}{' '}
+                            )}{' '}
                         </div>
                     </div>
                 </>
