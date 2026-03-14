@@ -107,6 +107,65 @@
     color: var(--text-accent) !important;
 }
 
+/* ============================================================
+   Language Assistant — force override Obsidian theme colors
+   ============================================================ */
+
+/* --- Modal selects & inputs --- */
+.la-modal-select,
+select.la-modal-select,
+.la-modal-input,
+input.la-modal-input {
+    color: #1c1c1e !important;
+    background-color: #f9f9f9 !important;
+    border: 1px solid #e5e5ea !important;
+    border-radius: 10px !important;
+    font-size: 15px !important;
+    outline: none !important;
+    box-shadow: none !important;
+    /* Force WebKit / Obsidian dark-mode fill color */
+    -webkit-text-fill-color: #1c1c1e !important;
+    /* Tell the browser to render this element in light mode */
+    color-scheme: light !important;
+}
+
+.la-modal-select option,
+select.la-modal-select option {
+    color: #1c1c1e !important;
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #1c1c1e !important;
+}
+
+.la-modal-select:focus,
+select.la-modal-select:focus,
+.la-modal-input:focus,
+input.la-modal-input:focus {
+    border-color: #007aff !important;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15) !important;
+}
+
+/* --- Sidebar navigation items --- */
+.la-nav-item {
+    color: #1c1c1e !important;
+    -webkit-text-fill-color: #1c1c1e !important;
+}
+
+.la-nav-item.la-nav-active {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* description sub-label inside nav items */
+.la-nav-item .la-nav-desc {
+    color: #8e8e93 !important;
+    -webkit-text-fill-color: #8e8e93 !important;
+}
+
+.la-nav-item.la-nav-active .la-nav-desc {
+    color: rgba(255, 255, 255, 0.8) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.8) !important;
+}
+
 /* Scrollbar styling for suggestion container */
 .suggestion-container::-webkit-scrollbar {
     width: 6px;

@@ -1,6 +1,33 @@
-// @ts-ignore
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { Word, WordHelper } from './MarkdownWordStorage';
+import {
+    MoreHorizontal,
+    Plus,
+    Search,
+    Trash2,
+    Edit2,
+    Play,
+    ChevronLeft,
+    ChevronRight,
+    Activity,
+    BookOpen,
+    Filter,
+    Grid,
+    List,
+    ChevronUp,
+    ChevronDown,
+    Tag,
+    Layers,
+    FileText,
+    X,
+    Check,
+    AlertCircle,
+    Sparkles,
+    Hash,
+    BookMarked,
+    AlignLeft,
+    MessageSquare,
+} from 'lucide-react';
 
 // 使用 WordHelper 创建空白单词
 const createEmptyWord = (): Word => WordHelper.createEmpty();
@@ -154,7 +181,7 @@ const WordCard: React.FC<{
                                 e.currentTarget.style.backgroundColor =
                                     '#F2F2F7';
                             }}>
-                            ✏️ 编辑
+                            <Edit2 size={16} /> 编辑
                         </button>
                         <button
                             onClick={(e) => {
@@ -185,7 +212,7 @@ const WordCard: React.FC<{
                                     '#FFEBEE';
                                 e.currentTarget.style.color = '#FF3B30';
                             }}>
-                            🗑️ 删除
+                            <Trash2 size={16} /> 删除
                         </button>
                         <button
                             onClick={(e) => {
@@ -216,7 +243,7 @@ const WordCard: React.FC<{
                                     '#E3F2FD';
                                 e.currentTarget.style.color = '#007AFF';
                             }}>
-                            🔗 跳转
+                            <Play size={16} /> 跳转
                         </button>
                     </div>
                 </div>
@@ -290,7 +317,7 @@ const WordCard: React.FC<{
                                 lineHeight: '1.5',
                             }}>
                             <strong style={{ color: '#FF9500' }}>
-                                💡 备注:
+                                <Activity size={16} /> 备注:
                             </strong>{' '}
                             {enableFullHighlight ? (
                                 <HighlightText
@@ -435,6 +462,7 @@ const WordListItem: React.FC<{
                 </div>
                 {/* 标签 */}
                 <div style={{ flex: '1', fontSize: '15px' }}>
+                    {' '}
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {WordHelper.getTags(word)
                             .slice(0, 3)
@@ -544,7 +572,7 @@ const WordListItem: React.FC<{
                         onMouseLeave={(e) => {
                             e.currentTarget.style.backgroundColor = '#F2F2F7';
                         }}>
-                        ✏️
+                        <Edit2 size={16} />
                     </button>
                     <button
                         onClick={(e) => {
@@ -573,7 +601,7 @@ const WordListItem: React.FC<{
                             e.currentTarget.style.backgroundColor = '#FFEBEE';
                             e.currentTarget.style.color = '#FF3B30';
                         }}>
-                        🗑️
+                        <Trash2 size={16} />
                     </button>
                     <button
                         onClick={(e) => {
@@ -602,7 +630,7 @@ const WordListItem: React.FC<{
                             e.currentTarget.style.backgroundColor = '#E3F2FD';
                             e.currentTarget.style.color = '#007AFF';
                         }}>
-                        🔗
+                        <Play size={16} />
                     </button>
                 </div>
             </div>
@@ -1252,7 +1280,7 @@ export default function WordManagerMarkdown({
                                 alignItems: 'center',
                                 gap: '12px',
                             }}>
-                            📚 单词管理
+                            <BookOpen size={32} /> 单词管理
                         </h1>
                         <p
                             style={{
@@ -1276,68 +1304,69 @@ export default function WordManagerMarkdown({
                             fontFamily:
                                 '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                         }}>
+                        {' '}
                         <div
                             style={{
                                 display: 'flex',
                                 gap: '12px',
                                 alignItems: 'center',
                                 flexWrap: 'wrap',
-                                position: 'relative',
                                 zIndex: 1,
                             }}>
-                            {/* iOS 风格搜索框 */}
-                            <input
-                                ref={searchInputRef}
-                                type="text"
-                                placeholder="🔍 搜索单词、分类、标签..."
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    console.log(
-                                        '🔍 搜索输入变化:',
-                                        e.target.value,
-                                    );
-                                    setSearchTerm(e.target.value);
-                                }}
+                            {/* iOS 风格搜索框 — 图标内嵌 */}
+                            <div
                                 style={{
                                     flex: 1,
-                                    padding: '12px 16px',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    fontSize: '15px',
-                                    backgroundColor: '#F2F2F7',
-                                    transition:
-                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                    outline: 'none',
-                                    pointerEvents: 'auto',
-                                    userSelect: 'text',
-                                    zIndex: 1,
                                     position: 'relative',
-                                    color: '#1C1C1E',
-                                    fontFamily:
-                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                                }}
-                                onFocus={(e) => {
-                                    console.log('🎯 搜索框获得焦点');
-                                    e.currentTarget.style.backgroundColor =
-                                        '#E5E5EA';
-                                }}
-                                onBlur={(e) => {
-                                    console.log('😔 搜索框失去焦点');
-                                    e.currentTarget.style.backgroundColor =
-                                        '#F2F2F7';
-                                }}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (searchInputRef.current) {
-                                        searchInputRef.current.focus();
-                                    }
-                                }}
-                                onMouseDown={(e) => {
-                                    e.stopPropagation();
-                                }}
-                                tabIndex={0}
-                            />
-
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    minWidth: '200px',
+                                }}>
+                                <Search
+                                    size={16}
+                                    color="#8E8E93"
+                                    style={{
+                                        position: 'absolute',
+                                        left: '14px',
+                                        pointerEvents: 'none',
+                                        flexShrink: 0,
+                                    }}
+                                />
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    placeholder="搜索单词、分类、标签..."
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px 16px 12px 40px',
+                                        border: 'none',
+                                        borderRadius: '12px',
+                                        fontSize: '15px',
+                                        backgroundColor: '#F2F2F7',
+                                        transition: 'background-color 0.2s',
+                                        outline: 'none',
+                                        color: '#1C1C1E',
+                                        WebkitTextFillColor: '#1C1C1E',
+                                        fontFamily:
+                                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                    }}
+                                    onFocus={(e) => {
+                                        e.currentTarget.style.backgroundColor =
+                                            '#E5E5EA';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.currentTarget.style.backgroundColor =
+                                            '#F2F2F7';
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    tabIndex={0}
+                                />
+                            </div>
                             {searchTerm && (
                                 <label
                                     style={{
@@ -1405,7 +1434,7 @@ export default function WordManagerMarkdown({
                                     e.currentTarget.style.boxShadow =
                                         '0 2px 8px rgba(0, 122, 255, 0.25)';
                                 }}>
-                                ➕ 添加单词
+                                <Plus size={16} /> 添加单词
                             </button>
 
                             {/* iOS 风格筛选按钮 */}
@@ -1442,7 +1471,7 @@ export default function WordManagerMarkdown({
                                             '#F2F2F7';
                                     }
                                 }}>
-                                🔍 筛选
+                                <Filter size={16} /> 筛选
                                 {selectedTags.length +
                                     selectedCategories.length +
                                     selectedLevels.length +
@@ -1534,7 +1563,7 @@ export default function WordManagerMarkdown({
                                             fontFamily:
                                                 '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                         }}>
-                                        📊 网格
+                                        <Grid size={16} /> 网格
                                     </button>
                                     <button
                                         onClick={() => setDisplayMode('list')}
@@ -1558,7 +1587,7 @@ export default function WordManagerMarkdown({
                                             fontFamily:
                                                 '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                         }}>
-                                        📋 列表
+                                        <List size={16} /> 列表
                                     </button>
                                 </div>
                             </div>
@@ -1629,7 +1658,11 @@ export default function WordManagerMarkdown({
                                         e.currentTarget.style.backgroundColor =
                                             '#F2F2F7';
                                     }}>
-                                    {sortOrder === 'asc' ? '↑' : '↓'}
+                                    {sortOrder === 'asc' ? (
+                                        <ChevronUp size={16} />
+                                    ) : (
+                                        <ChevronDown size={16} />
+                                    )}
                                 </button>
                             </div>
 
@@ -2143,11 +2176,18 @@ export default function WordManagerMarkdown({
                                     padding: '10px 20px',
                                     fontSize: '15px',
                                     fontWeight: '600',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 6,
                                     backgroundColor:
                                         currentPage === 1
                                             ? '#F2F2F7'
                                             : '#007AFF',
                                     color:
+                                        currentPage === 1
+                                            ? '#C7C7CC'
+                                            : '#ffffff',
+                                    WebkitTextFillColor:
                                         currentPage === 1
                                             ? '#C7C7CC'
                                             : '#ffffff',
@@ -2183,10 +2223,14 @@ export default function WordManagerMarkdown({
                                             '0 2px 8px rgba(0, 122, 255, 0.25)';
                                     }
                                 }}>
-                                ← 上一页
-                            </button>
-
-                            <div style={{ display: 'flex', gap: 5 }}>
+                                <ChevronLeft size={16} /> 上一页
+                            </button>{' '}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    gap: 6,
+                                    alignItems: 'center',
+                                }}>
                                 {[...Array(totalPages)].map((_, index) => {
                                     const page = index + 1;
                                     const isCurrentPage = page === currentPage;
@@ -2204,10 +2248,14 @@ export default function WordManagerMarkdown({
                                                 <span
                                                     key={page}
                                                     style={{
-                                                        padding: '8px 4px',
-                                                        color: '#6c757d',
+                                                        padding: '0 4px',
+                                                        fontSize: '15px',
+                                                        color: '#C7C7CC',
+                                                        fontWeight: '600',
+                                                        lineHeight: '40px',
+                                                        userSelect: 'none',
                                                     }}>
-                                                    ...
+                                                    ···
                                                 </span>
                                             );
                                         }
@@ -2219,25 +2267,41 @@ export default function WordManagerMarkdown({
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
                                             style={{
-                                                padding: '8px 12px',
-                                                fontSize: '14px',
+                                                width: '40px',
+                                                height: '40px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '15px',
+                                                fontWeight: isCurrentPage
+                                                    ? '700'
+                                                    : '500',
                                                 backgroundColor: isCurrentPage
-                                                    ? '#007acc'
-                                                    : '#fff',
+                                                    ? '#007AFF'
+                                                    : '#F2F2F7',
                                                 color: isCurrentPage
-                                                    ? '#fff'
-                                                    : '#495057',
-                                                border: '1px solid #dee2e6',
-                                                borderRadius: '4px',
+                                                    ? '#ffffff'
+                                                    : '#1C1C1E',
+                                                WebkitTextFillColor:
+                                                    isCurrentPage
+                                                        ? '#ffffff'
+                                                        : '#1C1C1E',
+                                                border: 'none',
+                                                borderRadius: '12px',
                                                 cursor: 'pointer',
-                                                minWidth: '40px',
+                                                boxShadow: isCurrentPage
+                                                    ? '0 2px 8px rgba(0, 122, 255, 0.30)'
+                                                    : 'none',
+                                                transition:
+                                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                                fontFamily:
+                                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                             }}>
                                             {page}
                                         </button>
                                     );
                                 })}
                             </div>
-
                             <button
                                 onClick={() =>
                                     setCurrentPage(
@@ -2246,24 +2310,57 @@ export default function WordManagerMarkdown({
                                 }
                                 disabled={currentPage === totalPages}
                                 style={{
-                                    padding: '8px 12px',
-                                    fontSize: '14px',
+                                    padding: '10px 20px',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
                                     backgroundColor:
                                         currentPage === totalPages
-                                            ? '#f8f9fa'
-                                            : '#fff',
+                                            ? '#F2F2F7'
+                                            : '#007AFF',
                                     color:
                                         currentPage === totalPages
-                                            ? '#6c757d'
-                                            : '#495057',
-                                    border: '1px solid #dee2e6',
-                                    borderRadius: '4px',
+                                            ? '#C7C7CC'
+                                            : '#ffffff',
+                                    WebkitTextFillColor:
+                                        currentPage === totalPages
+                                            ? '#C7C7CC'
+                                            : '#ffffff',
+                                    border: 'none',
+                                    borderRadius: '12px',
                                     cursor:
                                         currentPage === totalPages
                                             ? 'not-allowed'
                                             : 'pointer',
+                                    transition:
+                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                    boxShadow:
+                                        currentPage === totalPages
+                                            ? 'none'
+                                            : '0 2px 8px rgba(0, 122, 255, 0.25)',
+                                    fontFamily:
+                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                    letterSpacing: '-0.2px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (currentPage !== totalPages) {
+                                        e.currentTarget.style.transform =
+                                            'scale(0.98)';
+                                        e.currentTarget.style.boxShadow =
+                                            '0 4px 12px rgba(0, 122, 255, 0.35)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (currentPage !== totalPages) {
+                                        e.currentTarget.style.transform =
+                                            'scale(1)';
+                                        e.currentTarget.style.boxShadow =
+                                            '0 2px 8px rgba(0, 122, 255, 0.25)';
+                                    }
                                 }}>
-                                下一页 →
+                                下一页 <ChevronRight size={16} />
                             </button>
                         </div>
                     )}
@@ -2282,7 +2379,7 @@ export default function WordManagerMarkdown({
                                 cursor: 'pointer',
                                 marginRight: 10,
                             }}>
-                            ← 返回列表
+                            <ChevronLeft size={16} /> 返回列表
                         </button>
                         <button
                             onClick={() => handleEditClick(currentWord)}
@@ -2294,7 +2391,7 @@ export default function WordManagerMarkdown({
                                 borderRadius: '6px',
                                 cursor: 'pointer',
                             }}>
-                            编辑单词
+                            <Edit2 size={16} /> 编辑单词
                         </button>
                     </div>
 
@@ -2395,7 +2492,7 @@ export default function WordManagerMarkdown({
                                                     border: '1px dashed #ccc',
                                                     borderRadius: '6px',
                                                 }}>
-                                                📝
+                                                <MoreHorizontal size={48} />
                                                 暂无有效内容，点击"编辑单词"按钮添加词性、定义和例句
                                             </div>
                                         );
@@ -2545,14 +2642,14 @@ export default function WordManagerMarkdown({
                                         border: '1px dashed #ccc',
                                         borderRadius: '6px',
                                     }}>
-                                    📝
+                                    <MoreHorizontal size={48} />
                                     暂无详细内容，点击"编辑单词"按钮添加词性、定义和例句
                                 </div>
                             )}{' '}
                         </div>
                     </div>
                 </>
-            )}
+            )}{' '}
             {showAdd && (
                 <div
                     style={{
@@ -2561,164 +2658,580 @@ export default function WordManagerMarkdown({
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        backgroundColor: 'rgba(0,0,0,0.45)',
+                        backdropFilter: 'blur(4px)',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
                         zIndex: 1000,
+                        padding: '20px',
                     }}>
                     <div
                         style={{
-                            backgroundColor: 'white',
-                            padding: 20,
-                            borderRadius: 8,
-                            maxWidth: '600px',
-                            maxHeight: '80vh',
+                            backgroundColor: '#F2F2F7',
+                            borderRadius: '20px',
+                            maxWidth: '640px',
+                            maxHeight: '88vh',
                             overflow: 'auto',
-                            width: '90%',
+                            width: '100%',
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                         }}>
-                        <h3>{editTarget ? '编辑单词' : '添加单词'}</h3>{' '}
-                        <div style={{ marginBottom: 10 }}>
-                            <label>单词名称:</label>
-                            <input
-                                type="text"
-                                value={form.name}
-                                onChange={(e) => {
-                                    setForm({ ...form, name: e.target.value });
-                                    // 输入时清除错误消息
-                                    if (errorMessage) {
-                                        setErrorMessage('');
-                                    }
-                                }}
-                                style={{
-                                    marginLeft: 10,
-                                    padding: 5,
-                                    width: '200px',
-                                    border: errorMessage
-                                        ? '2px solid #ff4444'
-                                        : '1px solid #ccc',
-                                }}
-                            />
-                            {errorMessage && (
-                                <div
-                                    style={{
-                                        color: '#ff4444',
-                                        fontSize: '12px',
-                                        marginTop: 5,
-                                        marginLeft: 10,
-                                        fontWeight: 'bold',
-                                    }}>
-                                    ⚠️ {errorMessage}
-                                </div>
-                            )}
-                        </div>
-                        <div style={{ marginBottom: 10 }}>
-                            <label>发音:</label>
-                            <input
-                                type="text"
-                                value={form.pronunciation}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        pronunciation: e.target.value,
-                                    })
-                                }
-                                style={{
-                                    marginLeft: 10,
-                                    padding: 5,
-                                    width: '200px',
-                                }}
-                            />{' '}
-                        </div>
-                        <div style={{ marginBottom: 10 }}>
-                            <label>分类:</label>
+                        {/* 弹窗标题栏 */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '20px 24px 16px',
+                                borderBottom: '1px solid rgba(0,0,0,0.08)',
+                                backgroundColor: 'white',
+                                borderRadius: '20px 20px 0 0',
+                                position: 'sticky',
+                                top: 0,
+                                zIndex: 10,
+                            }}>
                             <div
                                 style={{
-                                    marginLeft: 10,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 8,
+                                    gap: '10px',
                                 }}>
-                                <select
-                                    value={
-                                        allCategories.includes(
-                                            WordHelper.getCategory(form),
-                                        )
-                                            ? WordHelper.getCategory(form)
-                                            : ''
-                                    }
-                                    onChange={(e) => {
-                                        if (e.target.value) {
-                                            const newForm = { ...form };
-                                            WordHelper.setCategory(
-                                                newForm,
-                                                e.target.value,
-                                            );
-                                            setForm(newForm);
-                                        }
-                                    }}
+                                <div
                                     style={{
-                                        padding: 5,
-                                        width: '150px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: '10px',
+                                        background: editTarget
+                                            ? 'linear-gradient(135deg, #FF9500 0%, #FF6B00 100%)'
+                                            : 'linear-gradient(135deg, #34C759 0%, #30A14E 100%)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
                                     }}>
-                                    <option value="">选择已有分类</option>
-                                    {allCategories.map((category) => (
-                                        <option
-                                            key={category}
-                                            value={category}>
-                                            {category}
-                                        </option>
-                                    ))}
-                                </select>
-                                <span
-                                    style={{ color: '#666', fontSize: '12px' }}>
-                                    或
-                                </span>
-                                <input
-                                    type="text"
-                                    placeholder="新建分类"
-                                    value={WordHelper.getCategory(form)}
-                                    onChange={(e) => {
-                                        const newForm = { ...form };
-                                        WordHelper.setCategory(
-                                            newForm,
-                                            e.target.value,
-                                        );
-                                        setForm(newForm);
-                                    }}
-                                    style={{
-                                        padding: 5,
-                                        width: '150px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                    }}
-                                />
+                                    {editTarget ? (
+                                        <Edit2
+                                            size={18}
+                                            color="white"
+                                        />
+                                    ) : (
+                                        <Plus
+                                            size={18}
+                                            color="white"
+                                        />
+                                    )}
+                                </div>
+                                <div>
+                                    <div
+                                        style={{
+                                            fontSize: '18px',
+                                            fontWeight: '700',
+                                            color: '#1C1C1E',
+                                        }}>
+                                        {editTarget ? '编辑单词' : '添加单词'}
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontSize: '12px',
+                                            color: '#8E8E93',
+                                        }}>
+                                        {editTarget
+                                            ? '修改单词信息'
+                                            : '填写新单词的详细信息'}
+                                    </div>
+                                </div>
                             </div>
+                            <button
+                                onClick={() => {
+                                    setShowAdd(false);
+                                    setEditTarget(null);
+                                    setErrorMessage('');
+                                    setNewTagInput('');
+                                    setForm(createEmptyWord());
+                                }}
+                                style={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '50%',
+                                    backgroundColor: '#E5E5EA',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#8E8E93',
+                                }}>
+                                <X size={16} />
+                            </button>
                         </div>
-                        <div style={{ marginBottom: 20 }}>
-                            <label>标签:</label>
-                            <div style={{ marginLeft: 10 }}>
-                                {/* 已选标签显示区域 */}
+
+                        {/* 表单内容 */}
+                        <div style={{ padding: '16px 20px 24px' }}>
+                            {/* 基本信息卡片 */}
+                            <div
+                                style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '14px',
+                                    padding: '4px 0',
+                                    marginBottom: '16px',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                }}>
+                                {' '}
+                                {/* 单词名称 */}
+                                <div
+                                    style={{
+                                        padding: '14px 16px',
+                                        borderBottom: '1px solid #F2F2F7',
+                                    }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                        }}>
+                                        <BookMarked
+                                            size={16}
+                                            color="#007AFF"
+                                            style={{ flexShrink: 0 }}
+                                        />
+                                        <label
+                                            style={{
+                                                fontSize: '15px',
+                                                fontWeight: '500',
+                                                color: '#1C1C1E',
+                                                minWidth: 70,
+                                            }}>
+                                            单词名称
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={form.name}
+                                            onChange={(e) => {
+                                                setForm({
+                                                    ...form,
+                                                    name: e.target.value,
+                                                });
+                                                if (errorMessage)
+                                                    setErrorMessage('');
+                                            }}
+                                            placeholder="输入单词..."
+                                            style={{
+                                                flex: 1,
+                                                border: 'none',
+                                                outline: 'none',
+                                                fontSize: '15px',
+                                                color: '#1C1C1E',
+                                                backgroundColor: 'transparent',
+                                                textAlign: 'right',
+                                                minHeight: '24px',
+                                            }}
+                                        />
+                                    </div>
+                                    {errorMessage && (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                marginTop: '8px',
+                                                padding: '8px 12px',
+                                                backgroundColor: '#FFF2F2',
+                                                borderRadius: '8px',
+                                                color: '#FF3B30',
+                                                fontSize: '13px',
+                                            }}>
+                                            <AlertCircle size={14} />
+                                            {errorMessage}
+                                        </div>
+                                    )}
+                                </div>{' '}
+                                {/* 发音 */}
+                                <div
+                                    style={{
+                                        padding: '14px 16px',
+                                        borderBottom: '1px solid #F2F2F7',
+                                    }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                        }}>
+                                        <Hash
+                                            size={16}
+                                            color="#007AFF"
+                                            style={{ flexShrink: 0 }}
+                                        />
+                                        <label
+                                            style={{
+                                                fontSize: '15px',
+                                                fontWeight: '500',
+                                                color: '#1C1C1E',
+                                                minWidth: 70,
+                                            }}>
+                                            发音
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={form.pronunciation}
+                                            onChange={(e) =>
+                                                setForm({
+                                                    ...form,
+                                                    pronunciation:
+                                                        e.target.value,
+                                                })
+                                            }
+                                            placeholder="如: /ˈwɜːrd/"
+                                            style={{
+                                                flex: 1,
+                                                border: 'none',
+                                                outline: 'none',
+                                                fontSize: '15px',
+                                                color: '#1C1C1E',
+                                                backgroundColor: 'transparent',
+                                                textAlign: 'right',
+                                                minHeight: '24px',
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                {/* 分类 */}
+                                <div
+                                    style={{
+                                        padding: '14px 16px',
+                                        borderBottom: '1px solid #F2F2F7',
+                                    }}>
+                                    {/* 标题行 */}
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            marginBottom: '10px',
+                                        }}>
+                                        <Layers
+                                            size={16}
+                                            color="#007AFF"
+                                            style={{ flexShrink: 0 }}
+                                        />
+                                        <label
+                                            style={{
+                                                fontSize: '15px',
+                                                fontWeight: '500',
+                                                color: '#1C1C1E',
+                                            }}>
+                                            分类
+                                        </label>
+                                    </div>{' '}
+                                    {/* 已有分类 pill 选择器 */}
+                                    {allCategories.length > 0 && (
+                                        <div
+                                            style={{
+                                                paddingLeft: '26px',
+                                                marginBottom: '10px',
+                                            }}>
+                                            <div
+                                                style={{
+                                                    fontSize: '12px',
+                                                    color: '#8E8E93',
+                                                    marginBottom: '6px',
+                                                }}>
+                                                选择已有分类
+                                            </div>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    flexWrap: 'wrap',
+                                                    gap: '6px',
+                                                }}>
+                                                {allCategories.map(
+                                                    (category) => {
+                                                        const isSelected =
+                                                            WordHelper.getCategory(
+                                                                form,
+                                                            ) === category;
+                                                        return (
+                                                            <button
+                                                                key={category}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const newForm =
+                                                                        {
+                                                                            ...form,
+                                                                        };
+                                                                    WordHelper.setCategory(
+                                                                        newForm,
+                                                                        isSelected
+                                                                            ? ''
+                                                                            : category,
+                                                                    );
+                                                                    setForm(
+                                                                        newForm,
+                                                                    );
+                                                                }}
+                                                                style={{
+                                                                    padding:
+                                                                        '5px 14px',
+                                                                    fontSize:
+                                                                        '13px',
+                                                                    fontWeight:
+                                                                        isSelected
+                                                                            ? '600'
+                                                                            : '400',
+                                                                    backgroundColor:
+                                                                        isSelected
+                                                                            ? '#007AFF'
+                                                                            : '#F2F2F7',
+                                                                    color: isSelected
+                                                                        ? '#ffffff'
+                                                                        : '#1C1C1E',
+                                                                    border: isSelected
+                                                                        ? '1.5px solid #007AFF'
+                                                                        : '1.5px solid #E5E5EA',
+                                                                    borderRadius:
+                                                                        '20px',
+                                                                    cursor: 'pointer',
+                                                                    transition:
+                                                                        'all 0.15s',
+                                                                    display:
+                                                                        'flex',
+                                                                    alignItems:
+                                                                        'center',
+                                                                    gap: '4px',
+                                                                }}>
+                                                                {isSelected && (
+                                                                    <Check
+                                                                        size={
+                                                                            11
+                                                                        }
+                                                                    />
+                                                                )}
+                                                                {category}
+                                                            </button>
+                                                        );
+                                                    },
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {/* 新建分类输入框 */}
+                                    <div style={{ paddingLeft: '26px' }}>
+                                        <div
+                                            style={{
+                                                fontSize: '12px',
+                                                color: '#8E8E93',
+                                                marginBottom: '5px',
+                                            }}>
+                                            {allCategories.length > 0
+                                                ? '或输入新分类名称'
+                                                : '输入分类名称'}
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="新建分类名称..."
+                                            value={
+                                                allCategories.includes(
+                                                    WordHelper.getCategory(
+                                                        form,
+                                                    ),
+                                                )
+                                                    ? ''
+                                                    : WordHelper.getCategory(
+                                                          form,
+                                                      )
+                                            }
+                                            onChange={(e) => {
+                                                const newForm = { ...form };
+                                                WordHelper.setCategory(
+                                                    newForm,
+                                                    e.target.value,
+                                                );
+                                                setForm(newForm);
+                                            }}
+                                            style={{
+                                                width: '100%',
+                                                padding: '9px 12px',
+                                                fontSize: '15px',
+                                                border: '1.5px solid #E5E5EA',
+                                                borderRadius: '10px',
+                                                backgroundColor: '#ffffff',
+                                                color: '#1C1C1E',
+                                                outline: 'none',
+                                                boxSizing: 'border-box',
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                {/* 等级 */}
+                                <div style={{ padding: '14px 16px' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                        }}>
+                                        <Activity
+                                            size={16}
+                                            color="#007AFF"
+                                            style={{ flexShrink: 0 }}
+                                        />{' '}
+                                        <label
+                                            style={{
+                                                fontSize: '15px',
+                                                fontWeight: '500',
+                                                color: '#1C1C1E',
+                                                minWidth: 70,
+                                            }}>
+                                            等级
+                                        </label>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                gap: '6px',
+                                                flex: 1,
+                                            }}>
+                                            {['初级', '中级', '高级'].map(
+                                                (level) => {
+                                                    const isSelected =
+                                                        WordHelper.getLevel(
+                                                            form,
+                                                        ) === level;
+                                                    const colors: Record<
+                                                        string,
+                                                        {
+                                                            bg: string;
+                                                            border: string;
+                                                            text: string;
+                                                        }
+                                                    > = {
+                                                        初级: {
+                                                            bg: '#34C759',
+                                                            border: '#34C759',
+                                                            text: '#fff',
+                                                        },
+                                                        中级: {
+                                                            bg: '#FF9500',
+                                                            border: '#FF9500',
+                                                            text: '#fff',
+                                                        },
+                                                        高级: {
+                                                            bg: '#FF3B30',
+                                                            border: '#FF3B30',
+                                                            text: '#fff',
+                                                        },
+                                                    };
+                                                    return (
+                                                        <button
+                                                            key={level}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const newForm =
+                                                                    { ...form };
+                                                                WordHelper.setLevel(
+                                                                    newForm,
+                                                                    isSelected
+                                                                        ? ''
+                                                                        : level,
+                                                                );
+                                                                setForm(
+                                                                    newForm,
+                                                                );
+                                                            }}
+                                                            style={{
+                                                                flex: 1,
+                                                                padding:
+                                                                    '8px 0',
+                                                                fontSize:
+                                                                    '14px',
+                                                                fontWeight:
+                                                                    '600',
+                                                                backgroundColor:
+                                                                    isSelected
+                                                                        ? colors[
+                                                                              level
+                                                                          ].bg
+                                                                        : '#F2F2F7',
+                                                                color: isSelected
+                                                                    ? colors[
+                                                                          level
+                                                                      ].text
+                                                                    : '#8E8E93',
+                                                                border: `1.5px solid ${
+                                                                    isSelected
+                                                                        ? colors[
+                                                                              level
+                                                                          ]
+                                                                              .border
+                                                                        : '#E5E5EA'
+                                                                }`,
+                                                                borderRadius:
+                                                                    '10px',
+                                                                cursor: 'pointer',
+                                                                transition:
+                                                                    'all 0.15s',
+                                                                textAlign:
+                                                                    'center',
+                                                            }}>
+                                                            {level}
+                                                        </button>
+                                                    );
+                                                },
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 标签卡片 */}
+                            <div
+                                style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '14px',
+                                    padding: '16px',
+                                    marginBottom: '16px',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        marginBottom: '12px',
+                                    }}>
+                                    <Tag
+                                        size={16}
+                                        color="#007AFF"
+                                    />
+                                    <span
+                                        style={{
+                                            fontSize: '15px',
+                                            fontWeight: '600',
+                                            color: '#1C1C1E',
+                                        }}>
+                                        标签
+                                    </span>
+                                </div>
+
+                                {/* 已选标签 */}
                                 <div
                                     style={{
                                         display: 'flex',
                                         flexWrap: 'wrap',
-                                        gap: 6,
-                                        minHeight: 40,
-                                        padding: '8px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '6px',
-                                        backgroundColor: '#f9f9f9',
-                                        marginBottom: 10,
+                                        gap: '6px',
+                                        minHeight: '38px',
+                                        padding: '8px 10px',
+                                        border: '1.5px dashed #C7C7CC',
+                                        borderRadius: '10px',
+                                        backgroundColor: '#F9F9F9',
+                                        marginBottom: '12px',
                                     }}>
                                     {WordHelper.getTags(form).length === 0 ? (
                                         <span
                                             style={{
-                                                color: '#999',
+                                                color: '#C7C7CC',
                                                 fontSize: '14px',
-                                                padding: '4px',
+                                                lineHeight: '22px',
                                             }}>
                                             请选择或添加标签
                                         </span>
@@ -2728,15 +3241,17 @@ export default function WordManagerMarkdown({
                                                 <span
                                                     key={index}
                                                     style={{
-                                                        padding: '4px 8px',
-                                                        backgroundColor:
-                                                            '#e3f2fd',
-                                                        color: '#1976d2',
-                                                        borderRadius: 12,
-                                                        fontSize: '12px',
+                                                        padding:
+                                                            '3px 10px 3px 10px',
+                                                        background:
+                                                            'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+                                                        color: 'white',
+                                                        borderRadius: '20px',
+                                                        fontSize: '13px',
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        gap: 4,
+                                                        gap: '5px',
+                                                        fontWeight: '500',
                                                     }}>
                                                     {tag}
                                                     <button
@@ -2760,15 +3275,23 @@ export default function WordManagerMarkdown({
                                                             setForm(newForm);
                                                         }}
                                                         style={{
-                                                            background: 'none',
+                                                            background:
+                                                                'rgba(255,255,255,0.25)',
                                                             border: 'none',
-                                                            color: '#1976d2',
+                                                            color: 'white',
                                                             cursor: 'pointer',
-                                                            padding: '0 2px',
-                                                            fontSize: '14px',
+                                                            padding: '0',
+                                                            width: '16px',
+                                                            height: '16px',
+                                                            borderRadius: '50%',
+                                                            display: 'flex',
+                                                            alignItems:
+                                                                'center',
+                                                            justifyContent:
+                                                                'center',
                                                             lineHeight: 1,
                                                         }}>
-                                                        ×
+                                                        <X size={10} />
                                                     </button>
                                                 </span>
                                             ),
@@ -2776,26 +3299,33 @@ export default function WordManagerMarkdown({
                                     )}
                                 </div>
 
-                                {/* 已有标签选择区域 */}
+                                {/* 已有标签选择 */}
                                 {allTags.length > 0 && (
-                                    <div style={{ marginBottom: 12 }}>
+                                    <div style={{ marginBottom: '12px' }}>
                                         <div
                                             style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
                                                 fontSize: '13px',
-                                                fontWeight: 'bold',
-                                                color: '#555',
-                                                marginBottom: 6,
+                                                fontWeight: '600',
+                                                color: '#8E8E93',
+                                                marginBottom: '8px',
                                             }}>
-                                            📋 从已有标签中选择:
+                                            <BookOpen
+                                                size={13}
+                                                color="#8E8E93"
+                                            />
+                                            从已有标签中选择:
                                         </div>
                                         <div
                                             style={{
                                                 display: 'flex',
                                                 flexWrap: 'wrap',
-                                                gap: 4,
-                                                maxHeight: '120px',
+                                                gap: '6px',
+                                                maxHeight: '96px',
                                                 overflowY: 'auto',
-                                                padding: '4px',
+                                                padding: '2px',
                                             }}>
                                             {allTags
                                                 .filter(
@@ -2831,58 +3361,66 @@ export default function WordManagerMarkdown({
                                                             }
                                                         }}
                                                         style={{
-                                                            padding: '4px 8px',
-                                                            fontSize: '12px',
+                                                            padding: '4px 12px',
+                                                            fontSize: '13px',
                                                             backgroundColor:
-                                                                '#f8f9fa',
-                                                            border: '1px solid #dee2e6',
+                                                                '#F2F2F7',
+                                                            border: '1px solid #E5E5EA',
                                                             borderRadius:
-                                                                '12px',
+                                                                '20px',
                                                             cursor: 'pointer',
+                                                            color: '#3C3C43',
+                                                            display: 'flex',
+                                                            alignItems:
+                                                                'center',
+                                                            gap: '4px',
                                                             transition:
-                                                                'all 0.2s',
-                                                            color: '#495057',
+                                                                'all 0.15s',
                                                         }}
                                                         onMouseEnter={(e) => {
                                                             e.currentTarget.style.backgroundColor =
-                                                                '#28a745';
+                                                                '#34C759';
                                                             e.currentTarget.style.color =
-                                                                '#ffffff';
+                                                                '#fff';
                                                             e.currentTarget.style.borderColor =
-                                                                '#28a745';
+                                                                '#34C759';
                                                         }}
                                                         onMouseLeave={(e) => {
                                                             e.currentTarget.style.backgroundColor =
-                                                                '#f8f9fa';
+                                                                '#F2F2F7';
                                                             e.currentTarget.style.color =
-                                                                '#495057';
+                                                                '#3C3C43';
                                                             e.currentTarget.style.borderColor =
-                                                                '#dee2e6';
+                                                                '#E5E5EA';
                                                         }}>
-                                                        + {tag}
+                                                        <Plus size={12} />
+                                                        {tag}
                                                     </button>
                                                 ))}
                                         </div>
                                     </div>
                                 )}
 
-                                {/* 新建标签输入区域 */}
+                                {/* 新建标签输入 */}
                                 <div>
                                     <div
                                         style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
                                             fontSize: '13px',
-                                            fontWeight: 'bold',
-                                            color: '#555',
-                                            marginBottom: 6,
+                                            fontWeight: '600',
+                                            color: '#8E8E93',
+                                            marginBottom: '8px',
                                         }}>
-                                        ✨ 添加新标签:
+                                        <Sparkles
+                                            size={13}
+                                            color="#FF9500"
+                                        />
+                                        添加新标签:
                                     </div>
                                     <div
-                                        style={{
-                                            display: 'flex',
-                                            gap: 8,
-                                            alignItems: 'center',
-                                        }}>
+                                        style={{ display: 'flex', gap: '8px' }}>
                                         <input
                                             type="text"
                                             placeholder="输入新标签名称"
@@ -2920,13 +3458,16 @@ export default function WordManagerMarkdown({
                                                 }
                                             }}
                                             style={{
-                                                padding: '6px 10px',
-                                                width: '180px',
-                                                border: '1px solid #ccc',
-                                                borderRadius: '4px',
-                                                fontSize: '13px',
+                                                flex: 1,
+                                                padding: '8px 12px',
+                                                fontSize: '14px',
+                                                border: '1px solid #E5E5EA',
+                                                borderRadius: '10px',
+                                                backgroundColor: '#F9F9F9',
+                                                color: '#1C1C1E',
+                                                outline: 'none',
                                             }}
-                                        />{' '}
+                                        />
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -2956,149 +3497,171 @@ export default function WordManagerMarkdown({
                                                 }
                                             }}
                                             style={{
-                                                padding: '6px 12px',
-                                                fontSize: '12px',
-                                                backgroundColor: '#28a745',
+                                                padding: '8px 16px',
+                                                fontSize: '14px',
+                                                fontWeight: '600',
+                                                background:
+                                                    'linear-gradient(135deg, #34C759 0%, #30A14E 100%)',
                                                 color: 'white',
                                                 border: 'none',
-                                                borderRadius: '4px',
+                                                borderRadius: '10px',
                                                 cursor: 'pointer',
-                                                transition: 'all 0.2s',
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor =
-                                                    '#218838';
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor =
-                                                    '#28a745';
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '5px',
+                                                boxShadow:
+                                                    '0 2px 8px rgba(52,199,89,0.3)',
                                             }}>
-                                            添加标签
+                                            <Plus size={14} />
+                                            添加
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div style={{ marginBottom: 10 }}>
-                            <label>等级:</label>
-                            <select
-                                value={WordHelper.getLevel(form)}
-                                onChange={(e) => {
-                                    const newForm = { ...form };
-                                    WordHelper.setLevel(
-                                        newForm,
-                                        e.target.value,
-                                    );
-                                    setForm(newForm);
-                                }}
-                                style={{ marginLeft: 10, padding: 5 }}>
-                                <option value="">请选择</option>
-                                <option value="初级">初级</option>
-                                <option value="中级">中级</option>
-                                <option value="高级">高级</option>
-                            </select>
-                        </div>{' '}
-                        <div style={{ marginBottom: 10 }}>
-                            <label>词性概述:</label>
-                            <div style={{ marginLeft: 10, flex: 1 }}>
+
+                            {/* 词性概述卡片 */}
+                            <div
+                                style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '14px',
+                                    padding: '16px',
+                                    marginBottom: '16px',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        marginBottom: '12px',
+                                    }}>
+                                    <FileText
+                                        size={16}
+                                        color="#007AFF"
+                                    />
+                                    <span
+                                        style={{
+                                            fontSize: '15px',
+                                            fontWeight: '600',
+                                            color: '#1C1C1E',
+                                        }}>
+                                        词性概述
+                                    </span>
+                                </div>
+
+                                {/* 已选词性展示 */}
                                 <div
                                     style={{
                                         display: 'flex',
                                         flexWrap: 'wrap',
-                                        gap: 8,
-                                        marginBottom: 8,
-                                        minHeight: 32,
-                                        padding: 5,
-                                        border: '1px solid #ccc',
-                                        borderRadius: 4,
-                                        backgroundColor: '#f9f9f9',
+                                        gap: '6px',
+                                        minHeight: '38px',
+                                        padding: '8px 10px',
+                                        border: '1.5px dashed #C7C7CC',
+                                        borderRadius: '10px',
+                                        backgroundColor: '#F9F9F9',
+                                        marginBottom: '14px',
                                     }}>
                                     {form.partsOfSpeech
                                         .split(',')
-                                        .filter((p) => p.trim())
-                                        .map((selectedType, index) => (
-                                            <span
-                                                key={index}
-                                                style={{
-                                                    padding: '4px 8px',
-                                                    backgroundColor: '#e3f2fd',
-                                                    color: '#1976d2',
-                                                    borderRadius: 12,
-                                                    fontSize: '12px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 4,
-                                                }}>
-                                                {selectedType.trim()}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const types =
-                                                            form.partsOfSpeech
-                                                                .split(',')
-                                                                .map((t) =>
-                                                                    t.trim(),
-                                                                )
-                                                                .filter(
-                                                                    (t) =>
-                                                                        t !==
-                                                                        selectedType.trim(),
-                                                                );
-                                                        setForm({
-                                                            ...form,
-                                                            partsOfSpeech:
-                                                                types.join(','),
-                                                        });
-                                                    }}
-                                                    style={{
-                                                        background: 'none',
-                                                        border: 'none',
-                                                        color: '#1976d2',
-                                                        cursor: 'pointer',
-                                                        padding: '0 2px',
-                                                        fontSize: '14px',
-                                                        lineHeight: 1,
-                                                    }}>
-                                                    ×
-                                                </button>
-                                            </span>
-                                        ))}
-                                    {form.partsOfSpeech
-                                        .split(',')
                                         .filter((p) => p.trim()).length ===
-                                        0 && (
+                                    0 ? (
                                         <span
                                             style={{
-                                                color: '#999',
+                                                color: '#C7C7CC',
                                                 fontSize: '14px',
-                                                padding: '4px',
+                                                lineHeight: '22px',
                                             }}>
                                             点击下方选项添加词性
                                         </span>
+                                    ) : (
+                                        form.partsOfSpeech
+                                            .split(',')
+                                            .filter((p) => p.trim())
+                                            .map((selectedType, index) => (
+                                                <span
+                                                    key={index}
+                                                    style={{
+                                                        padding:
+                                                            '3px 10px 3px 10px',
+                                                        background:
+                                                            'linear-gradient(135deg, #5856D6 0%, #3634C7 100%)',
+                                                        color: 'white',
+                                                        borderRadius: '20px',
+                                                        fontSize: '13px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '5px',
+                                                        fontWeight: '500',
+                                                    }}>
+                                                    {selectedType.trim()}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const types =
+                                                                form.partsOfSpeech
+                                                                    .split(',')
+                                                                    .map((t) =>
+                                                                        t.trim(),
+                                                                    )
+                                                                    .filter(
+                                                                        (t) =>
+                                                                            t !==
+                                                                            selectedType.trim(),
+                                                                    );
+                                                            setForm({
+                                                                ...form,
+                                                                partsOfSpeech:
+                                                                    types.join(
+                                                                        ',',
+                                                                    ),
+                                                            });
+                                                        }}
+                                                        style={{
+                                                            background:
+                                                                'rgba(255,255,255,0.25)',
+                                                            border: 'none',
+                                                            color: 'white',
+                                                            cursor: 'pointer',
+                                                            padding: '0',
+                                                            width: '16px',
+                                                            height: '16px',
+                                                            borderRadius: '50%',
+                                                            display: 'flex',
+                                                            alignItems:
+                                                                'center',
+                                                            justifyContent:
+                                                                'center',
+                                                        }}>
+                                                        <X size={10} />
+                                                    </button>
+                                                </span>
+                                            ))
                                     )}
                                 </div>
-                                {/* 分组显示词性选项 */}
+
+                                {/* 分组词性选项 */}
                                 {Object.entries(PARTS_OF_SPEECH_GROUPS).map(
                                     ([groupName, options]) => (
                                         <div
                                             key={groupName}
-                                            style={{ marginBottom: 12 }}>
+                                            style={{ marginBottom: '12px' }}>
                                             <div
                                                 style={{
-                                                    fontSize: '13px',
-                                                    fontWeight: 'bold',
-                                                    color: '#555',
-                                                    marginBottom: 6,
-                                                    padding: '2px 0',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    color: '#8E8E93',
+                                                    marginBottom: '6px',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px',
                                                 }}>
-                                                {groupName}:
+                                                {groupName}
                                             </div>
                                             <div
                                                 style={{
                                                     display: 'flex',
                                                     flexWrap: 'wrap',
-                                                    gap: 6,
-                                                    paddingLeft: 12,
+                                                    gap: '6px',
                                                 }}>
                                                 {options.map((option) => {
                                                     const isSelected =
@@ -3116,7 +3679,6 @@ export default function WordManagerMarkdown({
                                                                 if (
                                                                     isSelected
                                                                 ) {
-                                                                    // 移除选中的词性
                                                                     const types =
                                                                         form.partsOfSpeech
                                                                             .split(
@@ -3143,7 +3705,6 @@ export default function WordManagerMarkdown({
                                                                             ),
                                                                     });
                                                                 } else {
-                                                                    // 添加词性
                                                                     const currentTypes =
                                                                         form.partsOfSpeech
                                                                             .split(
@@ -3176,159 +3737,182 @@ export default function WordManagerMarkdown({
                                                             }}
                                                             style={{
                                                                 padding:
-                                                                    '5px 10px',
+                                                                    '5px 12px',
                                                                 fontSize:
-                                                                    '12px',
+                                                                    '13px',
                                                                 backgroundColor:
                                                                     isSelected
-                                                                        ? '#1976d2'
-                                                                        : '#fff',
+                                                                        ? '#5856D6'
+                                                                        : '#F2F2F7',
                                                                 color: isSelected
-                                                                    ? '#fff'
-                                                                    : '#333',
-                                                                border: '1px solid #ccc',
+                                                                    ? 'white'
+                                                                    : '#3C3C43',
+                                                                border: isSelected
+                                                                    ? '1px solid #5856D6'
+                                                                    : '1px solid #E5E5EA',
                                                                 borderRadius:
-                                                                    '12px',
+                                                                    '20px',
                                                                 cursor: 'pointer',
                                                                 transition:
-                                                                    'all 0.2s',
+                                                                    'all 0.15s',
                                                                 fontWeight:
                                                                     isSelected
-                                                                        ? '500'
-                                                                        : 'normal',
+                                                                        ? '600'
+                                                                        : '400',
+                                                                display: 'flex',
+                                                                alignItems:
+                                                                    'center',
+                                                                gap: '4px',
                                                             }}>
-                                                            {option}{' '}
-                                                            {isSelected && '✓'}
+                                                            {isSelected && (
+                                                                <Check
+                                                                    size={11}
+                                                                />
+                                                            )}
+                                                            {option}
                                                         </button>
                                                     );
                                                 })}
                                             </div>
                                         </div>
                                     ),
-                                )}{' '}
+                                )}
                             </div>
-                        </div>
-                        {/* 备注字段 */}
-                        <div style={{ marginBottom: 10 }}>
-                            <label>备注 (记忆技巧、标注等):</label>
-                            <textarea
-                                value={form.notes}
-                                onChange={(e) =>
-                                    setForm({ ...form, notes: e.target.value })
-                                }
-                                placeholder="在此输入记忆技巧、学习笔记或其他备注信息..."
-                                style={{
-                                    width: '100%',
-                                    padding: '8px 12px',
-                                    border: '1px solid #ccc',
-                                    borderRadius: 4,
-                                    fontSize: '14px',
-                                    resize: 'vertical',
-                                    minHeight: '60px',
-                                    maxHeight: '120px',
-                                    backgroundColor: '#fafafa',
-                                    boxSizing: 'border-box',
-                                }}
-                            />
-                        </div>
-                        <h4>详细内容</h4>{' '}
-                        {form.content.map((part, partIndex) => (
+
+                            {/* 备注卡片 */}
                             <div
-                                key={partIndex}
                                 style={{
-                                    margin: '10px 0',
-                                    padding: 10,
-                                    border: '1px solid #ddd',
-                                    borderRadius: 4,
+                                    backgroundColor: 'white',
+                                    borderRadius: '14px',
+                                    padding: '16px',
+                                    marginBottom: '16px',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
                                 }}>
                                 <div
                                     style={{
-                                        marginBottom: 10,
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 10,
+                                        gap: '8px',
+                                        marginBottom: '10px',
                                     }}>
-                                    {' '}
-                                    <label>词性:</label>{' '}
-                                    <select
-                                        value={part.type}
-                                        onChange={(e) => {
-                                            const content = [...form.content];
-                                            content[partIndex].type =
-                                                e.target.value;
-                                            setForm({ ...form, content });
-                                        }}
+                                    <AlignLeft
+                                        size={16}
+                                        color="#007AFF"
+                                    />
+                                    <span
                                         style={{
-                                            marginLeft: 10,
-                                            padding: 5,
-                                            flex: 1,
-                                            border: '1px solid #ccc',
-                                            borderRadius: 4,
+                                            fontSize: '15px',
+                                            fontWeight: '600',
+                                            color: '#1C1C1E',
                                         }}>
-                                        <option value="">请选择词性</option>
-                                        {Object.entries(
-                                            PARTS_OF_SPEECH_GROUPS,
-                                        ).map(([groupName, options]) => (
-                                            <optgroup
-                                                key={groupName}
-                                                label={groupName}>
-                                                {options.map((option) => (
-                                                    <option
-                                                        key={option}
-                                                        value={option}>
-                                                        {option}
-                                                    </option>
-                                                ))}
-                                            </optgroup>
-                                        ))}
-                                    </select>
-                                    {form.content.length > 1 && (
-                                        <button
-                                            onClick={() =>
-                                                handleRemovePart(partIndex)
-                                            }
-                                            style={{
-                                                padding: '4px 8px',
-                                                fontSize: '12px',
-                                                backgroundColor: '#ffe6e6',
-                                                border: '1px solid #ffb3b3',
-                                                borderRadius: '4px',
-                                                cursor: 'pointer',
-                                                color: '#cc0000',
-                                            }}
-                                            title="删除该词性">
-                                            删除词性
-                                        </button>
-                                    )}
-                                </div>{' '}
-                                {part.definitions.map((def, defIndex) => (
+                                        备注
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: '12px',
+                                            color: '#8E8E93',
+                                        }}>
+                                        记忆技巧、学习笔记等
+                                    </span>
+                                </div>
+                                <textarea
+                                    value={form.notes}
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            notes: e.target.value,
+                                        })
+                                    }
+                                    placeholder="在此输入记忆技巧、学习笔记或其他备注信息..."
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        fontSize: '14px',
+                                        border: '1px solid #E5E5EA',
+                                        borderRadius: '10px',
+                                        resize: 'vertical',
+                                        minHeight: '72px',
+                                        maxHeight: '140px',
+                                        backgroundColor: '#F9F9F9',
+                                        color: '#1C1C1E',
+                                        outline: 'none',
+                                        lineHeight: '1.5',
+                                        boxSizing: 'border-box',
+                                    }}
+                                />
+                            </div>
+
+                            {/* 详细内容卡片 */}
+                            <div
+                                style={{
+                                    backgroundColor: 'white',
+                                    borderRadius: '14px',
+                                    padding: '16px',
+                                    marginBottom: '16px',
+                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                }}>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        marginBottom: '14px',
+                                    }}>
+                                    <BookOpen
+                                        size={16}
+                                        color="#007AFF"
+                                    />
+                                    <span
+                                        style={{
+                                            fontSize: '15px',
+                                            fontWeight: '600',
+                                            color: '#1C1C1E',
+                                        }}>
+                                        详细内容
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: '12px',
+                                            color: '#8E8E93',
+                                        }}>
+                                        词性 / 定义 / 例句
+                                    </span>
+                                </div>
+
+                                {form.content.map((part, partIndex) => (
                                     <div
-                                        key={defIndex}
+                                        key={partIndex}
                                         style={{
-                                            margin: '10px 0',
-                                            paddingLeft: 20,
-                                            borderLeft: '2px solid #eee',
+                                            marginBottom: '12px',
+                                            border: '1px solid #E5E5EA',
+                                            borderRadius: '12px',
+                                            overflow: 'hidden',
                                         }}>
+                                        {/* 词性行 */}
                                         <div
                                             style={{
-                                                marginBottom: 5,
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: 10,
+                                                gap: '8px',
+                                                padding: '10px 14px',
+                                                backgroundColor: '#F2F2F7',
+                                                borderBottom:
+                                                    part.definitions.length > 0
+                                                        ? '1px solid #E5E5EA'
+                                                        : 'none',
                                             }}>
-                                            <label>定义:</label>
-                                            <input
-                                                type="text"
-                                                value={def.definition}
+                                            <Layers
+                                                size={14}
+                                                color="#5856D6"
+                                                style={{ flexShrink: 0 }}
+                                            />
+                                            <select
+                                                value={part.type}
                                                 onChange={(e) => {
                                                     const content = [
                                                         ...form.content,
                                                     ];
-                                                    content[
-                                                        partIndex
-                                                    ].definitions[
-                                                        defIndex
-                                                    ].definition =
+                                                    content[partIndex].type =
                                                         e.target.value;
                                                     setForm({
                                                         ...form,
@@ -3336,147 +3920,410 @@ export default function WordManagerMarkdown({
                                                     });
                                                 }}
                                                 style={{
-                                                    marginLeft: 10,
-                                                    padding: 5,
                                                     flex: 1,
-                                                }}
-                                            />
-                                            {part.definitions.length > 1 && (
+                                                    padding: '4px 8px',
+                                                    fontSize: '14px',
+                                                    fontWeight: '600',
+                                                    border: '1px solid #E5E5EA',
+                                                    borderRadius: '8px',
+                                                    backgroundColor: 'white',
+                                                    color: '#1C1C1E',
+                                                    outline: 'none',
+                                                }}>
+                                                <option value="">
+                                                    请选择词性
+                                                </option>
+                                                {Object.entries(
+                                                    PARTS_OF_SPEECH_GROUPS,
+                                                ).map(
+                                                    ([groupName, options]) => (
+                                                        <optgroup
+                                                            key={groupName}
+                                                            label={groupName}>
+                                                            {options.map(
+                                                                (option) => (
+                                                                    <option
+                                                                        key={
+                                                                            option
+                                                                        }
+                                                                        value={
+                                                                            option
+                                                                        }>
+                                                                        {option}
+                                                                    </option>
+                                                                ),
+                                                            )}
+                                                        </optgroup>
+                                                    ),
+                                                )}
+                                            </select>
+                                            {form.content.length > 1 && (
                                                 <button
                                                     onClick={() =>
-                                                        handleRemoveDefinition(
+                                                        handleRemovePart(
                                                             partIndex,
-                                                            defIndex,
                                                         )
                                                     }
                                                     style={{
-                                                        padding: '2px 6px',
-                                                        fontSize: '11px',
+                                                        padding: '4px 10px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500',
                                                         backgroundColor:
-                                                            '#ffe6e6',
-                                                        border: '1px solid #ffb3b3',
-                                                        borderRadius: '4px',
+                                                            '#FFE5E5',
+                                                        color: '#FF3B30',
+                                                        border: '1px solid #FFB3B3',
+                                                        borderRadius: '8px',
                                                         cursor: 'pointer',
-                                                        color: '#cc0000',
-                                                    }}
-                                                    title="删除该定义">
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px',
+                                                        flexShrink: 0,
+                                                    }}>
+                                                    <Trash2 size={12} />
                                                     删除
                                                 </button>
                                             )}
-                                        </div>{' '}
-                                        {def.examples.map(
-                                            (example, exIndex) => (
+                                        </div>
+
+                                        {/* 定义列表 */}
+                                        {part.definitions.map(
+                                            (def, defIndex) => (
                                                 <div
-                                                    key={exIndex}
+                                                    key={defIndex}
                                                     style={{
-                                                        margin: '5px 0',
-                                                        paddingLeft: 20,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: 10,
+                                                        padding: '10px 14px',
+                                                        borderBottom:
+                                                            '1px solid #F2F2F7',
+                                                        backgroundColor:
+                                                            'white',
                                                     }}>
-                                                    <label>例句:</label>
-                                                    <input
-                                                        type="text"
-                                                        value={example.text}
-                                                        onChange={(e) => {
-                                                            const content = [
-                                                                ...form.content,
-                                                            ];
-                                                            content[
-                                                                partIndex
-                                                            ].definitions[
-                                                                defIndex
-                                                            ].examples[
-                                                                exIndex
-                                                            ].text =
-                                                                e.target.value;
-                                                            setForm({
-                                                                ...form,
-                                                                content,
-                                                            });
-                                                        }}
+                                                    {/* 定义行 */}
+                                                    <div
                                                         style={{
-                                                            marginLeft: 10,
-                                                            padding: 5,
-                                                            flex: 1,
-                                                        }}
-                                                    />
-                                                    {def.examples.length >
-                                                        0 && (
-                                                        <button
-                                                            onClick={() =>
-                                                                handleRemoveExample(
-                                                                    partIndex,
-                                                                    defIndex,
-                                                                    exIndex,
-                                                                )
-                                                            }
+                                                            display: 'flex',
+                                                            alignItems:
+                                                                'center',
+                                                            gap: '8px',
+                                                            marginBottom: '8px',
+                                                        }}>
+                                                        <AlignLeft
+                                                            size={13}
+                                                            color="#34C759"
                                                             style={{
-                                                                padding:
-                                                                    '1px 4px',
-                                                                fontSize:
-                                                                    '10px',
-                                                                backgroundColor:
-                                                                    '#ffe6e6',
-                                                                border: '1px solid #ffb3b3',
-                                                                borderRadius:
-                                                                    '3px',
-                                                                cursor: 'pointer',
-                                                                color: '#cc0000',
+                                                                flexShrink: 0,
                                                             }}
-                                                            title="删除该例句">
-                                                            ×
-                                                        </button>
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={
+                                                                def.definition
+                                                            }
+                                                            placeholder="输入定义..."
+                                                            onChange={(e) => {
+                                                                const content =
+                                                                    [
+                                                                        ...form.content,
+                                                                    ];
+                                                                content[
+                                                                    partIndex
+                                                                ].definitions[
+                                                                    defIndex
+                                                                ].definition =
+                                                                    e.target.value;
+                                                                setForm({
+                                                                    ...form,
+                                                                    content,
+                                                                });
+                                                            }}
+                                                            style={{
+                                                                flex: 1,
+                                                                padding:
+                                                                    '6px 10px',
+                                                                fontSize:
+                                                                    '14px',
+                                                                border: '1px solid #E5E5EA',
+                                                                borderRadius:
+                                                                    '8px',
+                                                                backgroundColor:
+                                                                    '#FAFAFA',
+                                                                color: '#1C1C1E',
+                                                                outline: 'none',
+                                                            }}
+                                                        />
+                                                        {part.definitions
+                                                            .length > 1 && (
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleRemoveDefinition(
+                                                                        partIndex,
+                                                                        defIndex,
+                                                                    )
+                                                                }
+                                                                style={{
+                                                                    width: 26,
+                                                                    height: 26,
+                                                                    border: 'none',
+                                                                    backgroundColor:
+                                                                        '#FFE5E5',
+                                                                    color: '#FF3B30',
+                                                                    borderRadius:
+                                                                        '6px',
+                                                                    cursor: 'pointer',
+                                                                    display:
+                                                                        'flex',
+                                                                    alignItems:
+                                                                        'center',
+                                                                    justifyContent:
+                                                                        'center',
+                                                                    flexShrink: 0,
+                                                                }}>
+                                                                <X size={12} />
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    {/* 例句列表 */}
+                                                    {def.examples.map(
+                                                        (example, exIndex) => (
+                                                            <div
+                                                                key={exIndex}
+                                                                style={{
+                                                                    display:
+                                                                        'flex',
+                                                                    alignItems:
+                                                                        'center',
+                                                                    gap: '8px',
+                                                                    marginBottom:
+                                                                        '6px',
+                                                                    paddingLeft:
+                                                                        '20px',
+                                                                }}>
+                                                                <MessageSquare
+                                                                    size={12}
+                                                                    color="#FF9500"
+                                                                    style={{
+                                                                        flexShrink: 0,
+                                                                    }}
+                                                                />
+                                                                <input
+                                                                    type="text"
+                                                                    value={
+                                                                        example.text
+                                                                    }
+                                                                    placeholder="输入例句..."
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) => {
+                                                                        const content =
+                                                                            [
+                                                                                ...form.content,
+                                                                            ];
+                                                                        content[
+                                                                            partIndex
+                                                                        ].definitions[
+                                                                            defIndex
+                                                                        ].examples[
+                                                                            exIndex
+                                                                        ].text =
+                                                                            e.target.value;
+                                                                        setForm(
+                                                                            {
+                                                                                ...form,
+                                                                                content,
+                                                                            },
+                                                                        );
+                                                                    }}
+                                                                    style={{
+                                                                        flex: 1,
+                                                                        padding:
+                                                                            '5px 10px',
+                                                                        fontSize:
+                                                                            '13px',
+                                                                        border: '1px solid #E5E5EA',
+                                                                        borderRadius:
+                                                                            '8px',
+                                                                        backgroundColor:
+                                                                            '#FAFAFA',
+                                                                        color: '#1C1C1E',
+                                                                        outline:
+                                                                            'none',
+                                                                    }}
+                                                                />
+                                                                <button
+                                                                    onClick={() =>
+                                                                        handleRemoveExample(
+                                                                            partIndex,
+                                                                            defIndex,
+                                                                            exIndex,
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        width: 24,
+                                                                        height: 24,
+                                                                        border: 'none',
+                                                                        backgroundColor:
+                                                                            '#FFE5E5',
+                                                                        color: '#FF3B30',
+                                                                        borderRadius:
+                                                                            '6px',
+                                                                        cursor: 'pointer',
+                                                                        display:
+                                                                            'flex',
+                                                                        alignItems:
+                                                                            'center',
+                                                                        justifyContent:
+                                                                            'center',
+                                                                        flexShrink: 0,
+                                                                    }}>
+                                                                    <X
+                                                                        size={
+                                                                            11
+                                                                        }
+                                                                    />
+                                                                </button>
+                                                            </div>
+                                                        ),
                                                     )}
+
+                                                    <button
+                                                        onClick={() =>
+                                                            handleAddExample(
+                                                                partIndex,
+                                                                defIndex,
+                                                            )
+                                                        }
+                                                        style={{
+                                                            marginTop: '4px',
+                                                            marginLeft: '20px',
+                                                            padding: '4px 10px',
+                                                            fontSize: '12px',
+                                                            backgroundColor:
+                                                                'transparent',
+                                                            color: '#FF9500',
+                                                            border: '1px solid #FF9500',
+                                                            borderRadius: '8px',
+                                                            cursor: 'pointer',
+                                                            display:
+                                                                'inline-flex',
+                                                            alignItems:
+                                                                'center',
+                                                            gap: '4px',
+                                                        }}>
+                                                        <Plus size={11} />
+                                                        添加例句
+                                                    </button>
                                                 </div>
                                             ),
                                         )}
-                                        <button
-                                            onClick={() =>
-                                                handleAddExample(
-                                                    partIndex,
-                                                    defIndex,
-                                                )
-                                            }
-                                            style={{ marginTop: 5 }}>
-                                            添加例句
-                                        </button>
+
+                                        {/* 添加定义按钮 */}
+                                        <div
+                                            style={{
+                                                padding: '8px 14px',
+                                                backgroundColor: 'white',
+                                            }}>
+                                            <button
+                                                onClick={() =>
+                                                    handleAddDefinition(
+                                                        partIndex,
+                                                    )
+                                                }
+                                                style={{
+                                                    padding: '5px 12px',
+                                                    fontSize: '13px',
+                                                    backgroundColor:
+                                                        'transparent',
+                                                    color: '#34C759',
+                                                    border: '1px solid #34C759',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px',
+                                                }}>
+                                                <Plus size={12} />
+                                                添加定义
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
+
                                 <button
-                                    onClick={() =>
-                                        handleAddDefinition(partIndex)
-                                    }
-                                    style={{ marginTop: 10 }}>
-                                    添加定义
+                                    onClick={handleAddPart}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        fontSize: '14px',
+                                        fontWeight: '500',
+                                        backgroundColor: '#F2F2F7',
+                                        color: '#007AFF',
+                                        border: '1.5px dashed #007AFF',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px',
+                                        marginTop: '4px',
+                                    }}>
+                                    <Plus size={15} />
+                                    添加词性
                                 </button>
                             </div>
-                        ))}
-                        <button
-                            onClick={handleAddPart}
-                            style={{ marginTop: 10 }}>
-                            添加词性
-                        </button>
-                        <div style={{ marginTop: 20 }}>
-                            <button
-                                onClick={handleSubmit}
-                                style={{
-                                    marginRight: 10,
-                                    padding: '10px 20px',
-                                }}>
-                                {editTarget ? '更新' : '添加'}
-                            </button>{' '}
-                            <button
-                                onClick={() => {
-                                    setShowAdd(false);
-                                    setEditTarget(null);
-                                    setErrorMessage(''); // 清除错误消息
-                                    setNewTagInput(''); // 清除新标签输入
-                                    setForm(createEmptyWord());
-                                }}>
-                                取消
-                            </button>
+
+                            {/* 底部操作按钮 */}
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button
+                                    onClick={() => {
+                                        setShowAdd(false);
+                                        setEditTarget(null);
+                                        setErrorMessage('');
+                                        setNewTagInput('');
+                                        setForm(createEmptyWord());
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        padding: '14px',
+                                        fontSize: '16px',
+                                        fontWeight: '600',
+                                        backgroundColor: '#F2F2F7',
+                                        color: '#8E8E93',
+                                        border: 'none',
+                                        borderRadius: '14px',
+                                        cursor: 'pointer',
+                                    }}>
+                                    取消
+                                </button>
+                                <button
+                                    onClick={handleSubmit}
+                                    style={{
+                                        flex: 2,
+                                        padding: '14px',
+                                        fontSize: '16px',
+                                        fontWeight: '600',
+                                        background: editTarget
+                                            ? 'linear-gradient(135deg, #FF9500 0%, #FF6B00 100%)'
+                                            : 'linear-gradient(135deg, #34C759 0%, #30A14E 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '14px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        boxShadow: editTarget
+                                            ? '0 4px 16px rgba(255,149,0,0.35)'
+                                            : '0 4px 16px rgba(52,199,89,0.35)',
+                                    }}>
+                                    {editTarget ? (
+                                        <Edit2 size={17} />
+                                    ) : (
+                                        <Plus size={17} />
+                                    )}
+                                    {editTarget ? '保存更新' : '添加单词'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

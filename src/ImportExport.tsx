@@ -1,6 +1,7 @@
 // 导入导出功能组件
 import React, { useState } from 'react';
 import { Word } from './MarkdownWordStorage';
+import { Package, CheckCircle, AlertTriangle, Upload, FileJson, FileSpreadsheet, FileText, Lightbulb, Download } from 'lucide-react';
 
 interface ImportExportProps {
     words: Word[];
@@ -11,7 +12,6 @@ interface ImportExportProps {
 const ImportExport: React.FC<ImportExportProps> = ({
     words,
     onImportWords,
-    onUpdateWords,
 }) => {
     const [importData, setImportData] = useState('');
     const [importStatus, setImportStatus] = useState<{
@@ -103,7 +103,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         if (word.partsOfSpeech)
                             text += `词性: ${word.partsOfSpeech}\n`;
 
-                        word.content.forEach((part, index) => {
+                        word.content.forEach((part) => {
                             text += `\n${part.type}:\n`;
                             part.definitions.forEach((def, defIndex) => {
                                 text += `  ${defIndex + 1}. ${
@@ -175,6 +175,17 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         content: Array.isArray(item.content)
                             ? item.content
                             : [],
+                        itemMeta: item.itemMeta || {
+                            frontEndId: `id-${Date.now()}`,
+                        },
+                        srsMeta: item.srsMeta || {
+                            nextReview: new Date().toISOString(),
+                            interval: 0,
+                            easeFactor: 2.5,
+                            reviewCount: 0,
+                            lapses: 0,
+                        },
+                        notes: item.notes || '',
                     };
 
                     onImportWords(word);
@@ -211,8 +222,11 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         fontWeight: '700',
                         color: '#1C1C1E',
                         letterSpacing: '-1px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
                     }}>
-                    📦 导入/导出
+                    <Package size={34} color="#007AFF" /> 导入/导出
                 </h2>
                 <p style={{ margin: 0, color: '#8E8E93', fontSize: '17px' }}>
                     备份您的单词库或导入新数据
@@ -241,8 +255,8 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         alignItems: 'center',
                         gap: '12px',
                     }}>
-                    <span style={{ fontSize: '20px' }}>
-                        {importStatus.type === 'success' ? '✓' : '⚠️'}
+                    <span style={{ display: 'flex' }}>
+                        {importStatus.type === 'success' ? <CheckCircle size={20} /> : <AlertTriangle size={20} />}
                     </span>
                     <span>{importStatus.message}</span>
                 </div>
@@ -262,8 +276,11 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         fontSize: '22px',
                         fontWeight: '600',
                         color: '#1C1C1E',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
                     }}>
-                    📤 导出数据
+                    <Upload size={24} color="#007AFF" /> 导出数据
                 </h3>
 
                 <div
@@ -285,8 +302,8 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             boxShadow: '0 4px 16px rgba(0, 122, 255, 0.2)',
                             color: 'white',
                         }}>
-                        <div style={{ fontSize: '32px', marginBottom: '12px' }}>
-                            📄
+                        <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                            <FileJson size={32} />
                         </div>
                         <h4
                             style={{
@@ -345,8 +362,8 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             boxShadow: '0 4px 16px rgba(52, 199, 89, 0.2)',
                             color: 'white',
                         }}>
-                        <div style={{ fontSize: '32px', marginBottom: '12px' }}>
-                            📊
+                        <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                            <FileSpreadsheet size={32} />
                         </div>
                         <h4
                             style={{
@@ -405,8 +422,8 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             boxShadow: '0 4px 16px rgba(142, 142, 147, 0.2)',
                             color: 'white',
                         }}>
-                        <div style={{ fontSize: '32px', marginBottom: '12px' }}>
-                            📝
+                        <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                            <FileText size={32} />
                         </div>
                         <h4
                             style={{
@@ -466,7 +483,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         alignItems: 'center',
                         gap: '8px',
                     }}>
-                    <span style={{ fontSize: '18px' }}>💡</span>
+                    <Lightbulb size={20} color="#FF9500" />
                     <span>
                         当前共有{' '}
                         <strong style={{ color: '#007AFF', fontWeight: '600' }}>
@@ -490,8 +507,11 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         fontSize: '22px',
                         fontWeight: '600',
                         color: '#1C1C1E',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
                     }}>
-                    📥 导入数据
+                    <Download size={24} color="#FF3B30" /> 导入数据
                 </h3>
 
                 <div style={{ marginBottom: '20px' }}>
@@ -604,7 +624,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             fontSize: '15px',
                             fontWeight: '600',
                         }}>
-                        <span>⚠️</span>
+                        <AlertTriangle size={18} />
                         <strong>导入说明</strong>
                     </div>
                     <ul

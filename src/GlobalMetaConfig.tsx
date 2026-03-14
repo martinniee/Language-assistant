@@ -111,7 +111,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
     };
     const handleDeleteTag = (
         alias: string,
-        removeFromWords: boolean = false,
+        _removeFromWords: boolean = false,
     ) => {
         if (!config) return;
 
@@ -156,7 +156,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
     };
     const handleDeleteCategory = (
         alias: string,
-        removeFromWords: boolean = false,
+        _removeFromWords: boolean = false,
     ) => {
         if (!config) return;
 

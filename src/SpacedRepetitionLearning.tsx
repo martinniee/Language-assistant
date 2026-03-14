@@ -1,8 +1,7 @@
 // 间隔重复学习组件
 import React, { useState, useEffect, useMemo } from 'react';
-import { Word, WordHelper } from './MarkdownWordStorage';
+import { Word } from './MarkdownWordStorage';
 import {
-    SRSAlgorithm,
     ReviewResult,
     ReviewResponse,
     defaultSRS,

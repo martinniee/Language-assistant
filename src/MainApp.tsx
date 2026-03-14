@@ -1,6 +1,19 @@
 // 主应用组件 - 支持导航和多模块功能
 import React, { useState, useMemo } from 'react';
 import { Word, WordHelper } from './MarkdownWordStorage';
+import {
+    BookOpen,
+    Brain,
+    BarChart2,
+    HardDrive,
+    Database,
+    Settings as SettingsIcon,
+    GraduationCap,
+    ChevronRight,
+    ChevronLeft,
+    Target,
+    Award,
+} from 'lucide-react';
 import WordManagerMarkdown from './WordManagerMarkdownNew';
 import SpacedRepetitionLearning from './SpacedRepetitionLearning';
 import DataStatistics from './DataStatistics';
@@ -55,38 +68,38 @@ const MainApp: React.FC<MainAppProps> = ({
         {
             id: 'home' as ViewMode,
             label: '单词管理',
-            icon: '📚',
+            icon: <BookOpen size={20} />,
             description: '添加、编辑和管理单词',
         },
         {
             id: 'srs' as ViewMode,
             label: '间隔学习',
-            icon: '🧠',
+            icon: <Brain size={20} />,
             description: '间隔重复学习系统',
             badge: stats.dueWords > 0 ? stats.dueWords : undefined,
         },
         {
             id: 'statistics' as ViewMode,
             label: '数据统计',
-            icon: '📊',
+            icon: <BarChart2 size={20} />,
             description: '学习进度和统计分析',
         },
         {
             id: 'import-export' as ViewMode,
             label: '导入导出',
-            icon: '💾',
+            icon: <HardDrive size={20} />,
             description: '数据导入导出功能',
         },
         {
             id: 'global-meta' as ViewMode,
             label: '元数据管理',
-            icon: '🔄',
+            icon: <Database size={20} />,
             description: '全局元数据配置和别名管理',
         },
         {
             id: 'settings' as ViewMode,
             label: '配置设置',
-            icon: '⚙️',
+            icon: <SettingsIcon size={20} />,
             description: '系统设置和偏好配置',
         },
     ];
@@ -202,8 +215,15 @@ const MainApp: React.FC<MainAppProps> = ({
                                     fontSize: '18px',
                                     fontWeight: '700',
                                     letterSpacing: '-0.4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
                                 }}>
-                                🎓 语言助手
+                                <GraduationCap
+                                    size={22}
+                                    color="#007AFF"
+                                />{' '}
+                                语言助手
                             </h2>
                             <p
                                 style={{
@@ -247,7 +267,11 @@ const MainApp: React.FC<MainAppProps> = ({
                             e.currentTarget.style.color = '#8E8E93';
                             e.currentTarget.style.transform = 'scale(1)';
                         }}>
-                        {isCollapsed ? '▶' : '◀'}
+                        {isCollapsed ? (
+                            <ChevronRight size={16} />
+                        ) : (
+                            <ChevronLeft size={16} />
+                        )}
                     </button>
                 </div>
 
@@ -304,8 +328,17 @@ const MainApp: React.FC<MainAppProps> = ({
                                 style={{
                                     fontSize: '32px',
                                     opacity: 0.8,
+                                    color:
+                                        stats.dueWords > 0
+                                            ? '#FF3B30'
+                                            : '#34C759',
+                                    display: 'flex',
                                 }}>
-                                {stats.dueWords > 0 ? '📚' : '🎉'}
+                                {stats.dueWords > 0 ? (
+                                    <Target size={32} />
+                                ) : (
+                                    <Award size={32} />
+                                )}
                             </div>
                         </div>
                     </div>
@@ -334,8 +367,14 @@ const MainApp: React.FC<MainAppProps> = ({
                                     stats.dueWords > 0
                                         ? '0 4px 12px rgba(255, 59, 48, 0.2)'
                                         : '0 4px 12px rgba(52, 199, 89, 0.2)',
+                                color:
+                                    stats.dueWords > 0 ? '#FF3B30' : '#34C759',
                             }}>
-                            {stats.dueWords > 0 ? '📚' : '🎉'}
+                            {stats.dueWords > 0 ? (
+                                <Target size={24} />
+                            ) : (
+                                <Award size={24} />
+                            )}
                             {stats.dueWords > 0 && (
                                 <div
                                     style={{
@@ -376,6 +415,9 @@ const MainApp: React.FC<MainAppProps> = ({
                         <button
                             key={item.id}
                             onClick={() => setCurrentView(item.id)}
+                            className={`la-nav-item${
+                                currentView === item.id ? ' la-nav-active' : ''
+                            }`}
                             style={{
                                 width: '100%',
                                 display: 'flex',
@@ -434,7 +476,6 @@ const MainApp: React.FC<MainAppProps> = ({
                             <span
                                 style={{
                                     marginRight: isCollapsed ? 0 : '12px',
-                                    fontSize: '18px',
                                     width: '20px',
                                     height: '20px',
                                     textAlign: 'center',
@@ -447,6 +488,7 @@ const MainApp: React.FC<MainAppProps> = ({
 
                             {!isCollapsed && (
                                 <div style={{ flex: 1, minWidth: 0 }}>
+                                    {' '}
                                     <div
                                         style={{
                                             fontWeight: 'inherit',
@@ -454,22 +496,39 @@ const MainApp: React.FC<MainAppProps> = ({
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
+                                            color:
+                                                currentView === item.id
+                                                    ? '#ffffff'
+                                                    : '#1C1C1E',
+                                            WebkitTextFillColor:
+                                                currentView === item.id
+                                                    ? '#ffffff'
+                                                    : '#1C1C1E',
                                         }}>
                                         {item.label}
-                                    </div>
+                                    </div>{' '}
                                     <div
                                         style={{
                                             fontSize: '12px',
                                             color:
                                                 currentView === item.id
-                                                    ? 'rgba(255, 255, 255, 0.8)'
-                                                    : '#8E8E93',
+                                                    ? 'rgba(255,255,255,0.85)'
+                                                    : '#636366',
+                                            WebkitTextFillColor:
+                                                currentView === item.id
+                                                    ? 'rgba(255,255,255,0.85)'
+                                                    : '#636366',
                                             marginTop: '2px',
                                             lineHeight: '1.2',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
                                             letterSpacing: '-0.1px',
+                                            fontWeight: '400',
+                                            opacity:
+                                                currentView === item.id
+                                                    ? 1
+                                                    : 0.85,
                                         }}>
                                         {item.description}
                                     </div>
@@ -550,14 +609,20 @@ const MainApp: React.FC<MainAppProps> = ({
                         }}>
                         <span
                             style={{
-                                fontSize: '32px',
                                 marginRight: '14px',
+                                display: 'flex',
+                                color: '#007AFF',
                             }}>
-                            {
-                                navigationItems.find(
-                                    (item) => item.id === currentView,
-                                )?.icon
-                            }
+                            {navigationItems.find(
+                                (item) => item.id === currentView,
+                            )?.icon
+                                ? React.cloneElement(
+                                      navigationItems.find(
+                                          (item) => item.id === currentView,
+                                      )!.icon as React.ReactElement,
+                                      { size: 36 } as any,
+                                  )
+                                : null}
                         </span>
                         <h1
                             style={{

@@ -1,5 +1,15 @@
 // iOS 风格设置配置组件
 import React, { useState } from 'react';
+import {
+    Settings as SettingsIcon,
+    Brain,
+    TrendingUp,
+    List,
+    Save,
+    RotateCcw,
+    Info,
+    AlertTriangle,
+} from 'lucide-react';
 
 const Settings: React.FC = () => {
     const [srsConfig, setSrsConfig] = useState({
@@ -38,7 +48,7 @@ const Settings: React.FC = () => {
         setIsUnsaved(false);
         // iOS 风格成功提示
         const successDiv = document.createElement('div');
-        successDiv.textContent = '✓ 设置已保存';
+        successDiv.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;vertical-align:-3px"><polyline points="20 6 9 17 4 12"></polyline></svg>设置已保存`;
         successDiv.style.cssText = `
             position: fixed;
             top: 20px;
@@ -84,6 +94,7 @@ const Settings: React.FC = () => {
     };
 
     const renderConfigSection = (
+        icon: React.ReactNode,
         title: string,
         description: string,
         children: React.ReactNode,
@@ -104,7 +115,13 @@ const Settings: React.FC = () => {
                     color: '#1c1c1e',
                     fontSize: '20px',
                     fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
                 }}>
+                <span style={{ color: '#007AFF', display: 'flex' }}>
+                    {icon}
+                </span>
                 {title}
             </h3>
             <p
@@ -290,16 +307,18 @@ const Settings: React.FC = () => {
                         alignItems: 'center',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                     }}>
-                    <span style={{ marginRight: '8px', fontSize: '18px' }}>
-                        ⚠️
-                    </span>
+                    <AlertTriangle
+                        size={20}
+                        style={{ marginRight: '8px' }}
+                    />
                     有未保存的更改，请记得保存设置
                 </div>
             )}
 
             {/* 通用设置 */}
             {renderConfigSection(
-                '🎛️ 通用设置',
+                <SettingsIcon size={22} />,
+                '通用设置',
                 '应用的基本配置选项',
                 <>
                     {renderInputField(
@@ -355,7 +374,8 @@ const Settings: React.FC = () => {
 
             {/* 间隔重复算法设置 */}
             {renderConfigSection(
-                '🧠 间隔重复算法',
+                <Brain size={22} />,
+                '间隔重复算法',
                 '调整学习算法的参数以优化学习效果',
                 <>
                     {renderInputField(
@@ -399,7 +419,8 @@ const Settings: React.FC = () => {
 
             {/* 难度因子调整 */}
             {renderConfigSection(
-                '⚖️ 难度因子调整',
+                <TrendingUp size={22} />,
+                '难度因子调整',
                 '根据回答质量调整卡片难度的参数',
                 <>
                     {renderInputField(
@@ -446,7 +467,8 @@ const Settings: React.FC = () => {
 
             {/* 预设配置 */}
             {renderConfigSection(
-                '📋 预设配置',
+                <List size={22} />,
+                '预设配置',
                 '快速应用常用的配置组合',
                 <div
                     style={{
@@ -624,8 +646,14 @@ const Settings: React.FC = () => {
                         fontSize: '16px',
                         fontWeight: '600',
                         boxShadow: '0 4px 14px rgba(0, 122, 255, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
                     }}>
-                    💾 保存设置
+                    <Save
+                        size={18}
+                        style={{ marginRight: '8px' }}
+                    />
+                    保存设置
                 </button>
 
                 <button
@@ -640,8 +668,14 @@ const Settings: React.FC = () => {
                         cursor: 'pointer',
                         fontSize: '16px',
                         fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
                     }}>
-                    🔄 重置默认
+                    <RotateCcw
+                        size={18}
+                        style={{ marginRight: '8px' }}
+                    />
+                    重置默认
                 </button>
             </div>
 
@@ -662,8 +696,15 @@ const Settings: React.FC = () => {
                         color: '#1c1c1e',
                         fontSize: '16px',
                         fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
                     }}>
-                    💡 配置说明
+                    <Info
+                        size={20}
+                        color="#007AFF"
+                    />
+                    配置说明
                 </h4>
                 <ul style={{ margin: 0, paddingLeft: '24px' }}>
                     <li style={{ marginBottom: '6px' }}>
