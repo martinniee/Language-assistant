@@ -163,30 +163,30 @@ const MainApp: React.FC<MainAppProps> = ({
             style={{
                 display: 'flex',
                 height: '100vh',
-                backgroundColor: '#f8f9fa',
+                backgroundColor: '#F2F2F7',
                 fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                    '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif',
             }}>
-            {/* 左侧导航栏 */}{' '}
+            {/* 左侧导航栏 - iOS 风格 */}
             <div
                 style={{
-                    width: isCollapsed ? '80px' : '280px',
-                    backgroundColor: '#ffffff',
-                    borderRight: '1px solid #dee2e6',
+                    width: isCollapsed ? '72px' : '260px',
+                    backgroundColor: '#FAFAFA',
+                    borderRight: '1px solid rgba(0,0,0,0.06)',
                     display: 'flex',
                     flexDirection: 'column',
-                    boxShadow: '2px 0 10px rgba(0,0,0,0.08)',
+                    boxShadow: '2px 0 12px rgba(0,0,0,0.04)',
                     overflow: 'hidden',
-                    transition: 'width 0.3s ease',
+                    transition: 'width 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)',
                 }}>
                 {/* 应用标题和折叠按钮 */}
                 <div
                     style={{
                         padding: isCollapsed
-                            ? '20px 12px 16px'
-                            : '20px 20px 16px',
-                        borderBottom: '1px solid #f0f0f0',
-                        backgroundColor: '#fafafa',
+                            ? '24px 8px 20px'
+                            : '24px 20px 20px',
+                        borderBottom: '1px solid rgba(0,0,0,0.04)',
+                        backgroundColor: '#ffffff',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: isCollapsed
@@ -198,67 +198,75 @@ const MainApp: React.FC<MainAppProps> = ({
                             <h2
                                 style={{
                                     margin: 0,
-                                    color: '#2c3e50',
+                                    color: '#1C1C1E',
                                     fontSize: '18px',
                                     fontWeight: '700',
-                                    letterSpacing: '-0.3px',
+                                    letterSpacing: '-0.4px',
                                 }}>
                                 🎓 语言助手
                             </h2>
                             <p
                                 style={{
-                                    margin: '4px 0 0',
-                                    color: '#7f8c8d',
-                                    fontSize: '12px',
+                                    margin: '6px 0 0',
+                                    color: '#8E8E93',
+                                    fontSize: '13px',
                                     fontWeight: '500',
+                                    letterSpacing: '-0.1px',
                                 }}>
                                 共 {stats.totalWords} 个单词
                             </p>
                         </div>
                     )}
 
-                    {/* 折叠/展开按钮 */}
+                    {/* 折叠/展开按钮 - iOS 风格 */}
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         style={{
-                            width: '32px',
-                            height: '32px',
+                            width: '36px',
+                            height: '36px',
                             border: 'none',
-                            backgroundColor: 'transparent',
-                            borderRadius: '8px',
+                            backgroundColor: '#F2F2F7',
+                            borderRadius: '10px',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: '16px',
-                            color: '#6b7280',
-                            transition: 'all 0.2s ease',
+                            fontSize: '14px',
+                            color: '#8E8E93',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            outline: 'none',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f3f4f6';
-                            e.currentTarget.style.color = '#374151';
+                            e.currentTarget.style.backgroundColor = '#E5E5EA';
+                            e.currentTarget.style.color = '#1C1C1E';
+                            e.currentTarget.style.transform = 'scale(0.95)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor =
-                                'transparent';
-                            e.currentTarget.style.color = '#6b7280';
+                            e.currentTarget.style.backgroundColor = '#F2F2F7';
+                            e.currentTarget.style.color = '#8E8E93';
+                            e.currentTarget.style.transform = 'scale(1)';
                         }}>
                         {isCollapsed ? '▶' : '◀'}
                     </button>
                 </div>
 
-                {/* 今日待学状态卡片 - 折叠时变为小图标 */}
+                {/* 今日待学状态卡片 - iOS 风格 */}
                 {!isCollapsed ? (
                     <div
                         style={{
                             margin: '16px 16px 12px',
-                            padding: '12px 14px',
+                            padding: '16px',
                             backgroundColor:
-                                stats.dueWords > 0 ? '#fff5f5' : '#f0f9f0',
-                            borderRadius: '8px',
-                            border: `1px solid ${
-                                stats.dueWords > 0 ? '#fed7d7' : '#c6f6d5'
-                            }`,
+                                stats.dueWords > 0
+                                    ? 'linear-gradient(135deg, #FFF5F5 0%, #FFE5E5 100%)'
+                                    : 'linear-gradient(135deg, #F0FFF4 0%, #E6F7EB 100%)',
+                            borderRadius: '14px',
+                            border: 'none',
+                            boxShadow:
+                                stats.dueWords > 0
+                                    ? '0 4px 12px rgba(255, 59, 48, 0.15)'
+                                    : '0 4px 12px rgba(52, 199, 89, 0.15)',
                         }}>
                         <div
                             style={{
@@ -269,21 +277,23 @@ const MainApp: React.FC<MainAppProps> = ({
                             <div>
                                 <div
                                     style={{
-                                        fontSize: '12px',
+                                        fontSize: '13px',
                                         fontWeight: '600',
-                                        color: '#4a5568',
-                                        marginBottom: '3px',
+                                        color: '#8E8E93',
+                                        marginBottom: '4px',
+                                        letterSpacing: '-0.1px',
                                     }}>
                                     今日待学
                                 </div>
                                 <div
                                     style={{
-                                        fontSize: '16px',
+                                        fontSize: '24px',
                                         fontWeight: '700',
                                         color:
                                             stats.dueWords > 0
-                                                ? '#e53e3e'
-                                                : '#38a169',
+                                                ? '#FF3B30'
+                                                : '#34C759',
+                                        letterSpacing: '-0.5px',
                                     }}>
                                     {stats.dueWords > 0
                                         ? `${stats.dueWords} 个`
@@ -292,8 +302,8 @@ const MainApp: React.FC<MainAppProps> = ({
                             </div>
                             <div
                                 style={{
-                                    fontSize: '20px',
-                                    opacity: 0.7,
+                                    fontSize: '32px',
+                                    opacity: 0.8,
                                 }}>
                                 {stats.dueWords > 0 ? '📚' : '🎉'}
                             </div>
@@ -308,34 +318,43 @@ const MainApp: React.FC<MainAppProps> = ({
                         }}>
                         <div
                             style={{
-                                width: '40px',
-                                height: '40px',
-                                backgroundColor:
-                                    stats.dueWords > 0 ? '#fee2e2' : '#dcfce7',
+                                width: '48px',
+                                height: '48px',
+                                background:
+                                    stats.dueWords > 0
+                                        ? 'linear-gradient(135deg, #FFE5E5 0%, #FFC9C9 100%)'
+                                        : 'linear-gradient(135deg, #E6F7EB 0%, #C6F6D5 100%)',
                                 borderRadius: '50%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontSize: '18px',
+                                fontSize: '22px',
                                 position: 'relative',
+                                boxShadow:
+                                    stats.dueWords > 0
+                                        ? '0 4px 12px rgba(255, 59, 48, 0.2)'
+                                        : '0 4px 12px rgba(52, 199, 89, 0.2)',
                             }}>
                             {stats.dueWords > 0 ? '📚' : '🎉'}
                             {stats.dueWords > 0 && (
                                 <div
                                     style={{
                                         position: 'absolute',
-                                        top: '-4px',
-                                        right: '-4px',
-                                        backgroundColor: '#dc2626',
+                                        top: '-2px',
+                                        right: '-2px',
+                                        backgroundColor: '#FF3B30',
                                         color: 'white',
                                         borderRadius: '50%',
-                                        width: '18px',
-                                        height: '18px',
-                                        fontSize: '10px',
+                                        width: '20px',
+                                        height: '20px',
+                                        fontSize: '11px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         fontWeight: '700',
+                                        border: '2px solid #FAFAFA',
+                                        boxShadow:
+                                            '0 2px 8px rgba(255, 59, 48, 0.4)',
                                     }}>
                                     {stats.dueWords > 9 ? '9+' : stats.dueWords}
                                 </div>
@@ -344,13 +363,15 @@ const MainApp: React.FC<MainAppProps> = ({
                     </div>
                 )}
 
-                {/* 导航菜单 */}
+                {/* 导航菜单 - iOS 风格 */}
                 <nav
                     style={{
                         flex: 1,
                         overflowY: 'auto',
-                        padding: isCollapsed ? '0 8px' : '0 16px',
+                        padding: isCollapsed ? '0 8px' : '0 12px',
+                        paddingBottom: '12px',
                     }}>
+                    {' '}
                     {navigationItems.map((item) => (
                         <button
                             key={item.id}
@@ -362,37 +383,47 @@ const MainApp: React.FC<MainAppProps> = ({
                                 justifyContent: isCollapsed
                                     ? 'center'
                                     : 'flex-start',
-                                padding: isCollapsed ? '12px 8px' : '12px 14px',
-                                marginBottom: '4px',
+                                padding: isCollapsed ? '14px 8px' : '14px 16px',
+                                marginBottom: '6px',
                                 border: 'none',
                                 backgroundColor:
                                     currentView === item.id
-                                        ? '#e3f2fd'
+                                        ? '#007AFF'
                                         : 'transparent',
                                 color:
                                     currentView === item.id
-                                        ? '#1565c0'
-                                        : '#4a5568',
-                                fontSize: '14px',
+                                        ? '#ffffff'
+                                        : '#1C1C1E',
+                                fontSize: '15px',
                                 fontWeight:
                                     currentView === item.id ? '600' : '500',
                                 cursor: 'pointer',
                                 textAlign: 'left',
-                                transition: 'all 0.2s ease',
-                                borderRadius: '8px',
+                                transition:
+                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                borderRadius: '12px',
                                 outline: 'none',
                                 position: 'relative',
+                                boxShadow:
+                                    currentView === item.id
+                                        ? '0 4px 12px rgba(0, 122, 255, 0.25)'
+                                        : 'none',
+                                letterSpacing: '-0.2px',
                             }}
                             onMouseEnter={(e) => {
                                 if (currentView !== item.id) {
                                     e.currentTarget.style.backgroundColor =
-                                        '#f7fafc';
+                                        '#F2F2F7';
+                                    e.currentTarget.style.transform =
+                                        'scale(0.98)';
                                 }
                             }}
                             onMouseLeave={(e) => {
                                 if (currentView !== item.id) {
                                     e.currentTarget.style.backgroundColor =
                                         'transparent';
+                                    e.currentTarget.style.transform =
+                                        'scale(1)';
                                 }
                             }}
                             title={
@@ -403,9 +434,9 @@ const MainApp: React.FC<MainAppProps> = ({
                             <span
                                 style={{
                                     marginRight: isCollapsed ? 0 : '12px',
-                                    fontSize: '16px',
-                                    width: '18px',
-                                    height: '18px',
+                                    fontSize: '18px',
+                                    width: '20px',
+                                    height: '20px',
                                     textAlign: 'center',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -419,7 +450,7 @@ const MainApp: React.FC<MainAppProps> = ({
                                     <div
                                         style={{
                                             fontWeight: 'inherit',
-                                            lineHeight: '1.3',
+                                            lineHeight: '1.4',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
@@ -428,17 +459,17 @@ const MainApp: React.FC<MainAppProps> = ({
                                     </div>
                                     <div
                                         style={{
-                                            fontSize: '11px',
+                                            fontSize: '12px',
                                             color:
                                                 currentView === item.id
-                                                    ? '#1976d2'
-                                                    : '#9ca3af',
-                                            marginTop: '1px',
+                                                    ? 'rgba(255, 255, 255, 0.8)'
+                                                    : '#8E8E93',
+                                            marginTop: '2px',
                                             lineHeight: '1.2',
-                                            opacity: 0.8,
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
+                                            letterSpacing: '-0.1px',
                                         }}>
                                         {item.description}
                                     </div>
@@ -451,20 +482,22 @@ const MainApp: React.FC<MainAppProps> = ({
                                         position: isCollapsed
                                             ? 'absolute'
                                             : 'static',
-                                        top: isCollapsed ? '8px' : 'auto',
-                                        right: isCollapsed ? '8px' : 'auto',
-                                        backgroundColor: '#ef4444',
+                                        top: isCollapsed ? '6px' : 'auto',
+                                        right: isCollapsed ? '6px' : 'auto',
+                                        backgroundColor: '#FF3B30',
                                         color: 'white',
-                                        borderRadius: '10px',
+                                        borderRadius: '12px',
                                         padding: isCollapsed
-                                            ? '2px 6px'
-                                            : '3px 7px',
-                                        fontSize: isCollapsed ? '9px' : '10px',
-                                        fontWeight: '600',
-                                        minWidth: isCollapsed ? '16px' : '18px',
+                                            ? '3px 7px'
+                                            : '4px 8px',
+                                        fontSize: isCollapsed ? '10px' : '11px',
+                                        fontWeight: '700',
+                                        minWidth: isCollapsed ? '18px' : '20px',
                                         textAlign: 'center',
                                         marginLeft: isCollapsed ? 0 : '8px',
                                         lineHeight: '1',
+                                        boxShadow:
+                                            '0 2px 8px rgba(255, 59, 48, 0.3)',
                                     }}>
                                     {isCollapsed && item.badge > 9
                                         ? '9+'
@@ -475,22 +508,24 @@ const MainApp: React.FC<MainAppProps> = ({
                     ))}
                 </nav>
 
-                {/* 底部版本信息 */}
+                {/* 底部版本信息 - iOS 风格 */}
                 {!isCollapsed && (
                     <div
                         style={{
-                            padding: '12px 16px',
-                            borderTop: '1px solid #f0f0f0',
-                            backgroundColor: '#fafafa',
-                            fontSize: '11px',
-                            color: '#9ca3af',
+                            padding: '16px 20px',
+                            borderTop: '1px solid rgba(0,0,0,0.04)',
+                            backgroundColor: '#ffffff',
+                            fontSize: '12px',
+                            color: '#C7C7CC',
                             textAlign: 'center',
+                            fontWeight: '500',
+                            letterSpacing: '-0.1px',
                         }}>
                         Language Assistant v1.0
                     </div>
                 )}
-            </div>
-            {/* 右侧内容区域 */}
+            </div>{' '}
+            {/* 右侧内容区域 - iOS 风格 */}
             <div
                 style={{
                     flex: 1,
@@ -499,24 +534,24 @@ const MainApp: React.FC<MainAppProps> = ({
                     flexDirection: 'column',
                     backgroundColor: '#ffffff',
                 }}>
-                {/* 内容头部 */}
+                {/* 内容头部 - iOS 风格 */}
                 <div
                     style={{
-                        padding: '24px 32px 20px',
+                        padding: '28px 36px 24px',
                         backgroundColor: '#ffffff',
-                        borderBottom: '1px solid #e5e7eb',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                        borderBottom: '1px solid rgba(0,0,0,0.06)',
+                        boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
                     }}>
                     <div
                         style={{
                             display: 'flex',
                             alignItems: 'center',
-                            marginBottom: '8px',
+                            marginBottom: '10px',
                         }}>
                         <span
                             style={{
-                                fontSize: '24px',
-                                marginRight: '12px',
+                                fontSize: '32px',
+                                marginRight: '14px',
                             }}>
                             {
                                 navigationItems.find(
@@ -527,10 +562,10 @@ const MainApp: React.FC<MainAppProps> = ({
                         <h1
                             style={{
                                 margin: 0,
-                                fontSize: '26px',
-                                color: '#1f2937',
+                                fontSize: '32px',
+                                color: '#1C1C1E',
                                 fontWeight: '700',
-                                letterSpacing: '-0.5px',
+                                letterSpacing: '-1px',
                             }}>
                             {navigationItems.find(
                                 (item) => item.id === currentView,
@@ -540,9 +575,11 @@ const MainApp: React.FC<MainAppProps> = ({
                     <p
                         style={{
                             margin: 0,
-                            color: '#6b7280',
+                            color: '#8E8E93',
                             fontSize: '15px',
                             lineHeight: '1.5',
+                            fontWeight: '500',
+                            letterSpacing: '-0.1px',
                         }}>
                         {
                             navigationItems.find(
@@ -552,24 +589,14 @@ const MainApp: React.FC<MainAppProps> = ({
                     </p>
                 </div>
 
-                {/* 主内容区域 */}
+                {/* 主内容区域 - iOS 风格 */}
                 <div
                     style={{
                         flex: 1,
                         overflow: 'auto',
-                        backgroundColor: '#f9fafb',
-                        padding: '24px 32px 32px',
+                        backgroundColor: '#F2F2F7',
                     }}>
-                    <div
-                        style={{
-                            backgroundColor: '#ffffff',
-                            borderRadius: '12px',
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                            minHeight: 'calc(100vh - 200px)',
-                            overflow: 'hidden',
-                        }}>
-                        {renderContent()}
-                    </div>
+                    {renderContent()}
                 </div>
             </div>
         </div>

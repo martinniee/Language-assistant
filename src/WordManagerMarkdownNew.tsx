@@ -64,7 +64,7 @@ const HighlightText: React.FC<{ text: string; searchTerm: string }> =
         return highlightedContent;
     });
 
-// 缩略卡片组件
+// 缩略卡片组件 - iOS 风格
 const WordCard: React.FC<{
     word: Word;
     searchTerm: string;
@@ -87,39 +87,45 @@ const WordCard: React.FC<{
             <div
                 style={{
                     padding: '20px',
-                    border: '1px solid rgba(0,0,0,0.05)',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '16px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
                     backgroundColor: '#ffffff',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    fontFamily:
+                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                 }}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.boxShadow =
-                        '0 4px 12px rgba(0,0,0,0.15)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.borderColor =
-                        'rgba(0, 102, 204, 0.2)';
+                        '0 4px 16px rgba(0,0,0,0.08)';
+                    e.currentTarget.style.transform = 'translateY(-3px)';
                 }}
                 onMouseLeave={(e) => {
                     e.currentTarget.style.boxShadow =
-                        '0 2px 4px rgba(0,0,0,0.05)';
+                        '0 2px 8px rgba(0,0,0,0.04)';
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)';
                 }}>
                 <div
                     style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginBottom: 10,
+                        marginBottom: 12,
                     }}>
-                    <h3 style={{ margin: 0, fontSize: '1.2em' }}>
+                    <h3
+                        style={{
+                            margin: 0,
+                            fontSize: '20px',
+                            fontWeight: '600',
+                            color: '#1C1C1E',
+                            letterSpacing: '-0.3px',
+                        }}>
                         <HighlightText
                             text={word.name}
                             searchTerm={searchTerm}
                         />
-                    </h3>{' '}
+                    </h3>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                             onClick={(e) => {
@@ -127,25 +133,26 @@ const WordCard: React.FC<{
                                 onEdit();
                             }}
                             style={{
-                                padding: '6px 12px',
-                                fontSize: '12px',
-                                backgroundColor: '#f8f9fa',
-                                border: '1px solid #e9ecef',
-                                borderRadius: '6px',
+                                padding: '8px 14px',
+                                fontSize: '13px',
+                                backgroundColor: '#F2F2F7',
+                                border: 'none',
+                                borderRadius: '10px',
                                 cursor: 'pointer',
-                                color: '#495057',
-                                fontWeight: '500',
-                                transition: 'all 0.2s ease',
+                                color: '#007AFF',
+                                fontWeight: '600',
+                                transition:
+                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#e9ecef';
-                                e.currentTarget.style.borderColor = '#adb5bd';
+                                    '#E5E5EA';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#f8f9fa';
-                                e.currentTarget.style.borderColor = '#e9ecef';
+                                    '#F2F2F7';
                             }}>
                             ✏️ 编辑
                         </button>
@@ -155,29 +162,29 @@ const WordCard: React.FC<{
                                 onDelete();
                             }}
                             style={{
-                                padding: '6px 12px',
-                                fontSize: '12px',
-                                backgroundColor: '#fff5f5',
-                                border: '1px solid #fed7d7',
-                                borderRadius: '6px',
+                                padding: '8px 14px',
+                                fontSize: '13px',
+                                backgroundColor: '#FFEBEE',
+                                border: 'none',
+                                borderRadius: '10px',
                                 cursor: 'pointer',
-                                color: '#c53030',
-                                fontWeight: '500',
-                                transition: 'all 0.2s ease',
+                                color: '#FF3B30',
+                                fontWeight: '600',
+                                transition:
+                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#c53030';
+                                    '#FF3B30';
                                 e.currentTarget.style.color = '#ffffff';
-                                e.currentTarget.style.borderColor = '#c53030';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#fff5f5';
-                                e.currentTarget.style.color = '#c53030';
-                                e.currentTarget.style.borderColor = '#fed7d7';
+                                    '#FFEBEE';
+                                e.currentTarget.style.color = '#FF3B30';
                             }}>
-                            {' '}
                             🗑️ 删除
                         </button>
                         <button
@@ -186,27 +193,28 @@ const WordCard: React.FC<{
                                 onJumpToSource();
                             }}
                             style={{
-                                padding: '6px 12px',
-                                fontSize: '12px',
-                                backgroundColor: '#eff6ff',
-                                border: '1px solid #bfdbfe',
-                                borderRadius: '6px',
+                                padding: '8px 14px',
+                                fontSize: '13px',
+                                backgroundColor: '#E3F2FD',
+                                border: 'none',
+                                borderRadius: '10px',
                                 cursor: 'pointer',
-                                color: '#1d4ed8',
-                                fontWeight: '500',
-                                transition: 'all 0.2s ease',
+                                color: '#007AFF',
+                                fontWeight: '600',
+                                transition:
+                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#1d4ed8';
+                                    '#007AFF';
                                 e.currentTarget.style.color = '#ffffff';
-                                e.currentTarget.style.borderColor = '#1d4ed8';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#eff6ff';
-                                e.currentTarget.style.color = '#1d4ed8';
-                                e.currentTarget.style.borderColor = '#bfdbfe';
+                                    '#E3F2FD';
+                                e.currentTarget.style.color = '#007AFF';
                             }}>
                             🔗 跳转
                         </button>
@@ -218,11 +226,12 @@ const WordCard: React.FC<{
                     style={{ cursor: 'pointer' }}>
                     <p
                         style={{
-                            margin: '5px 0',
-                            fontSize: '14px',
-                            color: '#666',
+                            margin: '8px 0',
+                            fontSize: '15px',
+                            color: '#8E8E93',
+                            lineHeight: '1.5',
                         }}>
-                        <strong>发音:</strong>{' '}
+                        <strong style={{ color: '#48484A' }}>发音:</strong>{' '}
                         {enableFullHighlight ? (
                             <HighlightText
                                 text={word.pronunciation}
@@ -234,11 +243,12 @@ const WordCard: React.FC<{
                     </p>
                     <p
                         style={{
-                            margin: '5px 0',
-                            fontSize: '14px',
-                            color: '#666',
+                            margin: '8px 0',
+                            fontSize: '15px',
+                            color: '#8E8E93',
+                            lineHeight: '1.5',
                         }}>
-                        <strong>分类:</strong>{' '}
+                        <strong style={{ color: '#48484A' }}>分类:</strong>{' '}
                         {enableFullHighlight ? (
                             <HighlightText
                                 text={WordHelper.getCategory(word)}
@@ -250,11 +260,12 @@ const WordCard: React.FC<{
                     </p>
                     <p
                         style={{
-                            margin: '5px 0',
-                            fontSize: '14px',
-                            color: '#666',
+                            margin: '8px 0',
+                            fontSize: '15px',
+                            color: '#8E8E93',
+                            lineHeight: '1.5',
                         }}>
-                        <strong>标签:</strong>{' '}
+                        <strong style={{ color: '#48484A' }}>标签:</strong>{' '}
                         {enableFullHighlight ? (
                             <HighlightText
                                 text={WordHelper.getTags(word).join(', ')}
@@ -262,23 +273,25 @@ const WordCard: React.FC<{
                             />
                         ) : (
                             WordHelper.getTags(word).join(', ')
-                        )}{' '}
+                        )}
                     </p>
 
-                    {/* 显示备注信息 */}
                     {word.notes && word.notes.trim() && (
                         <p
                             style={{
-                                margin: '5px 0',
-                                fontSize: '14px',
-                                color: '#666',
-                                fontStyle: 'italic',
-                                backgroundColor: '#fff8e1',
-                                padding: '6px 8px',
-                                borderRadius: '4px',
-                                borderLeft: '3px solid #ffb300',
+                                margin: '12px 0 8px 0',
+                                fontSize: '15px',
+                                color: '#8E8E93',
+                                fontStyle: 'normal',
+                                backgroundColor: '#FFF9E6',
+                                padding: '10px 12px',
+                                borderRadius: '10px',
+                                borderLeft: '3px solid #FF9500',
+                                lineHeight: '1.5',
                             }}>
-                            <strong>💡 备注:</strong>{' '}
+                            <strong style={{ color: '#FF9500' }}>
+                                💡 备注:
+                            </strong>{' '}
                             {enableFullHighlight ? (
                                 <HighlightText
                                     text={word.notes}
@@ -292,18 +305,27 @@ const WordCard: React.FC<{
 
                     <div
                         style={{
-                            marginTop: 10,
-                            fontSize: '12px',
-                            color: '#999',
+                            marginTop: 12,
+                            fontSize: '13px',
+                            color: '#C7C7CC',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
                         }}>
-                        <span>等级: {WordHelper.getLevel(word)}</span>
                         <span
                             style={{
-                                color: '#007acc',
-                                textDecoration: 'underline',
+                                padding: '4px 10px',
+                                backgroundColor: '#F2F2F7',
+                                borderRadius: '8px',
+                                color: '#8E8E93',
+                                fontWeight: '500',
+                            }}>
+                            等级: {WordHelper.getLevel(word)}
+                        </span>
+                        <span
+                            style={{
+                                color: '#007AFF',
+                                fontWeight: '500',
                             }}>
                             点击查看详情 →
                         </span>
@@ -314,7 +336,7 @@ const WordCard: React.FC<{
     },
 );
 
-// 列表视图单词组件
+// 列表视图单词组件 - iOS 风格
 const WordListItem: React.FC<{
     word: Word;
     searchTerm: string;
@@ -340,26 +362,35 @@ const WordListItem: React.FC<{
                 style={{
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '12px 15px',
-                    border: '1px solid #dee2e6',
-                    borderTop: 'none',
-                    borderRadius: isLast ? '0 0 8px 8px' : '0',
+                    padding: '16px 20px',
+                    border: 'none',
+                    borderBottom: isLast
+                        ? 'none'
+                        : '1px solid rgba(0,0,0,0.06)',
+                    borderRadius: isLast ? '0 0 16px 16px' : '0',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                     backgroundColor: '#ffffff',
-                    minHeight: '60px',
+                    minHeight: '68px',
+                    fontFamily:
+                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                 }}
                 onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f8f9fa';
-                    e.currentTarget.style.transform = 'translateX(2px)';
+                    e.currentTarget.style.backgroundColor = '#F2F2F7';
                 }}
                 onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = '#ffffff';
-                    e.currentTarget.style.transform = 'translateX(0)';
                 }}
                 onClick={onViewDetail}>
                 {/* 单词名称 */}
-                <div style={{ flex: '0 0 200px', fontWeight: 'bold' }}>
+                <div
+                    style={{
+                        flex: '0 0 200px',
+                        fontWeight: '600',
+                        fontSize: '17px',
+                        color: '#1C1C1E',
+                        letterSpacing: '-0.3px',
+                    }}>
                     <HighlightText
                         text={word.name}
                         searchTerm={searchTerm}
@@ -369,8 +400,8 @@ const WordListItem: React.FC<{
                 <div
                     style={{
                         flex: '0 0 180px',
-                        fontSize: '14px',
-                        color: '#666',
+                        fontSize: '15px',
+                        color: '#8E8E93',
                     }}>
                     {enableFullHighlight ? (
                         <HighlightText
@@ -382,14 +413,15 @@ const WordListItem: React.FC<{
                     )}
                 </div>
                 {/* 分类 */}
-                <div style={{ flex: '0 0 120px', fontSize: '14px' }}>
+                <div style={{ flex: '0 0 120px', fontSize: '15px' }}>
                     <span
                         style={{
-                            padding: '2px 8px',
-                            backgroundColor: '#e3f2fd',
-                            color: '#1976d2',
-                            borderRadius: 12,
-                            fontSize: '12px',
+                            padding: '4px 12px',
+                            backgroundColor: '#E3F2FD',
+                            color: '#007AFF',
+                            borderRadius: 14,
+                            fontSize: '13px',
+                            fontWeight: '600',
                         }}>
                         {enableFullHighlight ? (
                             <HighlightText
@@ -402,19 +434,20 @@ const WordListItem: React.FC<{
                     </span>
                 </div>
                 {/* 标签 */}
-                <div style={{ flex: '1', fontSize: '14px' }}>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                <div style={{ flex: '1', fontSize: '15px' }}>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {WordHelper.getTags(word)
                             .slice(0, 3)
                             .map((tag, index) => (
                                 <span
                                     key={index}
                                     style={{
-                                        padding: '2px 6px',
-                                        backgroundColor: '#f1f8e9',
-                                        color: '#689f38',
-                                        borderRadius: 10,
-                                        fontSize: '11px',
+                                        padding: '4px 10px',
+                                        backgroundColor: '#E8F5E9',
+                                        color: '#34C759',
+                                        borderRadius: 12,
+                                        fontSize: '12px',
+                                        fontWeight: '500',
                                     }}>
                                     {enableFullHighlight ? (
                                         <HighlightText
@@ -427,7 +460,12 @@ const WordListItem: React.FC<{
                                 </span>
                             ))}
                         {WordHelper.getTags(word).length > 3 && (
-                            <span style={{ fontSize: '11px', color: '#999' }}>
+                            <span
+                                style={{
+                                    fontSize: '12px',
+                                    color: '#8E8E93',
+                                    fontWeight: '500',
+                                }}>
                                 +{WordHelper.getTags(word).length - 3}
                             </span>
                         )}
@@ -437,9 +475,10 @@ const WordListItem: React.FC<{
                 <div
                     style={{
                         flex: '0 0 80px',
-                        fontSize: '14px',
-                        color: '#666',
+                        fontSize: '15px',
+                        color: '#8E8E93',
                         textAlign: 'center',
+                        fontWeight: '500',
                     }}>
                     {getWordQueryCount(word)}
                 </div>
@@ -447,62 +486,65 @@ const WordListItem: React.FC<{
                 <div
                     style={{
                         flex: '0 0 60px',
-                        fontSize: '12px',
+                        fontSize: '13px',
                         textAlign: 'center',
                     }}>
                     <span
                         style={{
-                            padding: '2px 6px',
+                            padding: '4px 8px',
                             backgroundColor:
                                 WordHelper.getLevel(word) === '高级'
-                                    ? '#ffebee'
+                                    ? '#FFEBEE'
                                     : WordHelper.getLevel(word) === '中级'
-                                    ? '#fff3e0'
-                                    : '#e8f5e8',
+                                    ? '#FFF3E0'
+                                    : '#E8F5E9',
                             color:
                                 WordHelper.getLevel(word) === '高级'
-                                    ? '#c62828'
+                                    ? '#FF3B30'
                                     : WordHelper.getLevel(word) === '中级'
-                                    ? '#ef6c00'
-                                    : '#2e7d32',
-                            borderRadius: 8,
-                            fontSize: '11px',
+                                    ? '#FF9500'
+                                    : '#34C759',
+                            borderRadius: 10,
+                            fontSize: '12px',
+                            fontWeight: '600',
                         }}>
                         {WordHelper.getLevel(word)}
                     </span>
-                </div>{' '}
+                </div>
                 {/* 操作按钮 */}
                 <div
                     style={{
-                        flex: '0 0 120px',
+                        flex: '0 0 140px',
                         display: 'flex',
-                        gap: '4px',
+                        gap: '6px',
                         justifyContent: 'flex-end',
                     }}>
-                    {' '}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             onEdit();
                         }}
                         style={{
-                            padding: '4px 8px',
-                            fontSize: '11px',
-                            backgroundColor: '#f8f9fa',
-                            border: '1px solid #e9ecef',
-                            borderRadius: '4px',
+                            padding: '6px 12px',
+                            fontSize: '12px',
+                            backgroundColor: '#F2F2F7',
+                            border: 'none',
+                            borderRadius: '8px',
                             cursor: 'pointer',
-                            color: '#495057',
-                            fontWeight: '500',
-                            transition: 'all 0.2s',
+                            color: '#007AFF',
+                            fontWeight: '600',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e9ecef';
+                            e.currentTarget.style.backgroundColor = '#E5E5EA';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f8f9fa';
+                            e.currentTarget.style.backgroundColor = '#F2F2F7';
                         }}>
-                        ✏️ 编辑
+                        ✏️
                     </button>
                     <button
                         onClick={(e) => {
@@ -510,25 +552,28 @@ const WordListItem: React.FC<{
                             onDelete();
                         }}
                         style={{
-                            padding: '4px 8px',
-                            fontSize: '11px',
-                            backgroundColor: '#fff5f5',
-                            border: '1px solid #fed7d7',
-                            borderRadius: '4px',
+                            padding: '6px 12px',
+                            fontSize: '12px',
+                            backgroundColor: '#FFEBEE',
+                            border: 'none',
+                            borderRadius: '8px',
                             cursor: 'pointer',
-                            color: '#c53030',
-                            fontWeight: '500',
-                            transition: 'all 0.2s',
+                            color: '#FF3B30',
+                            fontWeight: '600',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#c53030';
+                            e.currentTarget.style.backgroundColor = '#FF3B30';
                             e.currentTarget.style.color = '#ffffff';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#fff5f5';
-                            e.currentTarget.style.color = '#c53030';
+                            e.currentTarget.style.backgroundColor = '#FFEBEE';
+                            e.currentTarget.style.color = '#FF3B30';
                         }}>
-                        🗑️ 删除
+                        🗑️
                     </button>
                     <button
                         onClick={(e) => {
@@ -536,25 +581,28 @@ const WordListItem: React.FC<{
                             onJumpToSource();
                         }}
                         style={{
-                            padding: '4px 8px',
-                            fontSize: '11px',
-                            backgroundColor: '#f0f9ff',
-                            border: '1px solid #bae6fd',
-                            borderRadius: '4px',
+                            padding: '6px 12px',
+                            fontSize: '12px',
+                            backgroundColor: '#E3F2FD',
+                            border: 'none',
+                            borderRadius: '8px',
                             cursor: 'pointer',
-                            color: '#0284c7',
-                            fontWeight: '500',
-                            transition: 'all 0.2s',
+                            color: '#007AFF',
+                            fontWeight: '600',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#0284c7';
+                            e.currentTarget.style.backgroundColor = '#007AFF';
                             e.currentTarget.style.color = '#ffffff';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f0f9ff';
-                            e.currentTarget.style.color = '#0284c7';
+                            e.currentTarget.style.backgroundColor = '#E3F2FD';
+                            e.currentTarget.style.color = '#007AFF';
                         }}>
-                        🔗 跳转
+                        🔗
                     </button>
                 </div>
             </div>
@@ -1181,66 +1229,67 @@ export default function WordManagerMarkdown({
             {' '}
             {viewMode === 'list' && (
                 <>
+                    {/* iOS 风格标题栏 */}
                     <div
                         style={{
                             background:
-                                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            padding: '24px',
-                            borderRadius: '12px',
+                                'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+                            padding: '32px 28px',
+                            borderRadius: '20px',
                             marginBottom: '24px',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                            boxShadow: '0 4px 16px rgba(0, 122, 255, 0.2)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                         }}>
                         <h1
                             style={{
                                 margin: 0,
                                 color: 'white',
-                                fontSize: '28px',
-                                fontWeight: '600',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                fontSize: '34px',
+                                fontWeight: '700',
+                                letterSpacing: '-1px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '12px',
                             }}>
-                            📚 单词管理中心
+                            📚 单词管理
                         </h1>
                         <p
                             style={{
                                 margin: '8px 0 0 0',
-                                color: 'rgba(255,255,255,0.9)',
-                                fontSize: '16px',
-                                fontWeight: '300',
+                                color: 'rgba(255,255,255,0.85)',
+                                fontSize: '17px',
+                                fontWeight: '400',
                             }}>
                             管理您的单词库，让学习更高效
                         </p>
-                    </div>{' '}
+                    </div>
+                    {/* iOS 风格搜索和操作栏 */}
                     <div
                         style={{
                             background: '#ffffff',
                             padding: '20px',
-                            borderRadius: '12px',
+                            borderRadius: '16px',
                             marginBottom: '24px',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                            border: '1px solid rgba(0,0,0,0.05)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            border: 'none',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                         }}>
                         <div
                             style={{
                                 display: 'flex',
-                                gap: '16px',
+                                gap: '12px',
                                 alignItems: 'center',
                                 flexWrap: 'wrap',
                                 position: 'relative',
                                 zIndex: 1,
-                            }}
-                            onClick={(e) => {
-                                // 防止容器点击影响搜索框聚焦
-                                if (e.target === e.currentTarget) {
-                                    e.stopPropagation();
-                                }
                             }}>
+                            {/* iOS 风格搜索框 */}
                             <input
                                 ref={searchInputRef}
                                 type="text"
-                                placeholder="🔍 搜索单词、分类、标签、发音或内容..."
+                                placeholder="🔍 搜索单词、分类、标签..."
                                 value={searchTerm}
                                 onChange={(e) => {
                                     console.log(
@@ -1252,54 +1301,53 @@ export default function WordManagerMarkdown({
                                 style={{
                                     flex: 1,
                                     padding: '12px 16px',
-                                    border: '2px solid #e1e5e9',
-                                    borderRadius: '8px',
-                                    fontSize: '14px',
-                                    backgroundColor: '#ffffff',
-                                    transition: 'all 0.2s ease',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    fontSize: '15px',
+                                    backgroundColor: '#F2F2F7',
+                                    transition:
+                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                     outline: 'none',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                                     pointerEvents: 'auto',
                                     userSelect: 'text',
                                     zIndex: 1,
                                     position: 'relative',
+                                    color: '#1C1C1E',
+                                    fontFamily:
+                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                 }}
                                 onFocus={(e) => {
                                     console.log('🎯 搜索框获得焦点');
-                                    e.currentTarget.style.borderColor =
-                                        '#0066cc';
-                                    e.currentTarget.style.boxShadow =
-                                        '0 0 0 3px rgba(0, 102, 204, 0.1)';
+                                    e.currentTarget.style.backgroundColor =
+                                        '#E5E5EA';
                                 }}
                                 onBlur={(e) => {
                                     console.log('😔 搜索框失去焦点');
-                                    e.currentTarget.style.borderColor =
-                                        '#e1e5e9';
-                                    e.currentTarget.style.boxShadow =
-                                        '0 2px 4px rgba(0,0,0,0.05)';
+                                    e.currentTarget.style.backgroundColor =
+                                        '#F2F2F7';
                                 }}
                                 onClick={(e) => {
-                                    console.log('👆 搜索框被点击');
                                     e.stopPropagation();
                                     if (searchInputRef.current) {
                                         searchInputRef.current.focus();
                                     }
                                 }}
                                 onMouseDown={(e) => {
-                                    console.log('🖱️ 搜索框鼠标按下');
                                     e.stopPropagation();
                                 }}
                                 tabIndex={0}
                             />
+
                             {searchTerm && (
                                 <label
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 5,
-                                        fontSize: '14px',
-                                        color: '#666',
+                                        gap: 6,
+                                        fontSize: '15px',
+                                        color: '#8E8E93',
                                         whiteSpace: 'nowrap',
+                                        cursor: 'pointer',
                                     }}>
                                     <input
                                         type="checkbox"
@@ -1309,78 +1357,89 @@ export default function WordManagerMarkdown({
                                                 e.target.checked,
                                             )
                                         }
+                                        style={{
+                                            width: '18px',
+                                            height: '18px',
+                                            cursor: 'pointer',
+                                        }}
                                     />
                                     全部高亮
                                 </label>
-                            )}{' '}
+                            )}
+
+                            {/* iOS 风格添加按钮 */}
                             <button
                                 onClick={() => setShowAdd(true)}
                                 style={{
-                                    padding: '12px 24px',
-                                    backgroundColor: '#0066cc',
+                                    padding: '12px 20px',
+                                    backgroundColor: '#007AFF',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '8px',
+                                    borderRadius: '12px',
                                     cursor: 'pointer',
-                                    fontSize: '14px',
-                                    fontWeight: '500',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                    transition: 'all 0.2s ease',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    boxShadow:
+                                        '0 2px 8px rgba(0, 122, 255, 0.25)',
+                                    transition:
+                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '8px',
+                                    gap: '6px',
+                                    fontFamily:
+                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.backgroundColor =
-                                        '#0052a3';
+                                        '#0051D5';
                                     e.currentTarget.style.transform =
                                         'translateY(-1px)';
                                     e.currentTarget.style.boxShadow =
-                                        '0 4px 8px rgba(0,0,0,0.15)';
+                                        '0 4px 12px rgba(0, 122, 255, 0.35)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.backgroundColor =
-                                        '#0066cc';
+                                        '#007AFF';
                                     e.currentTarget.style.transform =
                                         'translateY(0)';
                                     e.currentTarget.style.boxShadow =
-                                        '0 2px 4px rgba(0,0,0,0.1)';
+                                        '0 2px 8px rgba(0, 122, 255, 0.25)';
                                 }}>
-                                ➕ 添加新单词
-                            </button>{' '}
+                                ➕ 添加单词
+                            </button>
+
+                            {/* iOS 风格筛选按钮 */}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
                                 style={{
                                     padding: '12px 16px',
                                     backgroundColor: showFilters
-                                        ? '#e6f3ff'
-                                        : '#ffffff',
-                                    color: showFilters ? '#0066cc' : '#6c757d',
-                                    border: showFilters
-                                        ? '2px solid #0066cc'
-                                        : '2px solid #e1e5e9',
-                                    borderRadius: '8px',
+                                        ? '#E3F2FD'
+                                        : '#F2F2F7',
+                                    color: showFilters ? '#007AFF' : '#8E8E93',
+                                    border: 'none',
+                                    borderRadius: '12px',
                                     cursor: 'pointer',
-                                    fontSize: '14px',
-                                    fontWeight: '500',
-                                    transition: 'all 0.2s ease',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    transition:
+                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '6px',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                    fontFamily:
+                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                 }}
                                 onMouseEnter={(e) => {
                                     if (!showFilters) {
-                                        e.currentTarget.style.borderColor =
-                                            '#0066cc';
-                                        e.currentTarget.style.color = '#0066cc';
+                                        e.currentTarget.style.backgroundColor =
+                                            '#E5E5EA';
                                     }
                                 }}
                                 onMouseLeave={(e) => {
                                     if (!showFilters) {
-                                        e.currentTarget.style.borderColor =
-                                            '#e1e5e9';
-                                        e.currentTarget.style.color = '#6c757d';
+                                        e.currentTarget.style.backgroundColor =
+                                            '#F2F2F7';
                                     }
                                 }}>
                                 🔍 筛选
@@ -1409,7 +1468,7 @@ export default function WordManagerMarkdown({
                             </button>
                         </div>
                     </div>
-                    {/* 展示控制栏 */}{' '}
+                    {/* iOS 风格展示控制栏 */}
                     <div
                         style={{
                             display: 'flex',
@@ -1418,95 +1477,105 @@ export default function WordManagerMarkdown({
                             marginBottom: '20px',
                             padding: '16px 20px',
                             backgroundColor: '#ffffff',
-                            borderRadius: '12px',
-                            border: '1px solid rgba(0,0,0,0.05)',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                            borderRadius: '16px',
+                            border: 'none',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                         }}>
                         <div
                             style={{
                                 display: 'flex',
-                                gap: 15,
+                                gap: 16,
                                 alignItems: 'center',
                             }}>
-                            {/* 视图模式切换 */}
+                            {/* iOS 风格视图模式切换 */}
                             <div
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 5,
+                                    gap: 8,
                                 }}>
-                                {' '}
                                 <span
                                     style={{
-                                        fontSize: '14px',
-                                        color: '#374151',
+                                        fontSize: '15px',
+                                        color: '#8E8E93',
                                         fontWeight: '500',
-                                        marginRight: '8px',
                                     }}>
                                     视图:
                                 </span>
                                 <div
                                     style={{
                                         display: 'flex',
-                                        backgroundColor: '#f3f4f6',
-                                        borderRadius: '8px',
-                                        padding: '2px',
+                                        backgroundColor: '#F2F2F7',
+                                        borderRadius: '10px',
+                                        padding: '3px',
                                         gap: '2px',
                                     }}>
                                     <button
                                         onClick={() => setDisplayMode('grid')}
                                         style={{
-                                            padding: '8px 12px',
-                                            fontSize: '13px',
+                                            padding: '8px 14px',
+                                            fontSize: '14px',
                                             backgroundColor:
                                                 displayMode === 'grid'
-                                                    ? '#0066cc'
+                                                    ? '#007AFF'
                                                     : 'transparent',
                                             color:
                                                 displayMode === 'grid'
                                                     ? '#ffffff'
-                                                    : '#6b7280',
+                                                    : '#8E8E93',
                                             border: 'none',
-                                            borderRadius: '6px',
+                                            borderRadius: '8px',
                                             cursor: 'pointer',
-                                            fontWeight: '500',
-                                            transition: 'all 0.2s ease',
+                                            fontWeight: '600',
+                                            transition:
+                                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                            fontFamily:
+                                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                         }}>
                                         📊 网格
                                     </button>
                                     <button
                                         onClick={() => setDisplayMode('list')}
                                         style={{
-                                            padding: '8px 12px',
-                                            fontSize: '13px',
+                                            padding: '8px 14px',
+                                            fontSize: '14px',
                                             backgroundColor:
                                                 displayMode === 'list'
-                                                    ? '#0066cc'
+                                                    ? '#007AFF'
                                                     : 'transparent',
                                             color:
                                                 displayMode === 'list'
                                                     ? '#ffffff'
-                                                    : '#6b7280',
+                                                    : '#8E8E93',
                                             border: 'none',
-                                            borderRadius: '6px',
+                                            borderRadius: '8px',
                                             cursor: 'pointer',
-                                            fontWeight: '500',
-                                            transition: 'all 0.2s ease',
+                                            fontWeight: '600',
+                                            transition:
+                                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                            fontFamily:
+                                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                         }}>
                                         📋 列表
                                     </button>
                                 </div>
                             </div>
 
-                            {/* 排序选择 */}
+                            {/* iOS 风格排序选择 */}
                             <div
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 5,
+                                    gap: 8,
                                 }}>
                                 <span
-                                    style={{ fontSize: '14px', color: '#555' }}>
+                                    style={{
+                                        fontSize: '15px',
+                                        color: '#8E8E93',
+                                        fontWeight: '500',
+                                    }}>
                                     排序:
                                 </span>
                                 <select
@@ -1515,11 +1584,17 @@ export default function WordManagerMarkdown({
                                         setSortBy(e.target.value as any)
                                     }
                                     style={{
-                                        padding: '6px 8px',
-                                        fontSize: '12px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        backgroundColor: '#fff',
+                                        padding: '8px 12px',
+                                        fontSize: '14px',
+                                        border: 'none',
+                                        borderRadius: '10px',
+                                        backgroundColor: '#F2F2F7',
+                                        color: '#1C1C1E',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        outline: 'none',
+                                        fontFamily:
+                                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                     }}>
                                     <option value="name">名称</option>
                                     <option value="category">分类</option>
@@ -1535,26 +1610,42 @@ export default function WordManagerMarkdown({
                                         )
                                     }
                                     style={{
-                                        padding: '6px 8px',
-                                        fontSize: '12px',
-                                        backgroundColor: '#fff',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
+                                        padding: '8px 12px',
+                                        fontSize: '16px',
+                                        backgroundColor: '#F2F2F7',
+                                        border: 'none',
+                                        borderRadius: '10px',
                                         cursor: 'pointer',
+                                        color: '#007AFF',
+                                        fontWeight: '600',
+                                        transition:
+                                            'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor =
+                                            '#E5E5EA';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor =
+                                            '#F2F2F7';
                                     }}>
                                     {sortOrder === 'asc' ? '↑' : '↓'}
                                 </button>
                             </div>
 
-                            {/* 每页显示数量 */}
+                            {/* iOS 风格每页显示数量 */}
                             <div
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 5,
+                                    gap: 8,
                                 }}>
                                 <span
-                                    style={{ fontSize: '14px', color: '#555' }}>
+                                    style={{
+                                        fontSize: '15px',
+                                        color: '#8E8E93',
+                                        fontWeight: '500',
+                                    }}>
                                     每页:
                                 </span>
                                 <select
@@ -1564,11 +1655,17 @@ export default function WordManagerMarkdown({
                                         setCurrentPage(1);
                                     }}
                                     style={{
-                                        padding: '6px 8px',
-                                        fontSize: '12px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        backgroundColor: '#fff',
+                                        padding: '8px 12px',
+                                        fontSize: '14px',
+                                        border: 'none',
+                                        borderRadius: '10px',
+                                        backgroundColor: '#F2F2F7',
+                                        color: '#1C1C1E',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        outline: 'none',
+                                        fontFamily:
+                                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                     }}>
                                     <option value={6}>6</option>
                                     <option value={12}>12</option>
@@ -1578,8 +1675,13 @@ export default function WordManagerMarkdown({
                             </div>
                         </div>
 
-                        {/* 结果统计 */}
-                        <div style={{ fontSize: '14px', color: '#666' }}>
+                        {/* iOS 风格结果统计 */}
+                        <div
+                            style={{
+                                fontSize: '15px',
+                                color: '#8E8E93',
+                                fontWeight: '500',
+                            }}>
                             显示{' '}
                             {Math.min(
                                 (currentPage - 1) * itemsPerPage + 1,
@@ -1590,51 +1692,73 @@ export default function WordManagerMarkdown({
                                 currentPage * itemsPerPage,
                                 sortedWords.length,
                             )}{' '}
-                            / 共 {sortedWords.length} 个单词
+                            / 共 {sortedWords.length} 个
                         </div>
                     </div>
-                    {/* 过滤器面板 */}
+                    {/* iOS 风格过滤器面板 */}
                     {showFilters && (
                         <div
                             style={{
                                 marginBottom: 20,
-                                padding: 15,
-                                border: '1px solid #ddd',
-                                borderRadius: 8,
-                                backgroundColor: '#f9f9f9',
+                                padding: 20,
+                                border: 'none',
+                                borderRadius: 16,
+                                backgroundColor: '#ffffff',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                             }}>
                             <div
                                 style={{
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
-                                    marginBottom: 15,
+                                    marginBottom: 20,
                                 }}>
-                                <h3 style={{ margin: 0, fontSize: '16px' }}>
+                                <h3
+                                    style={{
+                                        margin: 0,
+                                        fontSize: '20px',
+                                        fontWeight: '600',
+                                        color: '#1C1C1E',
+                                    }}>
                                     过滤选项
                                 </h3>
                                 <button
                                     onClick={clearAllFilters}
                                     style={{
-                                        padding: '6px 12px',
-                                        fontSize: '12px',
-                                        backgroundColor: '#fff',
-                                        border: '1px solid #ddd',
-                                        borderRadius: '4px',
+                                        padding: '8px 16px',
+                                        fontSize: '14px',
+                                        backgroundColor: '#F2F2F7',
+                                        border: 'none',
+                                        borderRadius: '10px',
                                         cursor: 'pointer',
+                                        color: '#FF3B30',
+                                        fontWeight: '600',
+                                        transition:
+                                            'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.backgroundColor =
+                                            '#FFEBEE';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.backgroundColor =
+                                            '#F2F2F7';
                                     }}>
                                     清除筛选
                                 </button>
                             </div>
+
                             {/* 分类过滤 */}
                             {allCategories.length > 0 && (
-                                <div style={{ marginBottom: 15 }}>
+                                <div style={{ marginBottom: 20 }}>
                                     <div
                                         style={{
-                                            fontSize: '14px',
-                                            fontWeight: 'bold',
-                                            marginBottom: 8,
-                                            color: '#555',
+                                            fontSize: '15px',
+                                            fontWeight: '600',
+                                            marginBottom: 10,
+                                            color: '#48484A',
                                         }}>
                                         分类筛选:
                                     </div>
@@ -1642,7 +1766,7 @@ export default function WordManagerMarkdown({
                                         style={{
                                             display: 'flex',
                                             flexWrap: 'wrap',
-                                            gap: 6,
+                                            gap: 8,
                                         }}>
                                         {allCategories.map((category) => (
                                             <button
@@ -1653,23 +1777,25 @@ export default function WordManagerMarkdown({
                                                     )
                                                 }
                                                 style={{
-                                                    padding: '6px 12px',
-                                                    fontSize: '12px',
+                                                    padding: '8px 16px',
+                                                    fontSize: '14px',
                                                     backgroundColor:
                                                         selectedCategories.includes(
                                                             category,
                                                         )
-                                                            ? '#007acc'
-                                                            : '#fff',
+                                                            ? '#007AFF'
+                                                            : '#F2F2F7',
                                                     color: selectedCategories.includes(
                                                         category,
                                                     )
                                                         ? '#fff'
-                                                        : '#333',
-                                                    border: '1px solid #ccc',
-                                                    borderRadius: '15px',
+                                                        : '#1C1C1E',
+                                                    border: 'none',
+                                                    borderRadius: '14px',
                                                     cursor: 'pointer',
-                                                    transition: 'all 0.2s',
+                                                    fontWeight: '500',
+                                                    transition:
+                                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                                 }}>
                                                 {category}
                                                 {selectedCategories.includes(
@@ -1679,16 +1805,17 @@ export default function WordManagerMarkdown({
                                         ))}
                                     </div>
                                 </div>
-                            )}{' '}
+                            )}
+
                             {/* 标签过滤 */}
                             {allTags.length > 0 && (
-                                <div style={{ marginBottom: 15 }}>
+                                <div style={{ marginBottom: 20 }}>
                                     <div
                                         style={{
-                                            fontSize: '14px',
-                                            fontWeight: 'bold',
-                                            marginBottom: 8,
-                                            color: '#555',
+                                            fontSize: '15px',
+                                            fontWeight: '600',
+                                            marginBottom: 10,
+                                            color: '#48484A',
                                         }}>
                                         标签筛选:
                                     </div>
@@ -1696,7 +1823,7 @@ export default function WordManagerMarkdown({
                                         style={{
                                             display: 'flex',
                                             flexWrap: 'wrap',
-                                            gap: 6,
+                                            gap: 8,
                                         }}>
                                         {allTags.map((tag) => (
                                             <button
@@ -1705,23 +1832,25 @@ export default function WordManagerMarkdown({
                                                     handleTagToggle(tag)
                                                 }
                                                 style={{
-                                                    padding: '6px 12px',
-                                                    fontSize: '12px',
+                                                    padding: '8px 16px',
+                                                    fontSize: '14px',
                                                     backgroundColor:
                                                         selectedTags.includes(
                                                             tag,
                                                         )
-                                                            ? '#28a745'
-                                                            : '#fff',
+                                                            ? '#34C759'
+                                                            : '#F2F2F7',
                                                     color: selectedTags.includes(
                                                         tag,
                                                     )
                                                         ? '#fff'
-                                                        : '#333',
-                                                    border: '1px solid #ccc',
-                                                    borderRadius: '15px',
+                                                        : '#1C1C1E',
+                                                    border: 'none',
+                                                    borderRadius: '14px',
                                                     cursor: 'pointer',
-                                                    transition: 'all 0.2s',
+                                                    fontWeight: '500',
+                                                    transition:
+                                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                                 }}>
                                                 {tag}
                                                 {selectedTags.includes(tag) &&
@@ -1731,15 +1860,16 @@ export default function WordManagerMarkdown({
                                     </div>
                                 </div>
                             )}
+
                             {/* 等级过滤 */}
                             {allLevels.length > 0 && (
-                                <div style={{ marginBottom: 15 }}>
+                                <div style={{ marginBottom: 20 }}>
                                     <div
                                         style={{
-                                            fontSize: '14px',
-                                            fontWeight: 'bold',
-                                            marginBottom: 8,
-                                            color: '#555',
+                                            fontSize: '15px',
+                                            fontWeight: '600',
+                                            marginBottom: 10,
+                                            color: '#48484A',
                                         }}>
                                         等级筛选:
                                     </div>
@@ -1747,7 +1877,7 @@ export default function WordManagerMarkdown({
                                         style={{
                                             display: 'flex',
                                             flexWrap: 'wrap',
-                                            gap: 6,
+                                            gap: 8,
                                         }}>
                                         {allLevels.map((level) => (
                                             <button
@@ -1756,23 +1886,25 @@ export default function WordManagerMarkdown({
                                                     handleLevelToggle(level)
                                                 }
                                                 style={{
-                                                    padding: '6px 12px',
-                                                    fontSize: '12px',
+                                                    padding: '8px 16px',
+                                                    fontSize: '14px',
                                                     backgroundColor:
                                                         selectedLevels.includes(
                                                             level,
                                                         )
-                                                            ? '#ffc107'
-                                                            : '#fff',
+                                                            ? '#FF9500'
+                                                            : '#F2F2F7',
                                                     color: selectedLevels.includes(
                                                         level,
                                                     )
-                                                        ? '#000'
-                                                        : '#333',
-                                                    border: '1px solid #ccc',
-                                                    borderRadius: '15px',
+                                                        ? '#fff'
+                                                        : '#1C1C1E',
+                                                    border: 'none',
+                                                    borderRadius: '14px',
                                                     cursor: 'pointer',
-                                                    transition: 'all 0.2s',
+                                                    fontWeight: '500',
+                                                    transition:
+                                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                                 }}>
                                                 {level}
                                                 {selectedLevels.includes(
@@ -1783,15 +1915,16 @@ export default function WordManagerMarkdown({
                                     </div>
                                 </div>
                             )}
+
                             {/* 词性过滤 */}
                             {allPartsOfSpeech.length > 0 && (
                                 <div>
                                     <div
                                         style={{
-                                            fontSize: '14px',
-                                            fontWeight: 'bold',
-                                            marginBottom: 8,
-                                            color: '#555',
+                                            fontSize: '15px',
+                                            fontWeight: '600',
+                                            marginBottom: 10,
+                                            color: '#48484A',
                                         }}>
                                         词性筛选:
                                     </div>
@@ -1799,7 +1932,7 @@ export default function WordManagerMarkdown({
                                         style={{
                                             display: 'flex',
                                             flexWrap: 'wrap',
-                                            gap: 6,
+                                            gap: 8,
                                         }}>
                                         {allPartsOfSpeech.map(
                                             (partsOfSpeech) => (
@@ -1811,23 +1944,25 @@ export default function WordManagerMarkdown({
                                                         )
                                                     }
                                                     style={{
-                                                        padding: '6px 12px',
-                                                        fontSize: '12px',
+                                                        padding: '8px 16px',
+                                                        fontSize: '14px',
                                                         backgroundColor:
                                                             selectedPartsOfSpeech.includes(
                                                                 partsOfSpeech,
                                                             )
-                                                                ? '#6f42c1'
-                                                                : '#fff',
+                                                                ? '#AF52DE'
+                                                                : '#F2F2F7',
                                                         color: selectedPartsOfSpeech.includes(
                                                             partsOfSpeech,
                                                         )
                                                             ? '#fff'
-                                                            : '#333',
-                                                        border: '1px solid #ccc',
-                                                        borderRadius: '15px',
+                                                            : '#1C1C1E',
+                                                        border: 'none',
+                                                        borderRadius: '14px',
                                                         cursor: 'pointer',
-                                                        transition: 'all 0.2s',
+                                                        fontWeight: '500',
+                                                        transition:
+                                                            'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                                     }}>
                                                     {partsOfSpeech}
                                                     {selectedPartsOfSpeech.includes(
@@ -1987,17 +2122,17 @@ export default function WordManagerMarkdown({
                                 ),
                             )
                         )}
-                    </div>
-                    {/* 分页控件 */}
+                    </div>{' '}
+                    {/* 分页控件 - iOS 风格 */}
                     {totalPages > 1 && (
                         <div
                             style={{
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                gap: 10,
-                                marginTop: 20,
-                                padding: '15px 0',
+                                gap: 12,
+                                marginTop: 24,
+                                padding: '20px 0',
                             }}>
                             <button
                                 onClick={() =>
@@ -2005,20 +2140,48 @@ export default function WordManagerMarkdown({
                                 }
                                 disabled={currentPage === 1}
                                 style={{
-                                    padding: '8px 12px',
-                                    fontSize: '14px',
+                                    padding: '10px 20px',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
                                     backgroundColor:
-                                        currentPage === 1 ? '#f8f9fa' : '#fff',
+                                        currentPage === 1
+                                            ? '#F2F2F7'
+                                            : '#007AFF',
                                     color:
                                         currentPage === 1
-                                            ? '#6c757d'
-                                            : '#495057',
-                                    border: '1px solid #dee2e6',
-                                    borderRadius: '4px',
+                                            ? '#C7C7CC'
+                                            : '#ffffff',
+                                    border: 'none',
+                                    borderRadius: '12px',
                                     cursor:
                                         currentPage === 1
                                             ? 'not-allowed'
                                             : 'pointer',
+                                    transition:
+                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                    boxShadow:
+                                        currentPage === 1
+                                            ? 'none'
+                                            : '0 2px 8px rgba(0, 122, 255, 0.25)',
+                                    fontFamily:
+                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                    letterSpacing: '-0.2px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (currentPage !== 1) {
+                                        e.currentTarget.style.transform =
+                                            'scale(0.98)';
+                                        e.currentTarget.style.boxShadow =
+                                            '0 4px 12px rgba(0, 122, 255, 0.35)';
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (currentPage !== 1) {
+                                        e.currentTarget.style.transform =
+                                            'scale(1)';
+                                        e.currentTarget.style.boxShadow =
+                                            '0 2px 8px rgba(0, 122, 255, 0.25)';
+                                    }
                                 }}>
                                 ← 上一页
                             </button>
