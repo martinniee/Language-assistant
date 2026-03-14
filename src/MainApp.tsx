@@ -6,7 +6,7 @@ import {
     Brain,
     BarChart2,
     HardDrive,
-    Database,
+    Layers,
     Settings as SettingsIcon,
     GraduationCap,
     ChevronRight,
@@ -47,7 +47,8 @@ const MainApp: React.FC<MainAppProps> = ({
     onJumpToSource,
 }) => {
     const [currentView, setCurrentView] = useState<ViewMode>('home');
-    const [isCollapsed, setIsCollapsed] = useState(false); // 新增折叠状态
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [hoveredItem, setHoveredItem] = useState<ViewMode | null>(null);
 
     // 添加调试信息，监控数据变化
     React.useEffect(() => {
@@ -93,7 +94,7 @@ const MainApp: React.FC<MainAppProps> = ({
         {
             id: 'global-meta' as ViewMode,
             label: '元数据管理',
-            icon: <Database size={20} />,
+            icon: <Layers size={20} />,
             description: '全局元数据配置和别名管理',
         },
         {
@@ -180,411 +181,442 @@ const MainApp: React.FC<MainAppProps> = ({
                 fontFamily:
                     '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif',
             }}>
-            {/* 左侧导航栏 - iOS 风格 */}
+            {/* ────────────── 左侧导航栏 ────────────── */}
             <div
                 style={{
-                    width: isCollapsed ? '72px' : '260px',
+                    width: isCollapsed ? '68px' : '240px',
                     backgroundColor: '#FAFAFA',
-                    borderRight: '1px solid rgba(0,0,0,0.06)',
+                    borderRight: '1px solid rgba(0,0,0,0.07)',
                     display: 'flex',
                     flexDirection: 'column',
-                    boxShadow: '2px 0 12px rgba(0,0,0,0.04)',
+                    transition: 'width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
                     overflow: 'hidden',
-                    transition: 'width 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                    flexShrink: 0,
                 }}>
-                {/* 应用标题和折叠按钮 */}
+                {/* ── 顶部 Header ── */}
                 <div
                     style={{
                         padding: isCollapsed
-                            ? '24px 8px 20px'
-                            : '24px 20px 20px',
-                        borderBottom: '1px solid rgba(0,0,0,0.04)',
-                        backgroundColor: '#ffffff',
+                            ? '20px 10px 16px'
+                            : '20px 16px 16px',
+                        borderBottom: '1px solid rgba(0,0,0,0.05)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: isCollapsed
                             ? 'center'
                             : 'space-between',
+                        gap: 8,
+                        minHeight: '72px',
+                        backgroundColor: '#ffffff',
                     }}>
+                    {/* App logo + 标题 */}
                     {!isCollapsed && (
-                        <div style={{ flex: 1 }}>
-                            <h2
+                        <div style={{ flex: 1, overflow: 'hidden' }}>
+                            <div
                                 style={{
-                                    margin: 0,
-                                    color: '#1C1C1E',
-                                    fontSize: '18px',
-                                    fontWeight: '700',
-                                    letterSpacing: '-0.4px',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '8px',
+                                    gap: 8,
+                                    marginBottom: 3,
                                 }}>
                                 <GraduationCap
-                                    size={22}
+                                    size={20}
                                     color="#007AFF"
-                                />{' '}
-                                语言助手
-                            </h2>
-                            <p
-                                style={{
-                                    margin: '6px 0 0',
-                                    color: '#8E8E93',
-                                    fontSize: '13px',
-                                    fontWeight: '500',
-                                    letterSpacing: '-0.1px',
-                                }}>
-                                共 {stats.totalWords} 个单词
-                            </p>
-                        </div>
-                    )}
-
-                    {/* 折叠/展开按钮 - iOS 风格 */}
-                    <button
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                        style={{
-                            width: '36px',
-                            height: '36px',
-                            border: 'none',
-                            backgroundColor: '#F2F2F7',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '14px',
-                            color: '#8E8E93',
-                            transition:
-                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                            outline: 'none',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#E5E5EA';
-                            e.currentTarget.style.color = '#1C1C1E';
-                            e.currentTarget.style.transform = 'scale(0.95)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#F2F2F7';
-                            e.currentTarget.style.color = '#8E8E93';
-                            e.currentTarget.style.transform = 'scale(1)';
-                        }}>
-                        {isCollapsed ? (
-                            <ChevronRight size={16} />
-                        ) : (
-                            <ChevronLeft size={16} />
-                        )}
-                    </button>
-                </div>
-
-                {/* 今日待学状态卡片 - iOS 风格 */}
-                {!isCollapsed ? (
-                    <div
-                        style={{
-                            margin: '16px 16px 12px',
-                            padding: '16px',
-                            backgroundColor:
-                                stats.dueWords > 0
-                                    ? 'linear-gradient(135deg, #FFF5F5 0%, #FFE5E5 100%)'
-                                    : 'linear-gradient(135deg, #F0FFF4 0%, #E6F7EB 100%)',
-                            borderRadius: '14px',
-                            border: 'none',
-                            boxShadow:
-                                stats.dueWords > 0
-                                    ? '0 4px 12px rgba(255, 59, 48, 0.15)'
-                                    : '0 4px 12px rgba(52, 199, 89, 0.15)',
-                        }}>
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                            }}>
-                            <div>
-                                <div
+                                />
+                                <span
                                     style={{
-                                        fontSize: '13px',
-                                        fontWeight: '600',
-                                        color: '#8E8E93',
-                                        marginBottom: '4px',
-                                        letterSpacing: '-0.1px',
-                                    }}>
-                                    今日待学
-                                </div>
-                                <div
-                                    style={{
-                                        fontSize: '24px',
+                                        fontSize: '16px',
                                         fontWeight: '700',
-                                        color:
-                                            stats.dueWords > 0
-                                                ? '#FF3B30'
-                                                : '#34C759',
-                                        letterSpacing: '-0.5px',
+                                        color: '#1C1C1E',
+                                        WebkitTextFillColor: '#1C1C1E',
+                                        letterSpacing: '-0.4px',
+                                        lineHeight: 1,
                                     }}>
-                                    {stats.dueWords > 0
-                                        ? `${stats.dueWords} 个`
-                                        : '完成'}
-                                </div>
+                                    语言助手
+                                </span>
                             </div>
                             <div
                                 style={{
-                                    fontSize: '32px',
-                                    opacity: 0.8,
+                                    fontSize: '12px',
+                                    color: '#8E8E93',
+                                    WebkitTextFillColor: '#8E8E93',
+                                    fontWeight: '500',
+                                    paddingLeft: 28,
+                                }}>
+                                共 {stats.totalWords} 个单词
+                            </div>
+                        </div>
+                    )}{' '}
+                    {/* 折叠时：logo 本身即展开按钮 */}
+                    {isCollapsed && (
+                        <button
+                            onClick={() => setIsCollapsed(false)}
+                            title="展开侧边栏"
+                            style={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: 10,
+                                backgroundColor: '#EBF4FF',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: 0,
+                                transition: 'all 0.15s ease',
+                                flexShrink: 0,
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#D6EBFF';
+                                e.currentTarget.style.transform = 'scale(1.08)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#EBF4FF';
+                                e.currentTarget.style.transform = 'scale(1)';
+                            }}>
+                            <ChevronRight
+                                size={18}
+                                color="#007AFF"
+                            />
+                        </button>
+                    )}
+                    {/* 折叠/展开按钮 */}
+                    {!isCollapsed && (
+                        <button
+                            onClick={() => setIsCollapsed(true)}
+                            title="折叠侧边栏"
+                            style={{
+                                width: 30,
+                                height: 30,
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                borderRadius: 8,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#C7C7CC',
+                                flexShrink: 0,
+                                transition: 'all 0.15s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    '#F2F2F7';
+                                e.currentTarget.style.color = '#8E8E93';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    'transparent';
+                                e.currentTarget.style.color = '#C7C7CC';
+                            }}>
+                            <ChevronLeft size={16} />
+                        </button>
+                    )}
+                </div>
+                {/* ── 今日待学状态卡片 ── */}
+                {!isCollapsed && (
+                    <div
+                        style={{
+                            margin: '12px 12px 4px',
+                            padding: '12px 14px',
+                            borderRadius: 14,
+                            background:
+                                stats.dueWords > 0
+                                    ? 'linear-gradient(135deg, #FFF0EF 0%, #FFE0DE 100%)'
+                                    : 'linear-gradient(135deg, #EDFDF4 0%, #D6F5E3 100%)',
+                            boxShadow:
+                                stats.dueWords > 0
+                                    ? '0 2px 8px rgba(255, 59, 48, 0.12)'
+                                    : '0 2px 8px rgba(52, 199, 89, 0.12)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                        }}>
+                        <div>
+                            <div
+                                style={{
+                                    fontSize: '11px',
+                                    fontWeight: '600',
+                                    color: '#8E8E93',
+                                    WebkitTextFillColor: '#8E8E93',
+                                    letterSpacing: '0.2px',
+                                    textTransform: 'uppercase',
+                                    marginBottom: 4,
+                                }}>
+                                今日待学
+                            </div>
+                            <div
+                                style={{
+                                    fontSize: '22px',
+                                    fontWeight: '700',
                                     color:
                                         stats.dueWords > 0
                                             ? '#FF3B30'
                                             : '#34C759',
-                                    display: 'flex',
+                                    WebkitTextFillColor:
+                                        stats.dueWords > 0
+                                            ? '#FF3B30'
+                                            : '#34C759',
+                                    letterSpacing: '-0.5px',
+                                    lineHeight: 1,
                                 }}>
-                                {stats.dueWords > 0 ? (
-                                    <Target size={32} />
-                                ) : (
-                                    <Award size={32} />
-                                )}
+                                {stats.dueWords > 0
+                                    ? `${stats.dueWords} 个`
+                                    : '全部完成'}
                             </div>
                         </div>
-                    </div>
-                ) : (
-                    <div
-                        style={{
-                            margin: '16px 12px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                        }}>
                         <div
                             style={{
-                                width: '48px',
-                                height: '48px',
-                                background:
-                                    stats.dueWords > 0
-                                        ? 'linear-gradient(135deg, #FFE5E5 0%, #FFC9C9 100%)'
-                                        : 'linear-gradient(135deg, #E6F7EB 0%, #C6F6D5 100%)',
+                                width: 40,
+                                height: 40,
                                 borderRadius: '50%',
+                                backgroundColor:
+                                    stats.dueWords > 0
+                                        ? 'rgba(255,59,48,0.12)'
+                                        : 'rgba(52,199,89,0.12)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontSize: '22px',
-                                position: 'relative',
-                                boxShadow:
-                                    stats.dueWords > 0
-                                        ? '0 4px 12px rgba(255, 59, 48, 0.2)'
-                                        : '0 4px 12px rgba(52, 199, 89, 0.2)',
                                 color:
                                     stats.dueWords > 0 ? '#FF3B30' : '#34C759',
+                                flexShrink: 0,
                             }}>
                             {stats.dueWords > 0 ? (
-                                <Target size={24} />
+                                <Target size={22} />
                             ) : (
-                                <Award size={24} />
-                            )}
-                            {stats.dueWords > 0 && (
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        top: '-2px',
-                                        right: '-2px',
-                                        backgroundColor: '#FF3B30',
-                                        color: 'white',
-                                        borderRadius: '50%',
-                                        width: '20px',
-                                        height: '20px',
-                                        fontSize: '11px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontWeight: '700',
-                                        border: '2px solid #FAFAFA',
-                                        boxShadow:
-                                            '0 2px 8px rgba(255, 59, 48, 0.4)',
-                                    }}>
-                                    {stats.dueWords > 9 ? '9+' : stats.dueWords}
-                                </div>
+                                <Award size={22} />
                             )}
                         </div>
                     </div>
                 )}
-
-                {/* 导航菜单 - iOS 风格 */}
+                {/* 折叠状态下的待学徽章 */}
+                {isCollapsed && stats.dueWords > 0 && (
+                    <div
+                        style={{
+                            margin: '10px auto',
+                            width: 44,
+                            height: 44,
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(255,59,48,0.10)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#FF3B30',
+                            position: 'relative',
+                        }}>
+                        <Target size={22} />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                backgroundColor: '#FF3B30',
+                                color: 'white',
+                                WebkitTextFillColor: 'white',
+                                borderRadius: 8,
+                                padding: '1px 5px',
+                                fontSize: '10px',
+                                fontWeight: '700',
+                                lineHeight: '16px',
+                                minWidth: 16,
+                                textAlign: 'center',
+                                border: '2px solid #FAFAFA',
+                            }}>
+                            {stats.dueWords > 9 ? '9+' : stats.dueWords}
+                        </div>
+                    </div>
+                )}
+                {/* ── 导航菜单 ── */}
                 <nav
                     style={{
                         flex: 1,
                         overflowY: 'auto',
-                        padding: isCollapsed ? '0 8px' : '0 12px',
-                        paddingBottom: '12px',
+                        overflowX: 'hidden',
+                        padding: isCollapsed ? '8px 10px' : '8px 10px',
                     }}>
-                    {' '}
-                    {navigationItems.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => setCurrentView(item.id)}
-                            className={`la-nav-item${
-                                currentView === item.id ? ' la-nav-active' : ''
-                            }`}
-                            style={{
-                                width: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: isCollapsed
-                                    ? 'center'
-                                    : 'flex-start',
-                                padding: isCollapsed ? '14px 8px' : '14px 16px',
-                                marginBottom: '6px',
-                                border: 'none',
-                                backgroundColor:
-                                    currentView === item.id
-                                        ? '#007AFF'
-                                        : 'transparent',
-                                color:
-                                    currentView === item.id
-                                        ? '#ffffff'
-                                        : '#1C1C1E',
-                                fontSize: '15px',
-                                fontWeight:
-                                    currentView === item.id ? '600' : '500',
-                                cursor: 'pointer',
-                                textAlign: 'left',
-                                transition:
-                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                borderRadius: '12px',
-                                outline: 'none',
-                                position: 'relative',
-                                boxShadow:
-                                    currentView === item.id
-                                        ? '0 4px 12px rgba(0, 122, 255, 0.25)'
-                                        : 'none',
-                                letterSpacing: '-0.2px',
-                            }}
-                            onMouseEnter={(e) => {
-                                if (currentView !== item.id) {
-                                    e.currentTarget.style.backgroundColor =
-                                        '#F2F2F7';
-                                    e.currentTarget.style.transform =
-                                        'scale(0.98)';
+                    {navigationItems.map((item) => {
+                        const isActive = currentView === item.id;
+                        const isHovered = hoveredItem === item.id;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => setCurrentView(item.id)}
+                                onMouseEnter={() => setHoveredItem(item.id)}
+                                onMouseLeave={() => setHoveredItem(null)}
+                                className={`la-nav-item${
+                                    isActive ? ' la-nav-active' : ''
+                                }`}
+                                title={
+                                    isCollapsed
+                                        ? `${item.label} — ${item.description}`
+                                        : undefined
                                 }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (currentView !== item.id) {
-                                    e.currentTarget.style.backgroundColor =
-                                        'transparent';
-                                    e.currentTarget.style.transform =
-                                        'scale(1)';
-                                }
-                            }}
-                            title={
-                                isCollapsed
-                                    ? `${item.label} - ${item.description}`
-                                    : undefined
-                            }>
-                            <span
                                 style={{
-                                    marginRight: isCollapsed ? 0 : '12px',
-                                    width: '20px',
-                                    height: '20px',
-                                    textAlign: 'center',
+                                    width: '100%',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
+                                    justifyContent: isCollapsed
+                                        ? 'center'
+                                        : 'flex-start',
+                                    padding: isCollapsed
+                                        ? '11px 0'
+                                        : '10px 12px',
+                                    marginBottom: 4,
+                                    border: 'none',
+                                    borderRadius: 11,
+                                    backgroundColor: isActive
+                                        ? '#007AFF'
+                                        : isHovered
+                                        ? '#F0F0F5'
+                                        : 'transparent',
+                                    cursor: 'pointer',
+                                    textAlign: 'left',
+                                    outline: 'none',
+                                    position: 'relative',
+                                    boxShadow: isActive
+                                        ? '0 3px 10px rgba(0, 122, 255, 0.22)'
+                                        : 'none',
+                                    transition:
+                                        'background-color 0.15s ease, box-shadow 0.15s ease',
                                 }}>
-                                {item.icon}
-                            </span>
-
-                            {!isCollapsed && (
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    {' '}
-                                    <div
-                                        style={{
-                                            fontWeight: 'inherit',
-                                            lineHeight: '1.4',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            color:
-                                                currentView === item.id
-                                                    ? '#ffffff'
-                                                    : '#1C1C1E',
-                                            WebkitTextFillColor:
-                                                currentView === item.id
-                                                    ? '#ffffff'
-                                                    : '#1C1C1E',
-                                        }}>
-                                        {item.label}
-                                    </div>{' '}
-                                    <div
-                                        style={{
-                                            fontSize: '12px',
-                                            color:
-                                                currentView === item.id
-                                                    ? 'rgba(255,255,255,0.85)'
-                                                    : '#636366',
-                                            WebkitTextFillColor:
-                                                currentView === item.id
-                                                    ? 'rgba(255,255,255,0.85)'
-                                                    : '#636366',
-                                            marginTop: '2px',
-                                            lineHeight: '1.2',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            letterSpacing: '-0.1px',
-                                            fontWeight: '400',
-                                            opacity:
-                                                currentView === item.id
-                                                    ? 1
-                                                    : 0.85,
-                                        }}>
-                                        {item.description}
-                                    </div>
-                                </div>
-                            )}
-
-                            {item.badge && (
+                                {/* 图标容器 */}
                                 <span
                                     style={{
-                                        position: isCollapsed
-                                            ? 'absolute'
-                                            : 'static',
-                                        top: isCollapsed ? '6px' : 'auto',
-                                        right: isCollapsed ? '6px' : 'auto',
-                                        backgroundColor: '#FF3B30',
-                                        color: 'white',
-                                        borderRadius: '12px',
-                                        padding: isCollapsed
-                                            ? '3px 7px'
-                                            : '4px 8px',
-                                        fontSize: isCollapsed ? '10px' : '11px',
-                                        fontWeight: '700',
-                                        minWidth: isCollapsed ? '18px' : '20px',
-                                        textAlign: 'center',
-                                        marginLeft: isCollapsed ? 0 : '8px',
-                                        lineHeight: '1',
-                                        boxShadow:
-                                            '0 2px 8px rgba(255, 59, 48, 0.3)',
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: 9,
+                                        backgroundColor: isActive
+                                            ? 'rgba(255,255,255,0.20)'
+                                            : isHovered
+                                            ? 'rgba(0,122,255,0.08)'
+                                            : '#F2F2F7',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0,
+                                        color: isActive ? '#ffffff' : '#007AFF',
+                                        transition: 'all 0.15s ease',
+                                        marginRight: isCollapsed ? 0 : 10,
                                     }}>
-                                    {isCollapsed && item.badge > 9
-                                        ? '9+'
-                                        : item.badge}
+                                    {item.icon}
                                 </span>
-                            )}
-                        </button>
-                    ))}
-                </nav>
 
-                {/* 底部版本信息 - iOS 风格 */}
-                {!isCollapsed && (
-                    <div
-                        style={{
-                            padding: '16px 20px',
-                            borderTop: '1px solid rgba(0,0,0,0.04)',
-                            backgroundColor: '#ffffff',
-                            fontSize: '12px',
-                            color: '#C7C7CC',
-                            textAlign: 'center',
-                            fontWeight: '500',
-                            letterSpacing: '-0.1px',
-                        }}>
-                        Language Assistant v1.0
-                    </div>
-                )}
-            </div>{' '}
-            {/* 右侧内容区域 - iOS 风格 */}
+                                {/* 文字区域 */}
+                                {!isCollapsed && (
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div
+                                            style={{
+                                                fontSize: '14px',
+                                                fontWeight: isActive
+                                                    ? '600'
+                                                    : '500',
+                                                color: isActive
+                                                    ? '#ffffff'
+                                                    : '#1C1C1E',
+                                                WebkitTextFillColor: isActive
+                                                    ? '#ffffff'
+                                                    : '#1C1C1E',
+                                                lineHeight: '1.3',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                letterSpacing: '-0.2px',
+                                            }}>
+                                            {item.label}
+                                        </div>
+                                        <div
+                                            style={{
+                                                fontSize: '11px',
+                                                fontWeight: '400',
+                                                color: isActive
+                                                    ? 'rgba(255,255,255,0.78)'
+                                                    : '#8E8E93',
+                                                WebkitTextFillColor: isActive
+                                                    ? 'rgba(255,255,255,0.78)'
+                                                    : '#8E8E93',
+                                                marginTop: 1,
+                                                lineHeight: '1.2',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                letterSpacing: '-0.1px',
+                                            }}>
+                                            {item.description}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 角标 badge */}
+                                {item.badge && (
+                                    <span
+                                        style={{
+                                            position: isCollapsed
+                                                ? 'absolute'
+                                                : 'static',
+                                            top: isCollapsed ? 4 : 'auto',
+                                            right: isCollapsed ? 4 : 'auto',
+                                            backgroundColor: '#FF3B30',
+                                            color: 'white',
+                                            WebkitTextFillColor: 'white',
+                                            borderRadius: 8,
+                                            padding: '1px 6px',
+                                            fontSize: '10px',
+                                            fontWeight: '700',
+                                            lineHeight: '16px',
+                                            minWidth: 16,
+                                            textAlign: 'center',
+                                            marginLeft: isCollapsed ? 0 : 6,
+                                            border: isCollapsed
+                                                ? '2px solid #FAFAFA'
+                                                : 'none',
+                                            flexShrink: 0,
+                                        }}>
+                                        {item.badge > 9 ? '9+' : item.badge}
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </nav>{' '}
+                {/* ── 底部：版本信息 ── */}
+                <div
+                    style={{
+                        padding: '10px 16px',
+                        borderTop: '1px solid rgba(0,0,0,0.05)',
+                        backgroundColor: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: 44,
+                    }}>
+                    {!isCollapsed && (
+                        <span
+                            style={{
+                                fontSize: '11px',
+                                color: '#C7C7CC',
+                                WebkitTextFillColor: '#C7C7CC',
+                                fontWeight: '500',
+                                letterSpacing: '0.1px',
+                            }}>
+                            Language Assistant v1.0
+                        </span>
+                    )}
+                    {isCollapsed && (
+                        <div
+                            style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: '50%',
+                                backgroundColor: '#D1D1D6',
+                            }}
+                        />
+                    )}
+                </div>
+            </div>
+
+            {/* ────────────── 右侧内容区域 ────────────── */}
             <div
                 style={{
                     flex: 1,
@@ -592,76 +624,84 @@ const MainApp: React.FC<MainAppProps> = ({
                     display: 'flex',
                     flexDirection: 'column',
                     backgroundColor: '#ffffff',
+                    minWidth: 0,
                 }}>
-                {/* 内容头部 - iOS 风格 */}
+                {/* 内容顶部 Header */}
                 <div
                     style={{
-                        padding: '28px 36px 24px',
+                        padding: '20px 28px 16px',
                         backgroundColor: '#ffffff',
                         borderBottom: '1px solid rgba(0,0,0,0.06)',
-                        boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        flexShrink: 0,
                     }}>
+                    {/* 图标 */}
                     <div
                         style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 13,
+                            backgroundColor: '#EBF4FF',
                             display: 'flex',
                             alignItems: 'center',
-                            marginBottom: '10px',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            color: '#007AFF',
                         }}>
-                        <span
-                            style={{
-                                marginRight: '14px',
-                                display: 'flex',
-                                color: '#007AFF',
-                            }}>
-                            {navigationItems.find(
-                                (item) => item.id === currentView,
-                            )?.icon
-                                ? React.cloneElement(
-                                      navigationItems.find(
-                                          (item) => item.id === currentView,
-                                      )!.icon as React.ReactElement,
-                                      { size: 36 } as any,
-                                  )
-                                : null}
-                        </span>
+                        {navigationItems.find((i) => i.id === currentView)?.icon
+                            ? React.cloneElement(
+                                  navigationItems.find(
+                                      (i) => i.id === currentView,
+                                  )!.icon as React.ReactElement,
+                                  { size: 24 } as any,
+                              )
+                            : null}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
                         <h1
                             style={{
                                 margin: 0,
-                                fontSize: '32px',
+                                fontSize: '22px',
                                 color: '#1C1C1E',
+                                WebkitTextFillColor: '#1C1C1E',
                                 fontWeight: '700',
-                                letterSpacing: '-1px',
+                                letterSpacing: '-0.6px',
+                                lineHeight: 1.2,
                             }}>
-                            {navigationItems.find(
-                                (item) => item.id === currentView,
-                            )?.label || '未知页面'}
+                            {
+                                navigationItems.find(
+                                    (i) => i.id === currentView,
+                                )?.label
+                            }
                         </h1>
+                        <p
+                            style={{
+                                margin: '3px 0 0',
+                                color: '#8E8E93',
+                                WebkitTextFillColor: '#8E8E93',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                letterSpacing: '-0.1px',
+                            }}>
+                            {
+                                navigationItems.find(
+                                    (i) => i.id === currentView,
+                                )?.description
+                            }
+                        </p>
                     </div>
-                    <p
-                        style={{
-                            margin: 0,
-                            color: '#8E8E93',
-                            fontSize: '15px',
-                            lineHeight: '1.5',
-                            fontWeight: '500',
-                            letterSpacing: '-0.1px',
-                        }}>
-                        {
-                            navigationItems.find(
-                                (item) => item.id === currentView,
-                            )?.description
-                        }
-                    </p>
                 </div>
 
-                {/* 主内容区域 - iOS 风格 */}
+                {/* 主内容区域 */}
                 <div
                     style={{
                         flex: 1,
                         overflow: 'auto',
                         backgroundColor: '#F2F2F7',
                     }}>
-                    {renderContent()}
+                    {renderContent()}{' '}
                 </div>
             </div>
         </div>

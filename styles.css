@@ -150,9 +150,14 @@ input.la-modal-input:focus {
     -webkit-text-fill-color: #1c1c1e !important;
 }
 
+.la-nav-item:hover {
+    background-color: #f0f0f5 !important;
+}
+
 .la-nav-item.la-nav-active {
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
+    background-color: #007aff !important;
 }
 
 /* description sub-label inside nav items */
@@ -162,8 +167,8 @@ input.la-modal-input:focus {
 }
 
 .la-nav-item.la-nav-active .la-nav-desc {
-    color: rgba(255, 255, 255, 0.8) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.8) !important;
+    color: rgba(255, 255, 255, 0.78) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.78) !important;
 }
 
 /* Scrollbar styling for suggestion container */

@@ -1,6 +1,7 @@
 // 全局元数据配置组件
 import React, { useState, useEffect } from 'react';
 import { GlobalMetaManager, GlobalMetaConfig } from './GlobalMetaManager';
+import { Tag, Folder, Settings, BarChart2, Layers } from 'lucide-react';
 
 interface GlobalMetaConfigProps {
     words?: any[]; // 可选的单词数组用于统计和管理
@@ -231,6 +232,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                 fontFamily:
                     '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
             }}>
+            {' '}
             {/* iOS 风格标题栏 */}
             <div style={{ marginBottom: '24px' }}>
                 <h2
@@ -240,8 +242,15 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                         fontWeight: '700',
                         color: '#1C1C1E',
                         letterSpacing: '-1px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
                     }}>
-                    🔄 全局元数据配置
+                    <Layers
+                        size={32}
+                        color="#007AFF"
+                    />
+                    全局元数据配置
                 </h2>
                 <p style={{ margin: 0, color: '#8E8E93', fontSize: '17px' }}>
                     管理标签和分类的别名映射，节省存储空间
@@ -256,27 +265,32 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                     padding: '6px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                 }}>
+                {' '}
                 <div style={{ display: 'flex', gap: '6px' }}>
                     {[
                         {
                             id: 'tags',
-                            label: '🏷️ 标签管理',
+                            icon: <Tag size={15} />,
+                            label: '标签管理',
                             count: Object.keys(config.tags).length,
                         },
                         {
                             id: 'categories',
-                            label: '📂 分类管理',
+                            icon: <Folder size={15} />,
+                            label: '分类管理',
                             count: Object.keys(config.categories).length,
                         },
                         {
                             id: 'manage',
-                            label: '⚙️ 高级管理',
-                            count: words.length,
+                            icon: <Settings size={15} />,
+                            label: '高级管理',
+                            count: undefined,
                         },
                         {
                             id: 'stats',
-                            label: '📊 统计信息',
-                            count: stats.spaceSaved,
+                            icon: <BarChart2 size={15} />,
+                            label: '统计信息',
+                            count: undefined,
                         },
                     ].map((tab) => (
                         <button
@@ -284,7 +298,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                             onClick={() => setActiveTab(tab.id as any)}
                             style={{
                                 flex: 1,
-                                padding: '12px 16px',
+                                padding: '10px 12px',
                                 border: 'none',
                                 borderRadius: '12px',
                                 backgroundColor:
@@ -295,36 +309,59 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     activeTab === tab.id
                                         ? '#ffffff'
                                         : '#8E8E93',
+                                WebkitTextFillColor:
+                                    activeTab === tab.id
+                                        ? '#ffffff'
+                                        : '#8E8E93',
                                 cursor: 'pointer',
-                                fontSize: '15px',
+                                fontSize: '14px',
                                 fontWeight: '600',
                                 transition:
                                     'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '8px',
+                                gap: '6px',
+                                boxShadow:
+                                    activeTab === tab.id
+                                        ? '0 2px 8px rgba(0,122,255,0.25)'
+                                        : 'none',
                             }}>
-                            {tab.label}
                             <span
                                 style={{
-                                    backgroundColor:
-                                        activeTab === tab.id
-                                            ? 'rgba(255,255,255,0.3)'
-                                            : '#F2F2F7',
-                                    color:
-                                        activeTab === tab.id
-                                            ? '#ffffff'
-                                            : '#8E8E93',
-                                    padding: '2px 8px',
-                                    borderRadius: '10px',
-                                    fontSize: '13px',
-                                    fontWeight: '700',
-                                    minWidth: '24px',
-                                    textAlign: 'center',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    opacity: activeTab === tab.id ? 1 : 0.7,
                                 }}>
-                                {tab.count}
+                                {tab.icon}
                             </span>
+                            {tab.label}
+                            {tab.count !== undefined && (
+                                <span
+                                    style={{
+                                        backgroundColor:
+                                            activeTab === tab.id
+                                                ? 'rgba(255,255,255,0.25)'
+                                                : '#F2F2F7',
+                                        color:
+                                            activeTab === tab.id
+                                                ? '#ffffff'
+                                                : '#8E8E93',
+                                        WebkitTextFillColor:
+                                            activeTab === tab.id
+                                                ? '#ffffff'
+                                                : '#8E8E93',
+                                        padding: '1px 7px',
+                                        borderRadius: '10px',
+                                        fontSize: '12px',
+                                        fontWeight: '700',
+                                        minWidth: '22px',
+                                        textAlign: 'center',
+                                        lineHeight: '18px',
+                                    }}>
+                                    {tab.count}
+                                </span>
+                            )}
                         </button>
                     ))}
                 </div>
