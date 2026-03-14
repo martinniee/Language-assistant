@@ -1,5 +1,5 @@
 // @ts-ignore
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Word, WordHelper } from './MarkdownWordStorage';
 
 // 使用 WordHelper 创建空白单词
@@ -586,20 +586,43 @@ export default function WordManagerMarkdown({
     );
     const [currentWord, setCurrentWord] = useState<Word | null>(null);
 
-    // 监控数据变化
+    // 添加搜索框引用
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    // 添加快捷键支持
+    React.useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Ctrl+F 或 Cmd+F 或 / 快捷键聚焦搜索框
+            if (((e.ctrlKey || e.metaKey) && e.key === 'f') || e.key === '/') {
+                e.preventDefault();
+                if (searchInputRef.current) {
+                    searchInputRef.current.focus();
+                    console.log('⌨️ 快捷键聚焦搜索框');
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // 监控数据变化 - 避免频繁打印
     React.useEffect(() => {
         console.log(
             `📝 WordManager received ${words.length} words, updating interface`,
         );
     }, [words.length]);
 
-    // 监控 words 数组内容变化
+    // 监控 words 数组内容变化 - 使用 useMemo 优化
+    const wordsHash = useMemo(() => {
+        return words.map((w) => w.name).join(',');
+    }, [words]);
+
     React.useEffect(() => {
         console.log(
-            `🔄 Words data changed:`,
-            words.map((w) => w.name).slice(0, 5),
+            `🔄 Words data changed, hash: ${wordsHash.slice(0, 50)}...`,
         );
-    }, [words]); // 新增：标签和分类过滤状态
+    }, [wordsHash]); // 新增：标签和分类过滤状态
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
@@ -1172,12 +1195,27 @@ export default function WordManagerMarkdown({
                                 gap: '16px',
                                 alignItems: 'center',
                                 flexWrap: 'wrap',
+                                position: 'relative',
+                                zIndex: 1,
+                            }}
+                            onClick={(e) => {
+                                // 防止容器点击影响搜索框聚焦
+                                if (e.target === e.currentTarget) {
+                                    e.stopPropagation();
+                                }
                             }}>
                             <input
+                                ref={searchInputRef}
                                 type="text"
                                 placeholder="🔍 搜索单词、分类、标签、发音或内容..."
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={(e) => {
+                                    console.log(
+                                        '🔍 搜索输入变化:',
+                                        e.target.value,
+                                    );
+                                    setSearchTerm(e.target.value);
+                                }}
                                 style={{
                                     flex: 1,
                                     padding: '12px 16px',
@@ -1188,19 +1226,37 @@ export default function WordManagerMarkdown({
                                     transition: 'all 0.2s ease',
                                     outline: 'none',
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                    pointerEvents: 'auto',
+                                    userSelect: 'text',
+                                    zIndex: 1,
+                                    position: 'relative',
                                 }}
                                 onFocus={(e) => {
+                                    console.log('🎯 搜索框获得焦点');
                                     e.currentTarget.style.borderColor =
                                         '#0066cc';
                                     e.currentTarget.style.boxShadow =
                                         '0 0 0 3px rgba(0, 102, 204, 0.1)';
                                 }}
                                 onBlur={(e) => {
+                                    console.log('😔 搜索框失去焦点');
                                     e.currentTarget.style.borderColor =
                                         '#e1e5e9';
                                     e.currentTarget.style.boxShadow =
                                         '0 2px 4px rgba(0,0,0,0.05)';
                                 }}
+                                onClick={(e) => {
+                                    console.log('👆 搜索框被点击');
+                                    e.stopPropagation();
+                                    if (searchInputRef.current) {
+                                        searchInputRef.current.focus();
+                                    }
+                                }}
+                                onMouseDown={(e) => {
+                                    console.log('🖱️ 搜索框鼠标按下');
+                                    e.stopPropagation();
+                                }}
+                                tabIndex={0}
                             />
                             {searchTerm && (
                                 <label

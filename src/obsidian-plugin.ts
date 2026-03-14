@@ -278,7 +278,6 @@ class WordManagerView extends ItemView {
     private renderComponent() {
         // 增加渲染键以确保组件重新渲染
         this.renderKey++;
-
         if (this.root) {
             this.root.render(
                 React.createElement(MainApp, {
@@ -287,6 +286,7 @@ class WordManagerView extends ItemView {
                     onAdd: this.handleAddWord.bind(this),
                     onEdit: this.handleEditWord.bind(this),
                     onDelete: this.handleDeleteWord.bind(this),
+                    onBatchUpdate: this.handleBatchUpdateWords.bind(this), // 新增批量更新方法
                     onJumpToSource: this.jumpToWordInMarkdown.bind(this),
                 }),
             );
@@ -395,10 +395,49 @@ class WordManagerView extends ItemView {
             console.error('❌ 编辑单词失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 编辑单词失败: ${errorMessage}`); // 发生错误时也要刷新界面，恢复原始状态
-            this.forceRefreshUI();
+            new Notice(`❌ 编辑单词失败: ${errorMessage}`); // 发生错误时也要刷新界面，恢复原始状态            this.forceRefreshUI();
         }
     }
+
+    // 批量更新单词（用于元数据管理等操作）
+    private async handleBatchUpdateWords(updatedWords: Word[]) {
+        console.log(`🔄 批量更新 ${updatedWords.length} 个单词...`);
+        try {
+            // 更新本地数组中的单词
+            updatedWords.forEach((updatedWord) => {
+                const index = this.words.findIndex(
+                    (w) => w.name === updatedWord.name,
+                );
+                if (index >= 0) {
+                    this.words[index] = updatedWord;
+                    console.log(`📝 更新单词: ${updatedWord.name}`);
+                }
+            });
+
+            // 立即更新界面
+            this.forceRefreshUI();
+
+            // 保存到文件
+            await this.wordStorage.saveWords(this.words);
+            console.log('💾 批量更新已保存到 words.md 文件');
+
+            // 保存成功后再次确保界面更新
+            this.forceRefreshUI();
+
+            new Notice(
+                `✅ 已批量更新 ${updatedWords.length} 个单词并保存到文档`,
+            );
+        } catch (error) {
+            console.error('❌ 批量更新单词失败:', error);
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`❌ 批量更新单词失败: ${errorMessage}`);
+            // 发生错误时也要刷新界面
+            this.forceRefreshUI();
+            throw error;
+        }
+    }
+
     private async handleDeleteWord(wordName: string) {
         console.log('🗑️ 尝试删除单词:', wordName);
         try {

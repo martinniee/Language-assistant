@@ -21,6 +21,7 @@ interface MainAppProps {
     onAdd: (word: Word) => void;
     onEdit: (word: Word, originalWord?: Word) => void;
     onDelete: (name: string) => void;
+    onBatchUpdate?: (words: Word[]) => void; // 新增批量更新方法
     onJumpToSource: (wordId: string) => void;
 }
 
@@ -29,6 +30,7 @@ const MainApp: React.FC<MainAppProps> = ({
     onAdd,
     onEdit,
     onDelete,
+    onBatchUpdate,
     onJumpToSource,
 }) => {
     const [currentView, setCurrentView] = useState<ViewMode>('home');
@@ -119,7 +121,37 @@ const MainApp: React.FC<MainAppProps> = ({
                     />
                 );
             case 'global-meta':
-                return <GlobalMetaConfig />;
+                return (
+                    <GlobalMetaConfig
+                        words={words}
+                        onWordsUpdate={
+                            onBatchUpdate ||
+                            (async (updatedWords) => {
+                                console.log(
+                                    '🔄 GlobalMetaConfig 更新单词数据，使用fallback方法...',
+                                );
+                                // 批量更新单词 - 每个更新都会立即保存到文件
+                                for (const word of updatedWords) {
+                                    // 找到原始单词用于比较
+                                    const originalWord = words.find(
+                                        (w) => w.name === word.name,
+                                    );
+                                    if (originalWord) {
+                                        console.log(
+                                            `📝 更新单词: ${word.name}`,
+                                        );
+                                        await new Promise((resolve) => {
+                                            onEdit(word, originalWord);
+                                            // 给一点时间让保存操作完成
+                                            setTimeout(resolve, 10);
+                                        });
+                                    }
+                                }
+                                console.log('✅ 批量更新完成');
+                            })
+                        }
+                    />
+                );
             case 'settings':
                 return <Settings />;
             default:

@@ -258,6 +258,263 @@ export class GlobalMetaManager {
 
         this.config.lastUpdate = new Date().toISOString();
     }
+
+    // ===== 新增：标签和分类管理功能 =====
+
+    // 获取所有标签映射
+    getAllTagMappings(): Array<{ alias: string; fullName: string }> {
+        return Object.entries(this.config.tags).map(([alias, fullName]) => ({
+            alias,
+            fullName,
+        }));
+    }
+
+    // 获取所有分类映射
+    getAllCategoryMappings(): Array<{ alias: string; fullName: string }> {
+        return Object.entries(this.config.categories).map(
+            ([alias, fullName]) => ({
+                alias,
+                fullName,
+            }),
+        );
+    }
+
+    // 修改标签名称
+    updateTagName(alias: string, newFullName: string): boolean {
+        if (this.config.tags[alias]) {
+            this.config.tags[alias] = newFullName;
+            this.config.lastUpdate = new Date().toISOString();
+            return true;
+        }
+        return false;
+    }
+
+    // 修改分类名称
+    updateCategoryName(alias: string, newFullName: string): boolean {
+        if (this.config.categories[alias]) {
+            this.config.categories[alias] = newFullName;
+            this.config.lastUpdate = new Date().toISOString();
+            return true;
+        }
+        return false;
+    }
+
+    // 删除标签映射
+    deleteTagMapping(alias: string): boolean {
+        if (this.config.tags[alias]) {
+            delete this.config.tags[alias];
+            this.config.lastUpdate = new Date().toISOString();
+            return true;
+        }
+        return false;
+    }
+
+    // 删除分类映射
+    deleteCategoryMapping(alias: string): boolean {
+        if (this.config.categories[alias]) {
+            delete this.config.categories[alias];
+            this.config.lastUpdate = new Date().toISOString();
+            return true;
+        }
+        return false;
+    }
+
+    // 查找使用了指定标签别名的单词
+    findWordsUsingTagAlias(alias: string, words: Word[]): Word[] {
+        return words.filter((word) => {
+            const itemMetaTags = word.itemMeta.tags || [];
+            return itemMetaTags.includes(alias);
+        });
+    }
+
+    // 查找使用了指定分类别名的单词
+    findWordsUsingCategoryAlias(alias: string, words: Word[]): Word[] {
+        return words.filter((word) => {
+            return word.itemMeta.category === alias;
+        });
+    }
+
+    // 批量更新单词中的标签别名
+    updateTagAliasInWords(
+        oldAlias: string,
+        newFullName: string,
+        words: Word[],
+    ): Word[] {
+        const updatedWords = words.map((word) => {
+            const itemMetaTags = word.itemMeta.tags || [];
+            if (itemMetaTags.includes(oldAlias)) {
+                // 生成新的别名
+                const newAlias = this.generateTagAlias(newFullName);
+
+                // 更新 itemMeta 中的标签别名
+                const updatedTags = itemMetaTags.map((tag) =>
+                    tag === oldAlias ? newAlias : tag,
+                );
+                word.itemMeta.tags = updatedTags;
+
+                // 更新兼容字段
+                if (word.tags) {
+                    word.tags = word.tags.map((tag) =>
+                        this.config.tags[oldAlias] === tag ? newFullName : tag,
+                    );
+                }
+
+                // 更新时间戳
+                word.itemMeta.lastUpdate = new Date().toISOString();
+            }
+            return word;
+        });
+
+        return updatedWords;
+    }
+
+    // 批量更新单词中的分类别名
+    updateCategoryAliasInWords(
+        oldAlias: string,
+        newFullName: string,
+        words: Word[],
+    ): Word[] {
+        const updatedWords = words.map((word) => {
+            if (word.itemMeta.category === oldAlias) {
+                // 生成新的别名
+                const newAlias = this.generateCategoryAlias(newFullName);
+
+                // 更新 itemMeta 中的分类别名
+                word.itemMeta.category = newAlias;
+
+                // 更新兼容字段
+                if (
+                    word.category &&
+                    this.config.categories[oldAlias] === word.category
+                ) {
+                    word.category = newFullName;
+                }
+
+                // 更新时间戳
+                word.itemMeta.lastUpdate = new Date().toISOString();
+            }
+            return word;
+        });
+
+        return updatedWords;
+    }
+
+    // 从单词中移除指定标签别名
+    removeTagAliasFromWords(alias: string, words: Word[]): Word[] {
+        return words.map((word) => {
+            const itemMetaTags = word.itemMeta.tags || [];
+            if (itemMetaTags.includes(alias)) {
+                // 从 itemMeta 中移除别名
+                word.itemMeta.tags = itemMetaTags.filter(
+                    (tag) => tag !== alias,
+                );
+
+                // 从兼容字段中移除对应的完整名称
+                if (word.tags && this.config.tags[alias]) {
+                    word.tags = word.tags.filter(
+                        (tag) => tag !== this.config.tags[alias],
+                    );
+                }
+
+                // 更新时间戳
+                word.itemMeta.lastUpdate = new Date().toISOString();
+            }
+            return word;
+        });
+    }
+
+    // 从单词中移除指定分类别名
+    removeCategoryAliasFromWords(alias: string, words: Word[]): Word[] {
+        return words.map((word) => {
+            if (word.itemMeta.category === alias) {
+                // 清空分类
+                word.itemMeta.category = '';
+
+                // 清空兼容字段
+                if (
+                    word.category &&
+                    this.config.categories[alias] === word.category
+                ) {
+                    word.category = '';
+                }
+
+                // 更新时间戳
+                word.itemMeta.lastUpdate = new Date().toISOString();
+            }
+            return word;
+        });
+    } // 获取使用统计
+    getUsageStats(words: Word[]): {
+        totalTags: number;
+        usedTags: number;
+        totalCategories: number;
+        usedCategories: number;
+        tagUsage: Record<
+            string,
+            { alias: string; fullName: string; count: number; words: string[] }
+        >;
+        categoryUsage: Record<
+            string,
+            { alias: string; fullName: string; count: number; words: string[] }
+        >;
+    } {
+        const tagUsage: Record<
+            string,
+            { alias: string; fullName: string; count: number; words: string[] }
+        > = {};
+        const categoryUsage: Record<
+            string,
+            { alias: string; fullName: string; count: number; words: string[] }
+        > = {};
+
+        // 初始化标签使用统计
+        Object.entries(this.config.tags).forEach(([alias, fullName]) => {
+            tagUsage[alias] = { alias, fullName, count: 0, words: [] };
+        });
+
+        // 初始化分类使用统计
+        Object.entries(this.config.categories).forEach(([alias, fullName]) => {
+            categoryUsage[alias] = { alias, fullName, count: 0, words: [] };
+        });
+
+        // 统计实际使用情况
+        words.forEach((word) => {
+            // 统计标签使用
+            const itemMetaTags = word.itemMeta.tags || [];
+            itemMetaTags.forEach((tagAlias) => {
+                if (tagUsage[tagAlias]) {
+                    tagUsage[tagAlias].count++;
+                    tagUsage[tagAlias].words.push(word.name);
+                }
+            });
+
+            // 统计分类使用
+            if (
+                word.itemMeta.category &&
+                categoryUsage[word.itemMeta.category]
+            ) {
+                categoryUsage[word.itemMeta.category].count++;
+                categoryUsage[word.itemMeta.category].words.push(word.name);
+            }
+        });
+
+        // 计算使用中的标签和分类数量
+        const usedTags = Object.values(tagUsage).filter(
+            (usage) => usage.count > 0,
+        ).length;
+        const usedCategories = Object.values(categoryUsage).filter(
+            (usage) => usage.count > 0,
+        ).length;
+
+        return {
+            totalTags: Object.keys(this.config.tags).length,
+            usedTags,
+            totalCategories: Object.keys(this.config.categories).length,
+            usedCategories,
+            tagUsage,
+            categoryUsage,
+        };
+    }
 }
 
 // 导出单例实例
