@@ -1,4 +1,4 @@
-// 设置配置组件
+// iOS 风格设置配置组件
 import React, { useState } from 'react';
 
 const Settings: React.FC = () => {
@@ -34,10 +34,30 @@ const Settings: React.FC = () => {
     };
 
     const handleSave = () => {
-        // 这里可以实际保存配置到本地存储或服务器
         console.log('保存配置:', { srsConfig, generalConfig });
         setIsUnsaved(false);
-        alert('设置已保存！');
+        // iOS 风格成功提示
+        const successDiv = document.createElement('div');
+        successDiv.textContent = '✓ 设置已保存';
+        successDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #34C759 0%, #30A14E 100%);
+            color: white;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.3);
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+        `;
+        document.body.appendChild(successDiv);
+        setTimeout(() => {
+            successDiv.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => document.body.removeChild(successDiv), 300);
+        }, 2000);
     };
 
     const handleReset = () => {
@@ -71,17 +91,28 @@ const Settings: React.FC = () => {
         <div
             style={{
                 backgroundColor: '#ffffff',
-                borderRadius: '12px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                padding: '25px',
-                marginBottom: '25px',
+                borderRadius: '16px',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+                padding: '24px',
+                marginBottom: '24px',
+                fontFamily:
+                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
             }}>
-            <h3 style={{ margin: '0 0 8px 0', color: '#2c3e50' }}>{title}</h3>
+            <h3
+                style={{
+                    margin: '0 0 8px 0',
+                    color: '#1c1c1e',
+                    fontSize: '20px',
+                    fontWeight: '600',
+                }}>
+                {title}
+            </h3>
             <p
                 style={{
-                    margin: '0 0 20px 0',
-                    color: '#7f8c8d',
-                    fontSize: '14px',
+                    margin: '0 0 24px 0',
+                    color: '#8e8e93',
+                    fontSize: '15px',
+                    lineHeight: '1.4',
                 }}>
                 {description}
             </p>
@@ -101,28 +132,40 @@ const Settings: React.FC = () => {
             <label
                 style={{
                     display: 'block',
-                    marginBottom: '6px',
-                    fontSize: '14px',
+                    marginBottom: '8px',
+                    fontSize: '15px',
                     fontWeight: '600',
-                    color: '#555',
+                    color: '#1d1d1f',
                 }}>
                 {label}
             </label>
 
             {type === 'checkbox' ? (
                 <label
+                    className="ios-checkbox-label"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         cursor: 'pointer',
+                        padding: '12px 16px',
+                        backgroundColor: '#f5f5f7',
+                        borderRadius: '12px',
+                        transition: 'background-color 0.2s',
                     }}>
                     <input
                         type="checkbox"
                         checked={value}
                         onChange={(e) => onChange(e.target.checked)}
-                        style={{ marginRight: '8px' }}
+                        className="ios-checkbox"
+                        style={{
+                            marginRight: '12px',
+                            width: '20px',
+                            height: '20px',
+                            accentColor: '#007AFF',
+                            cursor: 'pointer',
+                        }}
                     />
-                    <span style={{ fontSize: '14px', color: '#555' }}>
+                    <span style={{ fontSize: '15px', color: '#1d1d1f' }}>
                         启用此功能
                     </span>
                 </label>
@@ -130,12 +173,23 @@ const Settings: React.FC = () => {
                 <select
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
+                    className="ios-input"
                     style={{
                         width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #ddd',
-                        borderRadius: '6px',
-                        fontSize: '14px',
+                        padding: '12px 16px',
+                        border: '1.5px solid #d2d2d7',
+                        borderRadius: '12px',
+                        fontSize: '15px',
+                        backgroundColor: '#ffffff',
+                        color: '#1d1d1f',
+                        outline: 'none',
+                        transition: 'all 0.2s ease',
+                        appearance: 'none',
+                        backgroundImage:
+                            'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231d1d1f%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E")',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 16px top 50%',
+                        backgroundSize: '12px auto',
                     }}>
                     {options?.map((option) => (
                         <option
@@ -156,12 +210,17 @@ const Settings: React.FC = () => {
                                 : e.target.value,
                         )
                     }
+                    className="ios-input"
                     style={{
                         width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #ddd',
-                        borderRadius: '6px',
-                        fontSize: '14px',
+                        padding: '12px 16px',
+                        border: '1.5px solid #d2d2d7',
+                        borderRadius: '12px',
+                        fontSize: '15px',
+                        backgroundColor: '#ffffff',
+                        color: '#1d1d1f',
+                        outline: 'none',
+                        transition: 'all 0.2s ease',
                         boxSizing: 'border-box',
                     }}
                 />
@@ -170,9 +229,10 @@ const Settings: React.FC = () => {
             {help && (
                 <div
                     style={{
-                        fontSize: '12px',
-                        color: '#999',
-                        marginTop: '4px',
+                        fontSize: '13px',
+                        color: '#86868b',
+                        marginTop: '8px',
+                        lineHeight: '1.4',
                     }}>
                     {help}
                 </div>
@@ -180,20 +240,60 @@ const Settings: React.FC = () => {
         </div>
     );
     return (
-        <div style={{ padding: '30px 30px 60px 30px', maxWidth: '800px' }}>
+        <div
+            style={{
+                padding: '30px 30px 100px 30px',
+                maxWidth: '800px',
+                margin: '0 auto',
+                fontFamily:
+                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            }}>
+            <style>
+                {`
+                .ios-input:focus {
+                    border-color: #007AFF !important;
+                    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1) !important;
+                }
+                .ios-checkbox-label:active {
+                    background-color: #e5e5ea !important;
+                }
+                .ios-btn {
+                    transition: transform 0.1s ease, opacity 0.1s ease;
+                }
+                .ios-btn:active {
+                    transform: scale(0.96);
+                    opacity: 0.8;
+                }
+                @keyframes slideIn {
+                    from { transform: translateY(-20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateY(0); opacity: 1; }
+                    to { transform: translateY(-20px); opacity: 0; }
+                }
+                `}
+            </style>
+
             {/* 保存状态提示 */}
             {isUnsaved && (
                 <div
                     style={{
-                        padding: '15px 20px',
-                        marginBottom: '20px',
-                        backgroundColor: '#fff3cd',
-                        color: '#856404',
-                        border: '1px solid #ffeaa7',
-                        borderRadius: '8px',
-                        fontSize: '14px',
+                        padding: '16px 20px',
+                        marginBottom: '24px',
+                        backgroundColor: '#fff9e6',
+                        color: '#b27b00',
+                        borderRadius: '12px',
+                        fontSize: '15px',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                     }}>
-                    ⚠️ 有未保存的更改，请记得保存设置
+                    <span style={{ marginRight: '8px', fontSize: '18px' }}>
+                        ⚠️
+                    </span>
+                    有未保存的更改，请记得保存设置
                 </div>
             )}
 
@@ -353,7 +453,7 @@ const Settings: React.FC = () => {
                         display: 'grid',
                         gridTemplateColumns:
                             'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '15px',
+                        gap: '16px',
                     }}>
                     <button
                         onClick={() => {
@@ -370,21 +470,34 @@ const Settings: React.FC = () => {
                             setIsUnsaved(true);
                         }}
                         style={{
-                            padding: '15px',
-                            backgroundColor: '#e3f2fd',
-                            border: '1px solid #1976d2',
-                            borderRadius: '8px',
+                            padding: '16px',
+                            backgroundColor: '#f2f2f7',
+                            border: '1px solid transparent',
+                            borderRadius: '16px',
                             cursor: 'pointer',
                             textAlign: 'center',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#e5e5ea';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f2f2f7';
                         }}>
-                        <div style={{ fontWeight: 'bold', color: '#1976d2' }}>
+                        <div
+                            style={{
+                                fontWeight: '600',
+                                color: '#007AFF',
+                                fontSize: '16px',
+                            }}>
                             标准模式
                         </div>
                         <div
                             style={{
-                                fontSize: '12px',
-                                color: '#666',
-                                marginTop: '5px',
+                                fontSize: '13px',
+                                color: '#8e8e93',
+                                marginTop: '6px',
+                                lineHeight: '1.4',
                             }}>
                             适合大多数用户的平衡设置
                         </div>
@@ -405,21 +518,34 @@ const Settings: React.FC = () => {
                             setIsUnsaved(true);
                         }}
                         style={{
-                            padding: '15px',
-                            backgroundColor: '#fff3e0',
-                            border: '1px solid #f57c00',
-                            borderRadius: '8px',
+                            padding: '16px',
+                            backgroundColor: '#f2f2f7',
+                            border: '1px solid transparent',
+                            borderRadius: '16px',
                             cursor: 'pointer',
                             textAlign: 'center',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#e5e5ea';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f2f2f7';
                         }}>
-                        <div style={{ fontWeight: 'bold', color: '#f57c00' }}>
+                        <div
+                            style={{
+                                fontWeight: '600',
+                                color: '#FF9500',
+                                fontSize: '16px',
+                            }}>
                             密集模式
                         </div>
                         <div
                             style={{
-                                fontSize: '12px',
-                                color: '#666',
-                                marginTop: '5px',
+                                fontSize: '13px',
+                                color: '#8e8e93',
+                                marginTop: '6px',
+                                lineHeight: '1.4',
                             }}>
                             更频繁的复习，适合短期冲刺
                         </div>
@@ -440,21 +566,34 @@ const Settings: React.FC = () => {
                             setIsUnsaved(true);
                         }}
                         style={{
-                            padding: '15px',
-                            backgroundColor: '#e8f5e8',
-                            border: '1px solid #4caf50',
-                            borderRadius: '8px',
+                            padding: '16px',
+                            backgroundColor: '#f2f2f7',
+                            border: '1px solid transparent',
+                            borderRadius: '16px',
                             cursor: 'pointer',
                             textAlign: 'center',
+                            transition: 'all 0.2s',
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#e5e5ea';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f2f2f7';
                         }}>
-                        <div style={{ fontWeight: 'bold', color: '#4caf50' }}>
+                        <div
+                            style={{
+                                fontWeight: '600',
+                                color: '#34C759',
+                                fontSize: '16px',
+                            }}>
                             轻松模式
                         </div>
                         <div
                             style={{
-                                fontSize: '12px',
-                                color: '#666',
-                                marginTop: '5px',
+                                fontSize: '13px',
+                                color: '#8e8e93',
+                                marginTop: '6px',
+                                lineHeight: '1.4',
                             }}>
                             较长的间隔，适合长期记忆
                         </div>
@@ -468,34 +607,36 @@ const Settings: React.FC = () => {
                     display: 'flex',
                     gap: '15px',
                     justifyContent: 'center',
-                    marginTop: '30px',
-                    paddingTop: '20px',
-                    borderTop: '1px solid #e0e0e0',
+                    marginTop: '40px',
+                    paddingTop: '30px',
+                    borderTop: '1px solid #e5e5ea',
                 }}>
                 <button
                     onClick={handleSave}
+                    className="ios-btn"
                     style={{
-                        padding: '12px 30px',
-                        backgroundColor: '#28a745',
+                        padding: '14px 32px',
+                        backgroundColor: '#007AFF',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '8px',
+                        borderRadius: '12px',
                         cursor: 'pointer',
                         fontSize: '16px',
                         fontWeight: '600',
-                        boxShadow: '0 2px 4px rgba(40,167,69,0.2)',
+                        boxShadow: '0 4px 14px rgba(0, 122, 255, 0.3)',
                     }}>
                     💾 保存设置
                 </button>
 
                 <button
                     onClick={handleReset}
+                    className="ios-btn"
                     style={{
-                        padding: '12px 30px',
-                        backgroundColor: 'transparent',
-                        color: '#dc3545',
-                        border: '2px solid #dc3545',
-                        borderRadius: '8px',
+                        padding: '14px 32px',
+                        backgroundColor: '#ffffff',
+                        color: '#FF3B30',
+                        border: '1.5px solid #FF3B30',
+                        borderRadius: '12px',
                         cursor: 'pointer',
                         fontSize: '16px',
                         fontWeight: '600',
@@ -508,21 +649,35 @@ const Settings: React.FC = () => {
             <div
                 style={{
                     marginTop: '40px',
-                    padding: '20px',
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    color: '#666',
-                    lineHeight: '1.5',
+                    padding: '24px',
+                    backgroundColor: '#f2f2f7',
+                    borderRadius: '16px',
+                    fontSize: '14px',
+                    color: '#8e8e93',
+                    lineHeight: '1.6',
                 }}>
-                <h4 style={{ margin: '0 0 10px 0', color: '#495057' }}>
+                <h4
+                    style={{
+                        margin: '0 0 12px 0',
+                        color: '#1c1c1e',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                    }}>
                     💡 配置说明
                 </h4>
-                <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                    <li>难度因子控制卡片的学习频率，范围通常在1.3-2.5之间</li>
-                    <li>较低的难度因子意味着更频繁的复习</li>
-                    <li>新卡片步骤决定了初学阶段的复习间隔</li>
-                    <li>修改设置后建议进行几天的试用以评估效果</li>
+                <ul style={{ margin: 0, paddingLeft: '24px' }}>
+                    <li style={{ marginBottom: '6px' }}>
+                        难度因子控制卡片的学习频率，范围通常在1.3-2.5之间
+                    </li>
+                    <li style={{ marginBottom: '6px' }}>
+                        较低的难度因子意味着更频繁的复习
+                    </li>
+                    <li style={{ marginBottom: '6px' }}>
+                        新卡片步骤决定了初学阶段的复习间隔
+                    </li>
+                    <li style={{ marginBottom: '6px' }}>
+                        修改设置后建议进行几天的试用以评估效果
+                    </li>
                     <li>如果学习效果不佳，可以尝试不同的预设配置</li>
                 </ul>
             </div>
