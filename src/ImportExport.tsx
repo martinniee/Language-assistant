@@ -196,43 +196,73 @@ const ImportExport: React.FC<ImportExportProps> = ({
         }
     };
     return (
-        <div style={{ padding: '30px 30px 60px 30px' }}>
-            {/* 状态提示 */}
+        <div
+            style={{
+                padding: '20px 30px 60px 30px',
+                fontFamily:
+                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+            }}>
+            {/* iOS 风格标题栏 */}
+            <div style={{ marginBottom: '24px' }}>
+                <h2
+                    style={{
+                        margin: '0 0 8px 0',
+                        fontSize: '34px',
+                        fontWeight: '700',
+                        color: '#1C1C1E',
+                        letterSpacing: '-1px',
+                    }}>
+                    📦 导入/导出
+                </h2>
+                <p style={{ margin: 0, color: '#8E8E93', fontSize: '17px' }}>
+                    备份您的单词库或导入新数据
+                </p>
+            </div>
+            {/* iOS 风格状态提示 */}
             {importStatus.show && (
                 <div
                     style={{
-                        padding: '15px 20px',
-                        marginBottom: '20px',
-                        backgroundColor:
+                        padding: '16px 20px',
+                        marginBottom: '24px',
+                        background:
                             importStatus.type === 'success'
-                                ? '#d4edda'
-                                : '#f8d7da',
-                        color:
+                                ? 'linear-gradient(135deg, #34C759 0%, #30A14E 100%)'
+                                : 'linear-gradient(135deg, #FF3B30 0%, #D70015 100%)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '14px',
+                        fontSize: '15px',
+                        fontWeight: '500',
+                        boxShadow:
                             importStatus.type === 'success'
-                                ? '#155724'
-                                : '#721c24',
-                        border: `1px solid ${
-                            importStatus.type === 'success'
-                                ? '#c3e6cb'
-                                : '#f5c6cb'
-                        }`,
-                        borderRadius: '8px',
-                        fontSize: '14px',
+                                ? '0 4px 16px rgba(52, 199, 89, 0.3)'
+                                : '0 4px 16px rgba(255, 59, 48, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
                     }}>
-                    {importStatus.message}
+                    <span style={{ fontSize: '20px' }}>
+                        {importStatus.type === 'success' ? '✓' : '⚠️'}
+                    </span>
+                    <span>{importStatus.message}</span>
                 </div>
-            )}
-
-            {/* 导出功能 */}
+            )}{' '}
+            {/* iOS 风格导出功能 */}
             <div
                 style={{
                     backgroundColor: '#ffffff',
-                    borderRadius: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    padding: '25px',
-                    marginBottom: '25px',
+                    borderRadius: '16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    padding: '24px',
+                    marginBottom: '24px',
                 }}>
-                <h3 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>
+                <h3
+                    style={{
+                        margin: '0 0 20px 0',
+                        fontSize: '22px',
+                        fontWeight: '600',
+                        color: '#1C1C1E',
+                    }}>
                     📤 导出数据
                 </h3>
 
@@ -241,112 +271,184 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         display: 'grid',
                         gridTemplateColumns:
                             'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '15px',
+                        gap: '16px',
                         marginBottom: '20px',
                     }}>
+                    {/* JSON 导出卡片 */}
                     <div
                         style={{
-                            padding: '20px',
-                            border: '2px solid #e9ecef',
-                            borderRadius: '8px',
+                            padding: '24px',
+                            background:
+                                'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+                            borderRadius: '16px',
                             textAlign: 'center',
+                            boxShadow: '0 4px 16px rgba(0, 122, 255, 0.2)',
+                            color: 'white',
                         }}>
-                        <div style={{ fontSize: '24px', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '32px', marginBottom: '12px' }}>
                             📄
                         </div>
-                        <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50' }}>
+                        <h4
+                            style={{
+                                margin: '0 0 8px 0',
+                                fontSize: '17px',
+                                fontWeight: '600',
+                            }}>
                             JSON格式
                         </h4>
                         <p
                             style={{
-                                fontSize: '12px',
-                                color: '#666',
-                                margin: '0 0 15px 0',
+                                fontSize: '13px',
+                                color: 'rgba(255,255,255,0.85)',
+                                margin: '0 0 16px 0',
+                                lineHeight: '1.4',
                             }}>
-                            完整数据格式，可用于备份和恢复
+                            完整数据格式
+                            <br />
+                            可用于备份和恢复
                         </p>
                         <button
                             onClick={() => handleExport('json')}
                             style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#007bff',
+                                padding: '10px 20px',
+                                backgroundColor: 'rgba(255,255,255,0.25)',
                                 color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                                borderRadius: '12px',
                                 cursor: 'pointer',
-                                fontSize: '12px',
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                transition:
+                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                backdropFilter: 'blur(10px)',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    'rgba(255,255,255,0.35)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    'rgba(255,255,255,0.25)';
                             }}>
                             导出 JSON
                         </button>
                     </div>
 
+                    {/* CSV 导出卡片 */}
                     <div
                         style={{
-                            padding: '20px',
-                            border: '2px solid #e9ecef',
-                            borderRadius: '8px',
+                            padding: '24px',
+                            background:
+                                'linear-gradient(135deg, #34C759 0%, #30A14E 100%)',
+                            borderRadius: '16px',
                             textAlign: 'center',
+                            boxShadow: '0 4px 16px rgba(52, 199, 89, 0.2)',
+                            color: 'white',
                         }}>
-                        <div style={{ fontSize: '24px', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '32px', marginBottom: '12px' }}>
                             📊
                         </div>
-                        <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50' }}>
+                        <h4
+                            style={{
+                                margin: '0 0 8px 0',
+                                fontSize: '17px',
+                                fontWeight: '600',
+                            }}>
                             CSV格式
                         </h4>
                         <p
                             style={{
-                                fontSize: '12px',
-                                color: '#666',
-                                margin: '0 0 15px 0',
+                                fontSize: '13px',
+                                color: 'rgba(255,255,255,0.85)',
+                                margin: '0 0 16px 0',
+                                lineHeight: '1.4',
                             }}>
-                            表格格式，可用于Excel等工具
+                            表格格式
+                            <br />
+                            可用于Excel等工具
                         </p>
                         <button
                             onClick={() => handleExport('csv')}
                             style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#28a745',
+                                padding: '10px 20px',
+                                backgroundColor: 'rgba(255,255,255,0.25)',
                                 color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                                borderRadius: '12px',
                                 cursor: 'pointer',
-                                fontSize: '12px',
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                transition:
+                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                backdropFilter: 'blur(10px)',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    'rgba(255,255,255,0.35)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    'rgba(255,255,255,0.25)';
                             }}>
                             导出 CSV
                         </button>
                     </div>
 
+                    {/* TXT 导出卡片 */}
                     <div
                         style={{
-                            padding: '20px',
-                            border: '2px solid #e9ecef',
-                            borderRadius: '8px',
+                            padding: '24px',
+                            background:
+                                'linear-gradient(135deg, #8E8E93 0%, #636366 100%)',
+                            borderRadius: '16px',
                             textAlign: 'center',
+                            boxShadow: '0 4px 16px rgba(142, 142, 147, 0.2)',
+                            color: 'white',
                         }}>
-                        <div style={{ fontSize: '24px', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '32px', marginBottom: '12px' }}>
                             📝
                         </div>
-                        <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50' }}>
+                        <h4
+                            style={{
+                                margin: '0 0 8px 0',
+                                fontSize: '17px',
+                                fontWeight: '600',
+                            }}>
                             TXT格式
                         </h4>
                         <p
                             style={{
-                                fontSize: '12px',
-                                color: '#666',
-                                margin: '0 0 15px 0',
+                                fontSize: '13px',
+                                color: 'rgba(255,255,255,0.85)',
+                                margin: '0 0 16px 0',
+                                lineHeight: '1.4',
                             }}>
-                            纯文本格式，易于阅读和打印
+                            纯文本格式
+                            <br />
+                            易于阅读和打印
                         </p>
                         <button
                             onClick={() => handleExport('txt')}
                             style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#6c757d',
+                                padding: '10px 20px',
+                                backgroundColor: 'rgba(255,255,255,0.25)',
                                 color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                                borderRadius: '12px',
                                 cursor: 'pointer',
-                                fontSize: '12px',
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                transition:
+                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                backdropFilter: 'blur(10px)',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    'rgba(255,255,255,0.35)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor =
+                                    'rgba(255,255,255,0.25)';
                             }}>
                             导出 TXT
                         </button>
@@ -355,25 +457,40 @@ const ImportExport: React.FC<ImportExportProps> = ({
 
                 <div
                     style={{
-                        padding: '15px',
-                        backgroundColor: '#f8f9fa',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        color: '#666',
+                        padding: '16px 20px',
+                        backgroundColor: '#F2F2F7',
+                        borderRadius: '12px',
+                        fontSize: '15px',
+                        color: '#48484A',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
                     }}>
-                    💡 当前共有 <strong>{words.length}</strong> 个单词可供导出
+                    <span style={{ fontSize: '18px' }}>💡</span>
+                    <span>
+                        当前共有{' '}
+                        <strong style={{ color: '#007AFF', fontWeight: '600' }}>
+                            {words.length}
+                        </strong>{' '}
+                        个单词可供导出
+                    </span>
                 </div>
-            </div>
-
-            {/* 导入功能 */}
+            </div>{' '}
+            {/* iOS 风格导入功能 */}
             <div
                 style={{
                     backgroundColor: '#ffffff',
-                    borderRadius: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    padding: '25px',
+                    borderRadius: '16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    padding: '24px',
                 }}>
-                <h3 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>
+                <h3
+                    style={{
+                        margin: '0 0 20px 0',
+                        fontSize: '22px',
+                        fontWeight: '600',
+                        color: '#1C1C1E',
+                    }}>
                     📥 导入数据
                 </h3>
 
@@ -381,10 +498,10 @@ const ImportExport: React.FC<ImportExportProps> = ({
                     <label
                         style={{
                             display: 'block',
-                            marginBottom: '8px',
-                            fontSize: '14px',
+                            marginBottom: '12px',
+                            fontSize: '15px',
                             fontWeight: '600',
-                            color: '#555',
+                            color: '#48484A',
                         }}>
                         JSON数据:
                     </label>
@@ -395,13 +512,18 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         style={{
                             width: '100%',
                             height: '200px',
-                            padding: '12px',
-                            border: '1px solid #ddd',
-                            borderRadius: '6px',
-                            fontSize: '13px',
-                            fontFamily: 'monospace',
+                            padding: '16px',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontSize: '14px',
+                            fontFamily:
+                                'Monaco, "SF Mono", Consolas, monospace',
                             resize: 'vertical',
                             boxSizing: 'border-box',
+                            backgroundColor: '#F2F2F7',
+                            color: '#1C1C1E',
+                            outline: 'none',
+                            lineHeight: '1.5',
                         }}
                     />
                 </div>
@@ -409,7 +531,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                 <div
                     style={{
                         display: 'flex',
-                        gap: '10px',
+                        gap: '12px',
                         alignItems: 'center',
                         marginBottom: '20px',
                     }}>
@@ -417,31 +539,46 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         onClick={handleImport}
                         disabled={!importData.trim()}
                         style={{
-                            padding: '10px 20px',
+                            padding: '12px 24px',
                             backgroundColor: importData.trim()
-                                ? '#dc3545'
-                                : '#ccc',
+                                ? '#FF3B30'
+                                : '#C7C7CC',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '6px',
+                            borderRadius: '12px',
                             cursor: importData.trim()
                                 ? 'pointer'
                                 : 'not-allowed',
-                            fontSize: '14px',
+                            fontSize: '15px',
                             fontWeight: '600',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            boxShadow: importData.trim()
+                                ? '0 2px 8px rgba(255, 59, 48, 0.25)'
+                                : 'none',
                         }}>
                         执行导入
                     </button>
                     <button
                         onClick={() => setImportData('')}
                         style={{
-                            padding: '10px 20px',
+                            padding: '12px 24px',
                             backgroundColor: 'transparent',
-                            color: '#6c757d',
-                            border: '1px solid #6c757d',
-                            borderRadius: '6px',
+                            color: '#8E8E93',
+                            border: '2px solid #8E8E93',
+                            borderRadius: '12px',
                             cursor: 'pointer',
-                            fontSize: '14px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#F2F2F7';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor =
+                                'transparent';
                         }}>
                         清空
                     </button>
@@ -449,15 +586,34 @@ const ImportExport: React.FC<ImportExportProps> = ({
 
                 <div
                     style={{
-                        padding: '15px',
-                        backgroundColor: '#fff3cd',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        color: '#856404',
-                        lineHeight: '1.5',
+                        padding: '16px 20px',
+                        background:
+                            'linear-gradient(135deg, #FF9500 0%, #FF6B00 100%)',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        color: 'white',
+                        lineHeight: '1.6',
+                        boxShadow: '0 2px 8px rgba(255, 149, 0, 0.2)',
                     }}>
-                    <strong>⚠️ 导入说明:</strong>
-                    <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '8px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                        }}>
+                        <span>⚠️</span>
+                        <strong>导入说明</strong>
+                    </div>
+                    <ul
+                        style={{
+                            margin: '0',
+                            paddingLeft: '24px',
+                            fontSize: '13px',
+                            color: 'rgba(255,255,255,0.95)',
+                        }}>
                         <li>只支持JSON格式数据导入</li>
                         <li>导入的数据会添加到现有单词库中</li>
                         <li>如果单词名称重复，会覆盖现有单词</li>
