@@ -20,7 +20,7 @@ const PARTS_OF_SPEECH_GROUPS = {
 interface WordManagerProps {
     words: Word[];
     onAdd: (word: Word) => void;
-    onEdit: (word: Word, originalWord?: Word) => void;
+    onEdit: (word: Word, originalWord?: Word, silent?: boolean) => void;
     onDelete: (name: string) => void;
     onJumpToSource: (wordId: string) => void;
 }
@@ -565,7 +565,7 @@ const WordListItem: React.FC<{
 interface WordManagerProps {
     words: Word[];
     onAdd: (word: Word) => void;
-    onEdit: (word: Word, originalWord?: Word) => void;
+    onEdit: (word: Word, originalWord?: Word, silent?: boolean) => void;
     onDelete: (name: string) => void;
     onJumpToSource: (wordId: string) => void;
 }
@@ -622,7 +622,22 @@ export default function WordManagerMarkdown({
         console.log(
             `🔄 Words data changed, hash: ${wordsHash.slice(0, 50)}...`,
         );
-    }, [wordsHash]); // 新增：标签和分类过滤状态
+    }, [wordsHash]);
+
+    // 监控视图模式变化
+    React.useEffect(() => {
+        console.log('🎯 ViewMode changed to:', viewMode);
+    }, [viewMode]);
+
+    // 监控当前单词变化
+    React.useEffect(() => {
+        console.log(
+            '📖 CurrentWord changed to:',
+            currentWord ? currentWord.name : 'null',
+        );
+    }, [currentWord]);
+
+    // 新增：标签和分类过滤状态
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
@@ -639,9 +654,7 @@ export default function WordManagerMarkdown({
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(12); // 新增：错误提示状态
-    const [errorMessage, setErrorMessage] = useState('');
-
-    // 新增：新建标签输入状态
+    const [errorMessage, setErrorMessage] = useState(''); // 新增：新建标签输入状态
     const [newTagInput, setNewTagInput] = useState('');
 
     // 优化的搜索函数 - 提前退出和缓存
@@ -923,6 +936,7 @@ export default function WordManagerMarkdown({
         setSelectedLevels([]);
         setSelectedPartsOfSpeech([]);
         setSearchTerm('');
+        console.log('🔄 清除所有筛选');
     }, []);
     const handleAddPart = useCallback(() => {
         setForm((f) => ({
@@ -1045,48 +1059,67 @@ export default function WordManagerMarkdown({
     ); // 页面模式切换函数 - 只有通过搜索/筛选后查看才增加查询次数
     const handleViewWord = useCallback(
         (word: Word) => {
-            // 检查是否有搜索或筛选条件
-            const hasSearchFilters =
-                searchTerm.trim() !== '' ||
-                selectedTags.length > 0 ||
-                selectedCategories.length > 0 ||
-                selectedLevels.length > 0 ||
-                selectedPartsOfSpeech.length > 0;
+            console.log('🔍 handleViewWord called for word:', word.name);
+
+            // 动态读取当前搜索框的值，避免闭包问题
+            // 不能依赖 useCallback 的 searchTerm，因为可能捕获旧值
+            const currentSearchTerm = searchInputRef.current?.value || '';
+            const hasSearchQuery = currentSearchTerm.trim() !== '';
+
+            console.log('🔍 hasSearchQuery:', hasSearchQuery);
+            console.log('🔍 current searchTerm from ref:', currentSearchTerm);
+            console.log('📊 Current viewCount:', word.itemMeta?.viewCount || 0);
 
             let updatedWord: Word;
 
-            if (hasSearchFilters) {
-                // 有搜索/筛选条件时，查询次数+1
+            if (hasSearchQuery) {
+                // 搜索框有内容时，增加查询次数
                 updatedWord = {
                     ...word,
                     itemMeta: {
                         ...word.itemMeta,
-                        viewCount: (word.itemMeta.viewCount || 0) + 1,
+                        viewCount: (word.itemMeta?.viewCount || 0) + 1,
                     },
                 };
-                // 同步更新到数据存储中
-                onEdit(updatedWord);
+                console.log(
+                    '📊 New viewCount will be:',
+                    updatedWord.itemMeta.viewCount,
+                );
             } else {
-                // 没有搜索/筛选条件时，不增加查询次数
+                // 搜索框为空时，不增加查询次数
                 updatedWord = word;
+                console.log('📊 No search query - viewCount unchanged');
             }
 
-            // 更新当前单词状态
+            // 首先立即设置视图状态
+            console.log('📝 Setting currentWord and switching to detail view');
             setCurrentWord(updatedWord);
             setViewMode('detail');
+
+            // 只有在搜索框有内容时才更新后端数据
+            if (hasSearchQuery) {
+                setTimeout(() => {
+                    // 静默更新到后端（不显示通知）
+                    console.log(
+                        '📊 Silent update to backend with viewCount:',
+                        updatedWord.itemMeta.viewCount,
+                    );
+                    onEdit(updatedWord, word, true);
+                }, 10);
+            }
+
+            console.log('✅ View mode changed to detail, currentWord set');
         },
-        [
-            onEdit,
-            searchTerm,
-            selectedTags,
-            selectedCategories,
-            selectedLevels,
-            selectedPartsOfSpeech,
-        ],
+        [onEdit],
     );
     const handleBackToList = useCallback(() => {
+        console.log('🔙 返回列表');
         setViewMode('list');
         setCurrentWord(null);
+
+        // 💡 不需要调用 onRefresh()
+        // 因为 viewCount 已经通过 onEdit 静默模式更新到内存中
+        // 调用 onRefresh() 会导致整个组件重新渲染，丢失筛选条件
     }, []); // 带确认提示的单词删除函数
     const handleDeleteWord = useCallback(
         (word: Word) => {
@@ -1590,7 +1623,7 @@ export default function WordManagerMarkdown({
                                         borderRadius: '4px',
                                         cursor: 'pointer',
                                     }}>
-                                    清除所有
+                                    清除筛选
                                 </button>
                             </div>
                             {/* 分类过滤 */}

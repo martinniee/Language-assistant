@@ -294,9 +294,27 @@ class WordManagerView extends ItemView {
                 `🔄 界面已重新渲染 (key: ${this.renderKey}, words: ${this.words.length})`,
             );
         }
+    } // 静默渲染：仅更新数据，不改变 key，保持UI状态
+    private renderComponentSilently() {
+        if (this.root) {
+            this.root.render(
+                React.createElement(MainApp, {
+                    key: this.renderKey, // 保持相同的 key，不重置组件状态
+                    words: [...this.words], // 创建新数组引用确保React检测到变化
+                    onAdd: this.handleAddWord.bind(this),
+                    onEdit: this.handleEditWord.bind(this),
+                    onDelete: this.handleDeleteWord.bind(this),
+                    onBatchUpdate: this.handleBatchUpdateWords.bind(this),
+                    onJumpToSource: this.jumpToWordInMarkdown.bind(this),
+                }),
+            );
+            console.log(
+                `🔇 静默更新数据 (key: ${this.renderKey}, words: ${this.words.length})`,
+            );
+        }
     }
 
-    // 强制刷新界面的辅助方法
+    // 强制刷新界面的辅助方法（会重置UI状态）
     private forceRefreshUI() {
         console.log('🔄 强制刷新UI...');
         this.renderComponent();
@@ -348,7 +366,11 @@ class WordManagerView extends ItemView {
             this.renderComponent();
         }
     }
-    private async handleEditWord(editedWord: Word, originalWord?: Word) {
+    private async handleEditWord(
+        editedWord: Word,
+        originalWord?: Word,
+        silent: boolean = false,
+    ) {
         console.log('✏️ 尝试编辑单词:', editedWord.name);
         try {
             // 如果提供了原始单词信息，使用原始单词名称查找
@@ -371,23 +393,25 @@ class WordManagerView extends ItemView {
                         );
                         return;
                     }
-                }
-
-                // 更新本地数组
+                } // 更新本地数组
                 this.words[index] = editedWord;
-                console.log('📝 单词已更新到本地数组，正在保存到文件...'); // 立即更新界面显示修改后的数据
-                this.forceRefreshUI();
-
-                // 保存到文件
+                console.log('📝 单词已更新到本地数组，正在保存到文件...'); // 保存到文件
                 await this.wordStorage.saveWords(this.words);
                 console.log('💾 已保存到 words.md 文件');
 
-                // 保存成功后再次确保界面更新
-                this.forceRefreshUI();
-
-                new Notice(
-                    `✅ 成功编辑单词 "${editedWord.name}" 并保存到 words.md`,
-                );
+                // 非静默模式：强制刷新UI（重置状态），显示通知
+                if (!silent) {
+                    this.forceRefreshUI();
+                    new Notice(
+                        `✅ 成功编辑单词 "${editedWord.name}" 并保存到 words.md`,
+                    );
+                } else {
+                    // 静默模式：仅更新数据，不重置UI状态
+                    console.log(
+                        '🔇 静默更新模式：已保存到文件和内存，仅更新数据不重置UI状态',
+                    );
+                    this.renderComponentSilently();
+                }
             } else {
                 new Notice(`❌ 未找到要编辑的单词 "${searchName}"`);
             }
@@ -395,7 +419,9 @@ class WordManagerView extends ItemView {
             console.error('❌ 编辑单词失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 编辑单词失败: ${errorMessage}`); // 发生错误时也要刷新界面，恢复原始状态            this.forceRefreshUI();
+            new Notice(`❌ 编辑单词失败: ${errorMessage}`);
+            // 发生错误时也要刷新界面，恢复原始状态
+            this.forceRefreshUI();
         }
     }
 
@@ -465,10 +491,12 @@ class WordManagerView extends ItemView {
             console.error('❌ 删除单词失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 删除单词失败: ${errorMessage}`); // 发生错误时也要刷新界面
+            new Notice(`❌ 删除单词失败: ${errorMessage}`);
+            // 发生错误时也要刷新界面
             this.forceRefreshUI();
         }
     }
+
     async onClose() {
         console.log('📴 关闭单词管理界面');
         if (this.root) {
