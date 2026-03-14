@@ -48,6 +48,7 @@ export interface Word {
     tags: string[]; // 标签数组（可以是别名或完整名称）
     level: string; // 等级
     partsOfSpeech: string; // 词性概述
+    notes: string; // 备注：记忆技巧、简单标注等
     content: PartOfSpeech[]; // 详细内容
 
     // 内部别名字段（用于存储）
@@ -219,7 +220,6 @@ export class MarkdownWordStorage {
             ) {
                 continue;
             }
-
             const word: Word = {
                 metadata: {
                     id: '', // 暂时为空，后面会设置
@@ -232,6 +232,7 @@ export class MarkdownWordStorage {
                 tags: [],
                 level: '',
                 partsOfSpeech: '',
+                notes: '', // 备注字段
                 content: [],
             };
 
@@ -343,6 +344,11 @@ export class MarkdownWordStorage {
                     line.startsWith('- 词性:')
                 ) {
                     word.partsOfSpeech = line.replace(/^-\s*词性:/, '').trim();
+                } else if (
+                    line.startsWith('-   备注:') ||
+                    line.startsWith('- 备注:')
+                ) {
+                    word.notes = line.replace(/^-\s*备注:/, '').trim();
                 } else if (
                     line.startsWith('-   内容:') ||
                     line.startsWith('- 内容:')
@@ -547,9 +553,7 @@ export class MarkdownWordStorage {
                 ),
             );
 
-            markdown += `%%meta${JSON.stringify(cleanMetadata)}%%\n\n`;
-
-            // 写入内容字段
+            markdown += `%%meta${JSON.stringify(cleanMetadata)}%%\n\n`; // 写入内容字段
             markdown += `- 发音: ${word.pronunciation}\n`;
             markdown += `- 词汇: ${word.vocabulary}\n`;
             markdown += `- 分类: ${word.category}\n`;
@@ -558,6 +562,7 @@ export class MarkdownWordStorage {
                 .join(',')}\n`;
             markdown += `- 等级: ${word.level}\n`;
             markdown += `- 词性: ${word.partsOfSpeech}\n`;
+            markdown += `- 备注: ${word.notes}\n`;
             markdown += `- 内容:\n`;
 
             // 序列化内容结构

@@ -23,6 +23,7 @@ const createEmptyWord = (): Word => ({
     tags: [],
     level: '',
     partsOfSpeech: '',
+    notes: '',
     content: [
         {
             type: '',
@@ -293,8 +294,33 @@ const WordCard: React.FC<{
                             />
                         ) : (
                             word.tags.join(', ')
-                        )}
+                        )}{' '}
                     </p>
+
+                    {/* 显示备注信息 */}
+                    {word.notes && word.notes.trim() && (
+                        <p
+                            style={{
+                                margin: '5px 0',
+                                fontSize: '14px',
+                                color: '#666',
+                                fontStyle: 'italic',
+                                backgroundColor: '#fff8e1',
+                                padding: '6px 8px',
+                                borderRadius: '4px',
+                                borderLeft: '3px solid #ffb300',
+                            }}>
+                            <strong>💡 备注:</strong>{' '}
+                            {enableFullHighlight ? (
+                                <HighlightText
+                                    text={word.notes}
+                                    searchTerm={searchTerm}
+                                />
+                            ) : (
+                                word.notes
+                            )}
+                        </p>
+                    )}
 
                     <div
                         style={{
@@ -629,14 +655,14 @@ export default function WordManagerMarkdown({
     const searchInWord = useCallback((word: Word, term: string): boolean => {
         if (!term) return true;
 
-        const lowerTerm = term.toLowerCase();
-
-        // 基本字段搜索 - 提前退出
+        const lowerTerm = term.toLowerCase(); // 基本字段搜索 - 提前退出
         if (word.name.toLowerCase().includes(lowerTerm)) return true;
         if (word.category.toLowerCase().includes(lowerTerm)) return true;
         if (word.level.toLowerCase().includes(lowerTerm)) return true;
         if (word.partsOfSpeech.toLowerCase().includes(lowerTerm)) return true;
         if (word.pronunciation.toLowerCase().includes(lowerTerm)) return true;
+        if (word.notes && word.notes.toLowerCase().includes(lowerTerm))
+            return true;
 
         // 标签搜索
         if (word.tags.some((tag) => tag.toLowerCase().includes(lowerTerm)))
@@ -2081,6 +2107,22 @@ export default function WordManagerMarkdown({
                                     <strong>查询次数:</strong>{' '}
                                     {getWordQueryCount(currentWord)}
                                 </p>
+                                {/* 显示备注信息 */}
+                                {currentWord.notes &&
+                                    currentWord.notes.trim() && (
+                                        <p
+                                            style={{
+                                                fontStyle: 'italic',
+                                                backgroundColor: '#fff8e1',
+                                                padding: '8px 12px',
+                                                borderRadius: '6px',
+                                                borderLeft: '4px solid #ffb300',
+                                                marginTop: '10px',
+                                            }}>
+                                            <strong>💡 备注:</strong>{' '}
+                                            {currentWord.notes}
+                                        </p>
+                                    )}
                             </div>
                         </div>{' '}
                         <div style={{ marginTop: 30 }}>
@@ -2761,7 +2803,6 @@ export default function WordManagerMarkdown({
                                         </span>
                                     )}
                                 </div>
-
                                 {/* 分组显示词性选项 */}
                                 {Object.entries(PARTS_OF_SPEECH_GROUPS).map(
                                     ([groupName, options]) => (
@@ -2890,8 +2931,31 @@ export default function WordManagerMarkdown({
                                             </div>
                                         </div>
                                     ),
-                                )}
+                                )}{' '}
                             </div>
+                        </div>
+                        {/* 备注字段 */}
+                        <div style={{ marginBottom: 10 }}>
+                            <label>备注 (记忆技巧、标注等):</label>
+                            <textarea
+                                value={form.notes}
+                                onChange={(e) =>
+                                    setForm({ ...form, notes: e.target.value })
+                                }
+                                placeholder="在此输入记忆技巧、学习笔记或其他备注信息..."
+                                style={{
+                                    width: '100%',
+                                    padding: '8px 12px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: 4,
+                                    fontSize: '14px',
+                                    resize: 'vertical',
+                                    minHeight: '60px',
+                                    maxHeight: '120px',
+                                    backgroundColor: '#fafafa',
+                                    boxSizing: 'border-box',
+                                }}
+                            />
                         </div>
                         <h4>详细内容</h4>{' '}
                         {form.content.map((part, partIndex) => (

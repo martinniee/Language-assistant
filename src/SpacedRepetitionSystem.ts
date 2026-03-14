@@ -113,7 +113,6 @@ export class SRSAlgorithm {
         const currentLevel = WordHelper.getSrsLevel(word);
         const currentEase = WordHelper.getEase(word);
         const currentInterval = WordHelper.getInterval(word);
-        const reviewCount = WordHelper.getReviewCount(word);
 
         let newSrsLevel = currentLevel;
         let newEase = currentEase;
