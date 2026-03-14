@@ -227,7 +227,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
     return (
         <div
             style={{
-                padding: '30px',
+                padding: '30px 30px 60px 30px',
                 fontFamily:
                     '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
             }}>

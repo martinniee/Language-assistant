@@ -179,9 +179,8 @@ const Settings: React.FC = () => {
             )}
         </div>
     );
-
     return (
-        <div style={{ padding: '30px', maxWidth: '800px' }}>
+        <div style={{ padding: '30px 30px 60px 30px', maxWidth: '800px' }}>
             {/* 保存状态提示 */}
             {isUnsaved && (
                 <div

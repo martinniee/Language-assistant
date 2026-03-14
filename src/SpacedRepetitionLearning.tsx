@@ -919,7 +919,7 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
     return (
         <div
             style={{
-                padding: '32px 24px',
+                padding: '32px 24px 60px 24px',
                 minHeight: '100%',
                 display: 'flex',
                 flexDirection: 'column',

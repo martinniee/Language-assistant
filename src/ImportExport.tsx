@@ -195,9 +195,8 @@ const ImportExport: React.FC<ImportExportProps> = ({
             );
         }
     };
-
     return (
-        <div style={{ padding: '30px' }}>
+        <div style={{ padding: '30px 30px 60px 30px' }}>
             {/* 状态提示 */}
             {importStatus.show && (
                 <div
