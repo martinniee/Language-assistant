@@ -1,5 +1,5 @@
 // Markdown 单词存储和解析器
-import { TFile, Vault } from 'obsidian';
+import { TFile, Vault, Notice } from 'obsidian';
 import { SRSUtils } from './SpacedRepetitionSystem';
 import { GlobalMetaManager, MetaFormatter } from './GlobalMetaManager';
 
@@ -580,42 +580,122 @@ export class MarkdownWordStorage {
     async loadWords(): Promise<Word[]> {
         const result = await this.loadWordsWithDuplicateInfo();
         return result.words;
-    }
-
-    // 读取 words.md 文件并返回重复信息
+    } // 读取 words.md 文件并返回重复信息
     async loadWordsWithDuplicateInfo(): Promise<ParseResult> {
         try {
             const file = this.vault.getAbstractFileByPath(this.wordsFilePath);
             if (!file || !(file instanceof TFile)) {
-                // 文件不存在，创建包含数据标记的空文件
+                // 文件不存在，确保父文件夹存在后创建空文件
+                await this.ensureParentFolderExists(this.wordsFilePath);
+
                 const emptyContent =
                     '# Words\n\n%%data-start%%\n\n%%data-end%%\n';
-                await this.vault.create(this.wordsFilePath, emptyContent);
+
+                // 再次检查文件是否存在（可能文件夹创建后文件也被创建了）
+                const existingFile = this.vault.getAbstractFileByPath(
+                    this.wordsFilePath,
+                );
+                if (!existingFile || !(existingFile instanceof TFile)) {
+                    await this.vault.create(this.wordsFilePath, emptyContent);
+                }
+
                 return { words: [], duplicates: [] };
             }
-
             const content = await this.vault.read(file);
             return this.parseMarkdownToWords(content);
         } catch (error) {
             console.error('读取单词文件失败:', error);
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`❌ 读取单词文件失败: ${errorMessage}`);
             return { words: [], duplicates: [] };
         }
-    }
-
-    // 保存单词数组到 words.md 文件
+    } // 保存单词数组到 words.md 文件
     async saveWords(words: Word[]): Promise<void> {
         try {
             const markdown = this.wordsToMarkdown(words);
 
             const file = this.vault.getAbstractFileByPath(this.wordsFilePath);
             if (!file || !(file instanceof TFile)) {
-                await this.vault.create(this.wordsFilePath, markdown);
+                // 确保父文件夹存在
+                await this.ensureParentFolderExists(this.wordsFilePath);
+
+                // 双重检查文件是否在文件夹创建后存在
+                const existingFile = this.vault.getAbstractFileByPath(
+                    this.wordsFilePath,
+                );
+                if (!existingFile || !(existingFile instanceof TFile)) {
+                    await this.vault.create(this.wordsFilePath, markdown);
+                } else {
+                    // 文件已存在，修改它
+                    await this.vault.modify(existingFile, markdown);
+                }
             } else {
                 await this.vault.modify(file, markdown);
             }
         } catch (error) {
             console.error('保存单词文件失败:', error);
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+
+            // 根据错误类型提供更具体的用户提示
+            if (errorMessage.includes('already exists')) {
+                new Notice(
+                    `❌ 文件创建失败: ${this.wordsFilePath} 已存在，请检查文件状态`,
+                );
+            } else if (
+                errorMessage.includes('permission') ||
+                errorMessage.includes('access')
+            ) {
+                new Notice(`❌ 文件保存失败: 没有写入权限，请检查文件权限设置`);
+            } else if (
+                errorMessage.includes('not found') ||
+                errorMessage.includes('path')
+            ) {
+                new Notice(
+                    `❌ 文件保存失败: 路径 ${this.wordsFilePath} 无效，请检查路径设置`,
+                );
+            } else {
+                new Notice(`❌ 文件保存失败: ${errorMessage}`);
+            }
+
             throw error;
+        }
+    } // 确保父文件夹存在
+    private async ensureParentFolderExists(filePath: string): Promise<void> {
+        const pathParts = filePath.split('/');
+        if (pathParts.length <= 1) {
+            // 文件在根目录，不需要创建文件夹
+            return;
+        }
+
+        // 获取父文件夹路径（去掉文件名）
+        const parentFolderPath = pathParts.slice(0, -1).join('/');
+        try {
+            // 检查父文件夹是否存在
+            const parentFolder =
+                this.vault.getAbstractFileByPath(parentFolderPath);
+            if (!parentFolder) {
+                // 父文件夹不存在，创建它
+                console.log(`📁 创建文件夹: ${parentFolderPath}`);
+                await this.vault.createFolder(parentFolderPath);
+                new Notice(`✅ 已创建文件夹: ${parentFolderPath}`);
+            }
+        } catch (error: any) {
+            // 如果文件夹已存在，createFolder 会抛出错误，这是正常的
+            const errorMessage = error?.message || String(error);
+            if (
+                errorMessage.includes('already exists') ||
+                errorMessage.includes('Folder already exists')
+            ) {
+                console.log(`📁 文件夹已存在: ${parentFolderPath}`);
+            } else {
+                console.warn(`⚠️ 创建文件夹失败: ${parentFolderPath}`, error);
+                new Notice(
+                    `❌ 创建文件夹失败: ${parentFolderPath} - ${errorMessage}`,
+                );
+                throw error;
+            }
         }
     }
 }

@@ -1,4 +1,13 @@
-import { Plugin, Notice, WorkspaceLeaf, ItemView, addIcon, PluginSettingTab, App, Setting } from 'obsidian';
+import {
+    Plugin,
+    Notice,
+    WorkspaceLeaf,
+    ItemView,
+    addIcon,
+    PluginSettingTab,
+    App,
+    Setting,
+} from 'obsidian';
 import { createRoot } from 'react-dom/client';
 import * as React from 'react';
 import MainApp from './MainApp';
@@ -25,18 +34,25 @@ addIcon(
 
 export default class LanguageAssistantPlugin extends Plugin {
     settings!: LanguageAssistantSettings;
-
     async onload() {
         console.log('Language Assistant Obsidian 插件已加载');
-        
-        // 加载设置
-        await this.loadSettings();
+
+        try {
+            // 加载设置
+            await this.loadSettings();
+        } catch (error) {
+            console.error('❌ 加载设置失败:', error);
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`❌ 加载插件设置失败: ${errorMessage}，将使用默认设置`);
+            this.settings = { ...DEFAULT_SETTINGS };
+        }
 
         this.registerView(
             VIEW_TYPE_WORD_MANAGER,
             (leaf) => new WordManagerView(leaf, this),
         );
-        
+
         // 添加设置选项卡
         this.addSettingTab(new LanguageAssistantSettingTab(this.app, this));
         this.addCommand({
@@ -55,14 +71,26 @@ export default class LanguageAssistantPlugin extends Plugin {
         // 添加 ribon 按钮
         this.addRibbonIcon('word-book', '单词管理', () => {
             this.openWordManagerLeaf();
-        });    }
-
-    async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+        });
     }
 
+    async loadSettings() {
+        this.settings = Object.assign(
+            {},
+            DEFAULT_SETTINGS,
+            await this.loadData(),
+        );
+    }
     async saveSettings() {
-        await this.saveData(this.settings);
+        try {
+            await this.saveData(this.settings);
+        } catch (error) {
+            console.error('❌ 保存设置失败:', error);
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`❌ 保存插件设置失败: ${errorMessage}`);
+            throw error;
+        }
     }
 
     onunload() {
@@ -93,11 +121,17 @@ class WordManagerView extends ItemView {
         super(leaf);
         this.plugin = plugin;
         // 使用插件设置中的文件路径初始化 Markdown 存储器
-        this.wordStorage = new MarkdownWordStorage(this.app.vault, plugin.settings.wordsFilePath);    }
+        this.wordStorage = new MarkdownWordStorage(
+            this.app.vault,
+            plugin.settings.wordsFilePath,
+        );
+    }
 
     // 更新存储文件路径
     public updateStoragePath(newPath: string) {
-        console.log(`📁 更新存储路径: ${this.plugin.settings.wordsFilePath} → ${newPath}`);
+        console.log(
+            `📁 更新存储路径: ${this.plugin.settings.wordsFilePath} → ${newPath}`,
+        );
         this.wordStorage = new MarkdownWordStorage(this.app.vault, newPath);
         // 重新加载数据
         this.onOpen();
@@ -112,7 +146,7 @@ class WordManagerView extends ItemView {
             Date.now().toString(36)
         );
     }
-    
+
     // 跳转到单词文件中的指定单词位置
     private async jumpToWordInMarkdown(wordId: string): Promise<void> {
         try {
@@ -185,7 +219,9 @@ class WordManagerView extends ItemView {
             }
         } catch (error) {
             console.error('❌ 跳转失败:', error);
-            new Notice('❌ 跳转到markdown失败，请查看控制台');
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`❌ 跳转到markdown失败: ${errorMessage}`);
         }
     }
 
@@ -230,7 +266,9 @@ class WordManagerView extends ItemView {
             }
         } catch (error) {
             console.error('❌ 加载单词失败:', error);
-            new Notice('❌ 加载单词失败，请查看控制台');
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`❌ 加载单词失败: ${errorMessage}`);
             this.words = [];
         }
 
@@ -302,7 +340,9 @@ class WordManagerView extends ItemView {
             new Notice(`✅ 成功添加单词 "${word.name}" 并保存到 words.md`);
         } catch (error) {
             console.error('❌ 添加单词失败:', error);
-            new Notice('❌ 添加单词失败，请查看控制台错误信息');
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`❌ 添加单词失败: ${errorMessage}`);
             // 如果保存失败，从数组中移除
             this.words = this.words.filter((w) => w.name !== word.name);
             this.renderComponent();
@@ -353,7 +393,9 @@ class WordManagerView extends ItemView {
             }
         } catch (error) {
             console.error('❌ 编辑单词失败:', error);
-            new Notice('❌ 编辑单词失败，请查看控制台错误信息'); // 发生错误时也要刷新界面，恢复原始状态
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`❌ 编辑单词失败: ${errorMessage}`); // 发生错误时也要刷新界面，恢复原始状态
             this.forceRefreshUI();
         }
     }
@@ -382,10 +424,13 @@ class WordManagerView extends ItemView {
             }
         } catch (error) {
             console.error('❌ 删除单词失败:', error);
-            new Notice('❌ 删除单词失败，请查看控制台错误信息'); // 发生错误时也要刷新界面
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`❌ 删除单词失败: ${errorMessage}`); // 发生错误时也要刷新界面
             this.forceRefreshUI();
         }
-    }    async onClose() {
+    }
+    async onClose() {
         console.log('📴 关闭单词管理界面');
         if (this.root) {
             this.root.unmount();
@@ -409,7 +454,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         // 标题
-        containerEl.createEl('h2', { text: '📚 Language Assistant 设置' });        // 存储位置设置（带自动补全功能）
+        containerEl.createEl('h2', { text: '📚 Language Assistant 设置' }); // 存储位置设置（带自动补全功能）
         this.createPathInputWithSuggestion(containerEl);
 
         // 路径示例说明
@@ -444,13 +489,13 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         const actionsEl = containerEl.createEl('div', {
             cls: 'setting-item',
         });
-        
+
         const actionsInfo = actionsEl.createEl('div', {
             cls: 'setting-item-info',
         });
         actionsInfo.createEl('div', {
             cls: 'setting-item-name',
-            text: '🔧 快速操作'
+            text: '🔧 快速操作',
         });
 
         const actionsControl = actionsEl.createEl('div', {
@@ -465,12 +510,14 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         checkButton.onclick = async () => {
             const filePath = this.plugin.settings.wordsFilePath;
             const file = this.app.vault.getFileByPath(filePath);
-            
+
             if (file) {
                 new Notice(`✅ 文件存在: ${filePath}`);
                 console.log('📂 文件信息:', file);
             } else {
-                new Notice(`❓ 文件不存在: ${filePath}，将在首次添加单词时自动创建`);
+                new Notice(
+                    `❓ 文件不存在: ${filePath}，将在首次添加单词时自动创建`,
+                );
             }
         };
 
@@ -482,20 +529,27 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         resetButton.style.marginLeft = '10px';
         resetButton.onclick = async () => {
             if (confirm('确定要重置存储路径为默认值 (words.md) 吗？')) {
-                this.plugin.settings.wordsFilePath = DEFAULT_SETTINGS.wordsFilePath;
+                this.plugin.settings.wordsFilePath =
+                    DEFAULT_SETTINGS.wordsFilePath;
                 await this.plugin.saveSettings();
-                
+
                 // 刷新设置页面
                 this.display();
-                
+
                 // 更新所有现有的视图
-                this.plugin.app.workspace.getLeavesOfType(VIEW_TYPE_WORD_MANAGER).forEach(leaf => {
-                    if (leaf.view instanceof WordManagerView) {
-                        leaf.view.updateStoragePath(DEFAULT_SETTINGS.wordsFilePath);
-                    }
-                });
-                
-                new Notice(`✅ 存储路径已重置为默认值: ${DEFAULT_SETTINGS.wordsFilePath}`);
+                this.plugin.app.workspace
+                    .getLeavesOfType(VIEW_TYPE_WORD_MANAGER)
+                    .forEach((leaf) => {
+                        if (leaf.view instanceof WordManagerView) {
+                            leaf.view.updateStoragePath(
+                                DEFAULT_SETTINGS.wordsFilePath,
+                            );
+                        }
+                    });
+
+                new Notice(
+                    `✅ 存储路径已重置为默认值: ${DEFAULT_SETTINGS.wordsFilePath}`,
+                );
             }
         };
 
@@ -549,7 +603,8 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         suggestionContainer.style.left = '0';
         suggestionContainer.style.right = '0';
         suggestionContainer.style.backgroundColor = 'var(--background-primary)';
-        suggestionContainer.style.border = '1px solid var(--background-modifier-border)';
+        suggestionContainer.style.border =
+            '1px solid var(--background-modifier-border)';
         suggestionContainer.style.borderRadius = '4px';
         suggestionContainer.style.maxHeight = '200px';
         suggestionContainer.style.overflowY = 'auto';
@@ -559,22 +614,23 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
 
         // 当前选中的建议索引
         let selectedIndex = -1;
-        let suggestions: string[] = [];        // 获取建议列表
+        let suggestions: string[] = []; // 获取建议列表
         const getSuggestions = (query: string): string[] => {
             if (!query) return [];
 
             const allFiles = this.app.vault.getFiles();
-            const allFolders = this.app.vault.getAllLoadedFiles()
-                .filter(file => file.hasOwnProperty('children')) // 这是文件夹的特征
-                .map(folder => folder.path);
+            const allFolders = this.app.vault
+                .getAllLoadedFiles()
+                .filter((file) => file.hasOwnProperty('children')) // 这是文件夹的特征
+                .map((folder) => folder.path);
 
             const queryLower = query.toLowerCase();
             const suggestions: string[] = [];
 
             // 添加现有的.md文件建议
             allFiles
-                .filter(file => file.path.toLowerCase().includes(queryLower))
-                .forEach(file => {
+                .filter((file) => file.path.toLowerCase().includes(queryLower))
+                .forEach((file) => {
                     if (file.extension === 'md') {
                         suggestions.push(file.path);
                     }
@@ -582,8 +638,10 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
 
             // 添加文件夹建议（用户可以在文件夹中创建新文件）
             allFolders
-                .filter(folderPath => folderPath.toLowerCase().includes(queryLower))
-                .forEach(folderPath => {
+                .filter((folderPath) =>
+                    folderPath.toLowerCase().includes(queryLower),
+                )
+                .forEach((folderPath) => {
                     // 建议在文件夹中创建.md文件
                     const suggestedPath = folderPath + '/words.md';
                     if (!suggestions.includes(suggestedPath)) {
@@ -598,7 +656,9 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
                 }
             } else if (query) {
                 // 为简单查询添加.md扩展名建议
-                const mdSuggestion = query.endsWith('.md') ? query : query + '.md';
+                const mdSuggestion = query.endsWith('.md')
+                    ? query
+                    : query + '.md';
                 if (!suggestions.includes(mdSuggestion)) {
                     suggestions.unshift(mdSuggestion);
                 }
@@ -623,10 +683,11 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
                     cls: 'suggestion-item',
                     text: suggestion,
                 });
-                
+
                 item.style.padding = '8px 12px';
                 item.style.cursor = 'pointer';
-                item.style.borderBottom = '1px solid var(--background-modifier-border-hover)';
+                item.style.borderBottom =
+                    '1px solid var(--background-modifier-border-hover)';
 
                 // 高亮匹配部分
                 const query = input.value.toLowerCase();
@@ -635,9 +696,12 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
                     const index = text.toLowerCase().indexOf(query);
                     if (index !== -1) {
                         const beforeMatch = text.substring(0, index);
-                        const match = text.substring(index, index + query.length);
+                        const match = text.substring(
+                            index,
+                            index + query.length,
+                        );
                         const afterMatch = text.substring(index + query.length);
-                        
+
                         item.innerHTML = `${beforeMatch}<strong style="color: var(--accent-color)">${match}</strong>${afterMatch}`;
                     }
                 }
@@ -650,7 +714,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
                 statusIndicator.style.float = 'right';
                 statusIndicator.style.fontSize = '12px';
                 statusIndicator.style.opacity = '0.7';
-                
+
                 if (file) {
                     statusIndicator.textContent = '✓ 存在';
                     statusIndicator.style.color = '#22c55e';
@@ -674,37 +738,46 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
 
         // 更新选中状态
         const updateSelection = (): void => {
-            const items = suggestionContainer.querySelectorAll('.suggestion-item');
+            const items =
+                suggestionContainer.querySelectorAll('.suggestion-item');
             items.forEach((item, index) => {
                 if (index === selectedIndex) {
-                    (item as HTMLElement).style.backgroundColor = 'var(--background-modifier-hover)';
+                    (item as HTMLElement).style.backgroundColor =
+                        'var(--background-modifier-hover)';
                 } else {
                     (item as HTMLElement).style.backgroundColor = 'transparent';
                 }
             });
-        };
-
-        // 选择建议
+        }; // 选择建议
         const selectSuggestion = async (suggestion: string): Promise<void> => {
             input.value = suggestion;
             suggestionContainer.style.display = 'none';
-            
-            // 验证并保存路径
-            if (this.validatePath(suggestion)) {
-                this.plugin.settings.wordsFilePath = suggestion;
-                await this.plugin.saveSettings();
-                
-                // 更新所有现有的视图
-                this.plugin.app.workspace.getLeavesOfType(VIEW_TYPE_WORD_MANAGER).forEach(leaf => {
-                    if (leaf.view instanceof WordManagerView) {
-                        leaf.view.updateStoragePath(suggestion);
-                    }
-                });
-                
-                new Notice(`✅ 存储路径已更新为: ${suggestion}`);
-                
-                // 刷新设置页面以显示新状态
-                this.display();
+
+            try {
+                // 验证并保存路径
+                if (this.validatePath(suggestion)) {
+                    this.plugin.settings.wordsFilePath = suggestion;
+                    await this.plugin.saveSettings();
+
+                    // 更新所有现有的视图
+                    this.plugin.app.workspace
+                        .getLeavesOfType(VIEW_TYPE_WORD_MANAGER)
+                        .forEach((leaf) => {
+                            if (leaf.view instanceof WordManagerView) {
+                                leaf.view.updateStoragePath(suggestion);
+                            }
+                        });
+
+                    new Notice(`✅ 存储路径已更新为: ${suggestion}`);
+
+                    // 刷新设置页面以显示新状态
+                    this.display();
+                }
+            } catch (error) {
+                console.error('❌ 更新存储路径失败:', error);
+                const errorMessage =
+                    error instanceof Error ? error.message : String(error);
+                new Notice(`❌ 更新存储路径失败: ${errorMessage}`);
             }
         };
 
@@ -722,7 +795,10 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
             switch (e.key) {
                 case 'ArrowDown':
                     e.preventDefault();
-                    selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
+                    selectedIndex = Math.min(
+                        selectedIndex + 1,
+                        suggestions.length - 1,
+                    );
                     updateSelection();
                     break;
                 case 'ArrowUp':
@@ -732,7 +808,10 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
                     break;
                 case 'Enter':
                     e.preventDefault();
-                    if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+                    if (
+                        selectedIndex >= 0 &&
+                        selectedIndex < suggestions.length
+                    ) {
                         selectSuggestion(suggestions[selectedIndex]);
                     } else {
                         // 直接验证并保存当前输入
@@ -775,19 +854,19 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
             new Notice('❌ 路径不能为空');
             return false;
         }
-        
+
         if (!path.endsWith('.md')) {
             new Notice('❌ 文件必须以 .md 结尾');
             return false;
         }
-        
+
         // 检查路径中是否包含非法字符
         const invalidChars = /[<>:"|?*]/;
         if (invalidChars.test(path)) {
             new Notice('❌ 路径包含非法字符');
             return false;
         }
-        
+
         return true;
     }
 }
