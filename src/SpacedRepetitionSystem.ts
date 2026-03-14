@@ -238,21 +238,23 @@ export class SRSAlgorithm {
     updateWordSRSData(word: Word, response: ReviewResponse): Word {
         const calculation = this.calculateNextReview(word, response);
         const now = new Date().toISOString();
-
         const updatedWord: Word = {
             ...word,
-            metadata: {
-                ...word.metadata,
+            itemMeta: {
+                ...word.itemMeta,
+                lastUpdate: now,
+            },
+            srsMeta: {
+                ...word.srsMeta,
                 srsLevel: calculation.newSrsLevel,
                 nextReviewDate: calculation.nextReviewDate.toISOString(),
                 lastReviewDate: now,
-                reviewCount: (word.metadata.reviewCount || 0) + 1,
+                reviewCount: WordHelper.getReviewCount(word) + 1,
                 correctCount:
-                    (word.metadata.correctCount || 0) +
+                    WordHelper.getCorrectCount(word) +
                     (response.result >= ReviewResult.GOOD ? 1 : 0),
                 ease: calculation.newEase,
                 interval: calculation.newInterval,
-                lastUpdate: now,
             },
         };
 

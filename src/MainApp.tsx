@@ -1,6 +1,6 @@
 // 主应用组件 - 支持导航和多模块功能
 import React, { useState, useMemo } from 'react';
-import { Word } from './MarkdownWordStorage';
+import { Word, WordHelper } from './MarkdownWordStorage';
 import WordManagerMarkdown from './WordManagerMarkdownNew';
 import SpacedRepetitionLearning from './SpacedRepetitionLearning';
 import DataStatistics from './DataStatistics';
@@ -37,15 +37,11 @@ const MainApp: React.FC<MainAppProps> = ({
     // 添加调试信息，监控数据变化
     React.useEffect(() => {
         console.log(`📊 MainApp received ${words.length} words`);
-    }, [words]);
-
-    // 计算统计信息用于导航栏显示
+    }, [words]); // 计算统计信息用于导航栏显示
     const stats = useMemo(() => {
         const totalWords = words.length;
         const dueWords = words.filter((word) => {
-            const nextReviewDate = word.metadata.nextReviewDate
-                ? new Date(word.metadata.nextReviewDate)
-                : null;
+            const nextReviewDate = WordHelper.getNextReviewDate(word);
             return !nextReviewDate || nextReviewDate <= new Date();
         }).length;
 

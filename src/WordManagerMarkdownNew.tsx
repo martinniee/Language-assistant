@@ -2,40 +2,8 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Word, WordHelper } from './MarkdownWordStorage';
 
-// 辅助函数来处理新的Word接口
-const createEmptyWord = (): Word => ({
-    metadata: {
-        id: '',
-        queryCount: 0,
-        createBy: 'user',
-        lastUpdate: new Date().toISOString(),
-        // 间隔学习默认值
-        srsLevel: 0,
-        reviewCount: 0,
-        correctCount: 0,
-        ease: 2.5,
-        interval: 1,
-    },
-    name: '',
-    pronunciation: '',
-    vocabulary: '',
-    category: '',
-    tags: [],
-    level: '',
-    partsOfSpeech: '',
-    notes: '',
-    content: [
-        {
-            type: '',
-            definitions: [
-                {
-                    definition: '',
-                    examples: [],
-                },
-            ],
-        },
-    ],
-});
+// 使用 WordHelper 创建空白单词
+const createEmptyWord = (): Word => WordHelper.createEmpty();
 
 const getWordId = (word: Word): string => WordHelper.getId(word);
 const getWordQueryCount = (word: Word): number =>
@@ -273,11 +241,11 @@ const WordCard: React.FC<{
                         <strong>分类:</strong>{' '}
                         {enableFullHighlight ? (
                             <HighlightText
-                                text={word.category}
+                                text={WordHelper.getCategory(word)}
                                 searchTerm={searchTerm}
                             />
                         ) : (
-                            word.category
+                            WordHelper.getCategory(word)
                         )}
                     </p>
                     <p
@@ -289,11 +257,11 @@ const WordCard: React.FC<{
                         <strong>标签:</strong>{' '}
                         {enableFullHighlight ? (
                             <HighlightText
-                                text={word.tags.join(', ')}
+                                text={WordHelper.getTags(word).join(', ')}
                                 searchTerm={searchTerm}
                             />
                         ) : (
-                            word.tags.join(', ')
+                            WordHelper.getTags(word).join(', ')
                         )}{' '}
                     </p>
 
@@ -331,7 +299,7 @@ const WordCard: React.FC<{
                             justifyContent: 'space-between',
                             alignItems: 'center',
                         }}>
-                        <span>等级: {word.level}</span>
+                        <span>等级: {WordHelper.getLevel(word)}</span>
                         <span
                             style={{
                                 color: '#007acc',
@@ -425,40 +393,42 @@ const WordListItem: React.FC<{
                         }}>
                         {enableFullHighlight ? (
                             <HighlightText
-                                text={word.category}
+                                text={WordHelper.getCategory(word)}
                                 searchTerm={searchTerm}
                             />
                         ) : (
-                            word.category
+                            WordHelper.getCategory(word)
                         )}
                     </span>
                 </div>
                 {/* 标签 */}
                 <div style={{ flex: '1', fontSize: '14px' }}>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                        {word.tags.slice(0, 3).map((tag, index) => (
-                            <span
-                                key={index}
-                                style={{
-                                    padding: '2px 6px',
-                                    backgroundColor: '#f1f8e9',
-                                    color: '#689f38',
-                                    borderRadius: 10,
-                                    fontSize: '11px',
-                                }}>
-                                {enableFullHighlight ? (
-                                    <HighlightText
-                                        text={tag}
-                                        searchTerm={searchTerm}
-                                    />
-                                ) : (
-                                    tag
-                                )}
-                            </span>
-                        ))}
-                        {word.tags.length > 3 && (
+                        {WordHelper.getTags(word)
+                            .slice(0, 3)
+                            .map((tag, index) => (
+                                <span
+                                    key={index}
+                                    style={{
+                                        padding: '2px 6px',
+                                        backgroundColor: '#f1f8e9',
+                                        color: '#689f38',
+                                        borderRadius: 10,
+                                        fontSize: '11px',
+                                    }}>
+                                    {enableFullHighlight ? (
+                                        <HighlightText
+                                            text={tag}
+                                            searchTerm={searchTerm}
+                                        />
+                                    ) : (
+                                        tag
+                                    )}
+                                </span>
+                            ))}
+                        {WordHelper.getTags(word).length > 3 && (
                             <span style={{ fontSize: '11px', color: '#999' }}>
-                                +{word.tags.length - 3}
+                                +{WordHelper.getTags(word).length - 3}
                             </span>
                         )}
                     </div>
@@ -471,7 +441,7 @@ const WordListItem: React.FC<{
                         color: '#666',
                         textAlign: 'center',
                     }}>
-                    {word.metadata.queryCount || 0}
+                    {getWordQueryCount(word)}
                 </div>
                 {/* 等级 */}
                 <div
@@ -484,21 +454,21 @@ const WordListItem: React.FC<{
                         style={{
                             padding: '2px 6px',
                             backgroundColor:
-                                word.level === '高级'
+                                WordHelper.getLevel(word) === '高级'
                                     ? '#ffebee'
-                                    : word.level === '中级'
+                                    : WordHelper.getLevel(word) === '中级'
                                     ? '#fff3e0'
                                     : '#e8f5e8',
                             color:
-                                word.level === '高级'
+                                WordHelper.getLevel(word) === '高级'
                                     ? '#c62828'
-                                    : word.level === '中级'
+                                    : WordHelper.getLevel(word) === '中级'
                                     ? '#ef6c00'
                                     : '#2e7d32',
                             borderRadius: 8,
                             fontSize: '11px',
                         }}>
-                        {word.level}
+                        {WordHelper.getLevel(word)}
                     </span>
                 </div>{' '}
                 {/* 操作按钮 */}
@@ -657,15 +627,21 @@ export default function WordManagerMarkdown({
 
         const lowerTerm = term.toLowerCase(); // 基本字段搜索 - 提前退出
         if (word.name.toLowerCase().includes(lowerTerm)) return true;
-        if (word.category.toLowerCase().includes(lowerTerm)) return true;
-        if (word.level.toLowerCase().includes(lowerTerm)) return true;
+        if (WordHelper.getCategory(word).toLowerCase().includes(lowerTerm))
+            return true;
+        if (WordHelper.getLevel(word).toLowerCase().includes(lowerTerm))
+            return true;
         if (word.partsOfSpeech.toLowerCase().includes(lowerTerm)) return true;
         if (word.pronunciation.toLowerCase().includes(lowerTerm)) return true;
         if (word.notes && word.notes.toLowerCase().includes(lowerTerm))
             return true;
 
         // 标签搜索
-        if (word.tags.some((tag) => tag.toLowerCase().includes(lowerTerm)))
+        if (
+            WordHelper.getTags(word).some((tag) =>
+                tag.toLowerCase().includes(lowerTerm),
+            )
+        )
             return true;
 
         // 详细内容搜索 - 优化嵌套循环
@@ -690,7 +666,7 @@ export default function WordManagerMarkdown({
     const allTags = useMemo(() => {
         const tagSet = new Set<string>();
         words.forEach((word) => {
-            word.tags.forEach((tag) => {
+            WordHelper.getTags(word).forEach((tag) => {
                 if (tag.trim()) tagSet.add(tag.trim());
             });
         });
@@ -699,7 +675,8 @@ export default function WordManagerMarkdown({
     const allCategories = useMemo(() => {
         const categorySet = new Set<string>();
         words.forEach((word) => {
-            if (word.category.trim()) categorySet.add(word.category.trim());
+            if (WordHelper.getCategory(word).trim())
+                categorySet.add(WordHelper.getCategory(word).trim());
         });
         return Array.from(categorySet).sort();
     }, [words]);
@@ -708,7 +685,8 @@ export default function WordManagerMarkdown({
     const allLevels = useMemo(() => {
         const levelSet = new Set<string>();
         words.forEach((word) => {
-            if (word.level.trim()) levelSet.add(word.level.trim());
+            if (WordHelper.getLevel(word).trim())
+                levelSet.add(WordHelper.getLevel(word).trim());
         });
         return Array.from(levelSet).sort();
     }, [words]);
@@ -730,20 +708,27 @@ export default function WordManagerMarkdown({
             // 标签过滤
             if (selectedTags.length > 0) {
                 const hasSelectedTag = selectedTags.some((selectedTag) =>
-                    word.tags.some((wordTag) => wordTag.trim() === selectedTag),
+                    WordHelper.getTags(word).some(
+                        (wordTag) => wordTag.trim() === selectedTag,
+                    ),
                 );
                 if (!hasSelectedTag) return false;
             }
 
             // 分类过滤
             if (selectedCategories.length > 0) {
-                if (!selectedCategories.includes(word.category.trim()))
+                if (
+                    !selectedCategories.includes(
+                        WordHelper.getCategory(word).trim(),
+                    )
+                )
                     return false;
             }
 
             // 等级过滤
             if (selectedLevels.length > 0) {
-                if (!selectedLevels.includes(word.level.trim())) return false;
+                if (!selectedLevels.includes(WordHelper.getLevel(word).trim()))
+                    return false;
             }
 
             // 词性过滤
@@ -778,7 +763,9 @@ export default function WordManagerMarkdown({
                     compareResult = a.name.localeCompare(b.name);
                     break;
                 case 'category':
-                    compareResult = a.category.localeCompare(b.category);
+                    compareResult = WordHelper.getCategory(a).localeCompare(
+                        WordHelper.getCategory(b),
+                    );
                     break;
                 case 'queryCount':
                     compareResult = getWordQueryCount(a) - getWordQueryCount(b);
@@ -839,10 +826,6 @@ export default function WordManagerMarkdown({
                     {
                         ...form,
                         name: trimmedName,
-                        metadata: {
-                            ...editTarget.metadata,
-                            ...form.metadata,
-                        },
                     },
                     editTarget,
                 );
@@ -875,7 +858,6 @@ export default function WordManagerMarkdown({
         setEditTarget(word);
         setForm({
             ...word,
-            tags: [...word.tags],
             content: JSON.parse(JSON.stringify(word.content)),
         });
         setNewTagInput(''); // 重置新标签输入
@@ -1054,9 +1036,9 @@ export default function WordManagerMarkdown({
                 // 有搜索/筛选条件时，查询次数+1
                 updatedWord = {
                     ...word,
-                    metadata: {
-                        ...word.metadata,
-                        queryCount: (word.metadata.queryCount || 0) + 1,
+                    itemMeta: {
+                        ...word.itemMeta,
+                        viewCount: (word.itemMeta.viewCount || 0) + 1,
                     },
                 };
                 // 同步更新到数据存储中
@@ -1086,7 +1068,7 @@ export default function WordManagerMarkdown({
     const handleDeleteWord = useCallback(
         (word: Word) => {
             const wordName = word.name;
-            const wordCategory = word.category || '未分类';
+            const wordCategory = WordHelper.getCategory(word) || '未分类';
             const definitionsCount = word.content.reduce(
                 (total, part) => total + part.definitions.length,
                 0,
@@ -2097,7 +2079,7 @@ export default function WordManagerMarkdown({
                             <div>
                                 <p>
                                     <strong>标签:</strong>{' '}
-                                    {currentWord.tags.join(', ')}
+                                    {WordHelper.getTags(currentWord).join(', ')}
                                 </p>
                                 <p>
                                     <strong>词性:</strong>{' '}
@@ -2407,16 +2389,20 @@ export default function WordManagerMarkdown({
                                 }}>
                                 <select
                                     value={
-                                        allCategories.includes(form.category)
-                                            ? form.category
+                                        allCategories.includes(
+                                            WordHelper.getCategory(form),
+                                        )
+                                            ? WordHelper.getCategory(form)
                                             : ''
                                     }
                                     onChange={(e) => {
                                         if (e.target.value) {
-                                            setForm({
-                                                ...form,
-                                                category: e.target.value,
-                                            });
+                                            const newForm = { ...form };
+                                            WordHelper.setCategory(
+                                                newForm,
+                                                e.target.value,
+                                            );
+                                            setForm(newForm);
                                         }
                                     }}
                                     style={{
@@ -2441,13 +2427,15 @@ export default function WordManagerMarkdown({
                                 <input
                                     type="text"
                                     placeholder="新建分类"
-                                    value={form.category}
-                                    onChange={(e) =>
-                                        setForm({
-                                            ...form,
-                                            category: e.target.value,
-                                        })
-                                    }
+                                    value={WordHelper.getCategory(form)}
+                                    onChange={(e) => {
+                                        const newForm = { ...form };
+                                        WordHelper.setCategory(
+                                            newForm,
+                                            e.target.value,
+                                        );
+                                        setForm(newForm);
+                                    }}
                                     style={{
                                         padding: 5,
                                         width: '150px',
@@ -2473,7 +2461,7 @@ export default function WordManagerMarkdown({
                                         backgroundColor: '#f9f9f9',
                                         marginBottom: 10,
                                     }}>
-                                    {form.tags.length === 0 ? (
+                                    {WordHelper.getTags(form).length === 0 ? (
                                         <span
                                             style={{
                                                 color: '#999',
@@ -2483,46 +2471,56 @@ export default function WordManagerMarkdown({
                                             请选择或添加标签
                                         </span>
                                     ) : (
-                                        form.tags.map((tag, index) => (
-                                            <span
-                                                key={index}
-                                                style={{
-                                                    padding: '4px 8px',
-                                                    backgroundColor: '#e3f2fd',
-                                                    color: '#1976d2',
-                                                    borderRadius: 12,
-                                                    fontSize: '12px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 4,
-                                                }}>
-                                                {tag}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const newTags =
-                                                            form.tags.filter(
-                                                                (_, i) =>
-                                                                    i !== index,
-                                                            );
-                                                        setForm({
-                                                            ...form,
-                                                            tags: newTags,
-                                                        });
-                                                    }}
+                                        WordHelper.getTags(form).map(
+                                            (tag, index) => (
+                                                <span
+                                                    key={index}
                                                     style={{
-                                                        background: 'none',
-                                                        border: 'none',
+                                                        padding: '4px 8px',
+                                                        backgroundColor:
+                                                            '#e3f2fd',
                                                         color: '#1976d2',
-                                                        cursor: 'pointer',
-                                                        padding: '0 2px',
-                                                        fontSize: '14px',
-                                                        lineHeight: 1,
+                                                        borderRadius: 12,
+                                                        fontSize: '12px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 4,
                                                     }}>
-                                                    ×
-                                                </button>
-                                            </span>
-                                        ))
+                                                    {tag}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newTags =
+                                                                WordHelper.getTags(
+                                                                    form,
+                                                                ).filter(
+                                                                    (_, i) =>
+                                                                        i !==
+                                                                        index,
+                                                                );
+                                                            const newForm = {
+                                                                ...form,
+                                                            };
+                                                            WordHelper.setTags(
+                                                                newForm,
+                                                                newTags,
+                                                            );
+                                                            setForm(newForm);
+                                                        }}
+                                                        style={{
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            color: '#1976d2',
+                                                            cursor: 'pointer',
+                                                            padding: '0 2px',
+                                                            fontSize: '14px',
+                                                            lineHeight: 1,
+                                                        }}>
+                                                        ×
+                                                    </button>
+                                                </span>
+                                            ),
+                                        )
                                     )}
                                 </div>
 
@@ -2550,9 +2548,9 @@ export default function WordManagerMarkdown({
                                             {allTags
                                                 .filter(
                                                     (tag) =>
-                                                        !form.tags.includes(
-                                                            tag,
-                                                        ),
+                                                        !WordHelper.getTags(
+                                                            form,
+                                                        ).includes(tag),
                                                 )
                                                 .map((tag) => (
                                                     <button
@@ -2560,17 +2558,24 @@ export default function WordManagerMarkdown({
                                                         type="button"
                                                         onClick={() => {
                                                             if (
-                                                                !form.tags.includes(
-                                                                    tag,
-                                                                )
+                                                                !WordHelper.getTags(
+                                                                    form,
+                                                                ).includes(tag)
                                                             ) {
-                                                                setForm({
-                                                                    ...form,
-                                                                    tags: [
-                                                                        ...form.tags,
+                                                                const newForm =
+                                                                    { ...form };
+                                                                WordHelper.setTags(
+                                                                    newForm,
+                                                                    [
+                                                                        ...WordHelper.getTags(
+                                                                            form,
+                                                                        ),
                                                                         tag,
                                                                     ],
-                                                                });
+                                                                );
+                                                                setForm(
+                                                                    newForm,
+                                                                );
                                                             }
                                                         }}
                                                         style={{
@@ -2635,23 +2640,29 @@ export default function WordManagerMarkdown({
                                             }
                                             onKeyPress={(e) => {
                                                 if (
-                                                    e.key === 'Enter' &&
-                                                    newTagInput?.trim()
+                                                    newTagInput?.trim() &&
+                                                    e.key === 'Enter'
                                                 ) {
                                                     const trimmedTag =
                                                         newTagInput.trim();
                                                     if (
-                                                        !form.tags.includes(
-                                                            trimmedTag,
-                                                        )
+                                                        !WordHelper.getTags(
+                                                            form,
+                                                        ).includes(trimmedTag)
                                                     ) {
-                                                        setForm({
+                                                        const newForm = {
                                                             ...form,
-                                                            tags: [
-                                                                ...form.tags,
+                                                        };
+                                                        WordHelper.setTags(
+                                                            newForm,
+                                                            [
+                                                                ...WordHelper.getTags(
+                                                                    form,
+                                                                ),
                                                                 trimmedTag,
                                                             ],
-                                                        });
+                                                        );
+                                                        setForm(newForm);
                                                         setNewTagInput('');
                                                     }
                                                 }
@@ -2663,7 +2674,7 @@ export default function WordManagerMarkdown({
                                                 borderRadius: '4px',
                                                 fontSize: '13px',
                                             }}
-                                        />
+                                        />{' '}
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -2671,17 +2682,23 @@ export default function WordManagerMarkdown({
                                                     const trimmedTag =
                                                         newTagInput.trim();
                                                     if (
-                                                        !form.tags.includes(
-                                                            trimmedTag,
-                                                        )
+                                                        !WordHelper.getTags(
+                                                            form,
+                                                        ).includes(trimmedTag)
                                                     ) {
-                                                        setForm({
+                                                        const newForm = {
                                                             ...form,
-                                                            tags: [
-                                                                ...form.tags,
+                                                        };
+                                                        WordHelper.setTags(
+                                                            newForm,
+                                                            [
+                                                                ...WordHelper.getTags(
+                                                                    form,
+                                                                ),
                                                                 trimmedTag,
                                                             ],
-                                                        });
+                                                        );
+                                                        setForm(newForm);
                                                         setNewTagInput('');
                                                     }
                                                 }
@@ -2713,10 +2730,15 @@ export default function WordManagerMarkdown({
                         <div style={{ marginBottom: 10 }}>
                             <label>等级:</label>
                             <select
-                                value={form.level}
-                                onChange={(e) =>
-                                    setForm({ ...form, level: e.target.value })
-                                }
+                                value={WordHelper.getLevel(form)}
+                                onChange={(e) => {
+                                    const newForm = { ...form };
+                                    WordHelper.setLevel(
+                                        newForm,
+                                        e.target.value,
+                                    );
+                                    setForm(newForm);
+                                }}
                                 style={{ marginLeft: 10, padding: 5 }}>
                                 <option value="">请选择</option>
                                 <option value="初级">初级</option>

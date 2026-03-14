@@ -148,18 +148,14 @@ export class GlobalMetaManager {
 
     // 从项目元数据恢复单词字段
     resolveItemMeta(itemMeta: ItemMeta): Partial<Word> {
-        const wordFields: Partial<Word> = {};
-
-        // 解析标签
+        const wordFields: Partial<Word> = {}; // 解析标签
         if (itemMeta.tags) {
             wordFields.tags = this.resolveTags(itemMeta.tags);
-            wordFields._tagAliases = itemMeta.tags;
         }
 
         // 解析分类
         if (itemMeta.category) {
             wordFields.category = this.resolveCategory(itemMeta.category);
-            wordFields._categoryAlias = itemMeta.category;
         }
 
         // 其他字段直接赋值

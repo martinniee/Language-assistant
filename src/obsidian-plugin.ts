@@ -11,7 +11,7 @@ import {
 import { createRoot } from 'react-dom/client';
 import * as React from 'react';
 import MainApp from './MainApp';
-import { MarkdownWordStorage } from './MarkdownWordStorage';
+import { MarkdownWordStorage, WordHelper } from './MarkdownWordStorage';
 import type { Word } from './MarkdownWordStorage';
 
 const VIEW_TYPE_WORD_MANAGER = 'word-manager-view';
@@ -320,9 +320,9 @@ class WordManagerView extends ItemView {
                 );
                 return;
             } // 如果没有ID，生成一个新的
-            if (!word.metadata.id) {
-                word.metadata.id = this.generateId();
-                console.log('🆔 为新单词生成ID:', word.metadata.id);
+            if (!WordHelper.getId(word)) {
+                WordHelper.setId(word, this.generateId());
+                console.log('🆔 为新单词生成ID:', WordHelper.getId(word));
             }
 
             // 添加到本地数组
