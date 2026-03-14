@@ -10,7 +10,7 @@ import {
 
 interface SpacedRepetitionLearningProps {
     words: Word[];
-    onUpdateWord: (word: Word, originalWord?: Word) => void;
+    onUpdateWord: (word: Word, originalWord?: Word, silent?: boolean) => void;
 }
 
 interface StudySession {
@@ -74,9 +74,7 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
         setStudyCards([]);
         // 重新加载统计信息
         loadStudyCards();
-    };
-
-    // 处理复习回答
+    }; // 处理复习回答
     const handleReviewAnswer = (result: ReviewResult) => {
         if (!currentCard || !session) return;
 
@@ -86,8 +84,8 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
             response,
         );
 
-        // 更新单词数据
-        onUpdateWord(updatedWord, currentCard);
+        // 静默更新单词数据（不显示通知，不刷新UI）
+        onUpdateWord(updatedWord, currentCard, true);
 
         // 更新会话统计
         const newSession: StudySession = {
@@ -284,7 +282,6 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                         />
                     </div>
                 </div>
-
                 {/* 单词卡片 */}
                 <div
                     style={{
@@ -403,8 +400,7 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                             ))}
                         </div>
                     )}
-                </div>
-
+                </div>{' '}
                 {/* 操作按钮 */}
                 <div
                     style={{
@@ -413,188 +409,162 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                         gap: '15px',
                         flexWrap: 'wrap',
                     }}>
-                    {' '}
-                    {!showAnswer ? (
+                    {/* 四个评分按钮始终显示 */}
+                    <button
+                        onClick={() => handleReviewAnswer(ReviewResult.AGAIN)}
+                        style={{
+                            padding: '16px 28px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            backgroundColor: '#f44336',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            minHeight: '52px',
+                            minWidth: '100px',
+                            letterSpacing: '0.3px',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#d32f2f';
+                            e.currentTarget.style.transform =
+                                'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f44336';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}>
+                        1️⃣ 陌生
+                    </button>
+
+                    <button
+                        onClick={() => handleReviewAnswer(ReviewResult.HARD)}
+                        style={{
+                            padding: '16px 28px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            backgroundColor: '#ff9800',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            minHeight: '52px',
+                            minWidth: '100px',
+                            letterSpacing: '0.3px',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f57c00';
+                            e.currentTarget.style.transform =
+                                'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ff9800';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}>
+                        2️⃣ 模糊
+                    </button>
+
+                    <button
+                        onClick={() => handleReviewAnswer(ReviewResult.GOOD)}
+                        style={{
+                            padding: '16px 28px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            backgroundColor: '#4caf50',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            minHeight: '52px',
+                            minWidth: '100px',
+                            letterSpacing: '0.3px',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#388e3c';
+                            e.currentTarget.style.transform =
+                                'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#4caf50';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}>
+                        3️⃣ 熟悉
+                    </button>
+
+                    <button
+                        onClick={() => handleReviewAnswer(ReviewResult.EASY)}
+                        style={{
+                            padding: '16px 28px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            backgroundColor: '#2196f3',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '24px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            minHeight: '52px',
+                            minWidth: '100px',
+                            letterSpacing: '0.3px',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#1976d2';
+                            e.currentTarget.style.transform =
+                                'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#2196f3';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}>
+                        4️⃣ 简单
+                    </button>
+                </div>
+                {/* 显示答案按钮 */}
+                {!showAnswer && (
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            marginTop: '20px',
+                        }}>
                         <button
                             onClick={() => setShowAnswer(true)}
                             style={{
-                                padding: '18px 48px',
-                                fontSize: '17px',
-                                fontWeight: '600',
-                                backgroundColor: '#1976d2',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '32px',
+                                padding: '12px 32px',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                backgroundColor: '#ffffff',
+                                color: '#1976d2',
+                                border: '2px solid #1976d2',
+                                borderRadius: '24px',
                                 cursor: 'pointer',
                                 transition: 'all 0.3s ease',
-                                boxShadow: '0 4px 16px rgba(25,118,210,0.25)',
-                                minHeight: '56px',
-                                letterSpacing: '0.5px',
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#1565c0';
-                                e.currentTarget.style.transform =
-                                    'translateY(-2px)';
-                                e.currentTarget.style.boxShadow =
-                                    '0 6px 20px rgba(25,118,210,0.35)';
+                                    '#e3f2fd';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#1976d2';
-                                e.currentTarget.style.transform =
-                                    'translateY(0)';
-                                e.currentTarget.style.boxShadow =
-                                    '0 4px 16px rgba(25,118,210,0.25)';
+                                    '#ffffff';
                             }}>
-                            显示答案
+                            💡 显示答案
                         </button>
-                    ) : (
-                        <>
-                            <button
-                                onClick={() =>
-                                    handleReviewAnswer(ReviewResult.AGAIN)
-                                }
-                                style={{
-                                    padding: '16px 28px',
-                                    fontSize: '15px',
-                                    fontWeight: '600',
-                                    backgroundColor: '#f44336',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '24px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    minHeight: '52px',
-                                    minWidth: '100px',
-                                    letterSpacing: '0.3px',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor =
-                                        '#d32f2f';
-                                    e.currentTarget.style.transform =
-                                        'translateY(-1px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor =
-                                        '#f44336';
-                                    e.currentTarget.style.transform =
-                                        'translateY(0)';
-                                }}>
-                                陌生
-                            </button>{' '}
-                            <button
-                                onClick={() =>
-                                    handleReviewAnswer(ReviewResult.HARD)
-                                }
-                                style={{
-                                    padding: '16px 28px',
-                                    fontSize: '15px',
-                                    fontWeight: '600',
-                                    backgroundColor: '#ff9800',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '24px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    minHeight: '52px',
-                                    minWidth: '100px',
-                                    letterSpacing: '0.3px',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor =
-                                        '#f57c00';
-                                    e.currentTarget.style.transform =
-                                        'translateY(-1px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor =
-                                        '#ff9800';
-                                    e.currentTarget.style.transform =
-                                        'translateY(0)';
-                                }}>
-                                模糊
-                            </button>
-                            <button
-                                onClick={() =>
-                                    handleReviewAnswer(ReviewResult.GOOD)
-                                }
-                                style={{
-                                    padding: '16px 28px',
-                                    fontSize: '15px',
-                                    fontWeight: '600',
-                                    backgroundColor: '#4caf50',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '24px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    minHeight: '52px',
-                                    minWidth: '100px',
-                                    letterSpacing: '0.3px',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor =
-                                        '#388e3c';
-                                    e.currentTarget.style.transform =
-                                        'translateY(-1px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor =
-                                        '#4caf50';
-                                    e.currentTarget.style.transform =
-                                        'translateY(0)';
-                                }}>
-                                熟悉
-                            </button>
-                            <button
-                                onClick={() =>
-                                    handleReviewAnswer(ReviewResult.EASY)
-                                }
-                                style={{
-                                    padding: '16px 28px',
-                                    fontSize: '15px',
-                                    fontWeight: '600',
-                                    backgroundColor: '#2196f3',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '24px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    minHeight: '52px',
-                                    minWidth: '100px',
-                                    letterSpacing: '0.3px',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor =
-                                        '#1976d2';
-                                    e.currentTarget.style.transform =
-                                        'translateY(-1px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor =
-                                        '#2196f3';
-                                    e.currentTarget.style.transform =
-                                        'translateY(0)';
-                                }}>
-                                简单
-                            </button>
-                        </>
-                    )}
-                </div>
-
-                {/* 快捷键提示 */}
-                {showAnswer && (
-                    <div
-                        style={{
-                            textAlign: 'center',
-                            marginTop: '20px',
-                            fontSize: '12px',
-                            color: '#999',
-                        }}>
-                        快捷键: 1-陌生 | 2-模糊 | 3-熟悉 | 4-简单
                     </div>
                 )}
+                {/* 快捷键提示 */}
+                <div
+                    style={{
+                        textAlign: 'center',
+                        marginTop: '20px',
+                        fontSize: '12px',
+                        color: '#999',
+                    }}>
+                    快捷键: 1-陌生 | 2-模糊 | 3-熟悉 | 4-简单 | 空格-显示答案
+                </div>
             </div>
         );
     };
