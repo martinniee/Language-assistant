@@ -1,4 +1,4 @@
-// 数据统计组件
+// 数据统计组件 - iOS 风格
 import React, { useMemo } from 'react';
 import { Word, WordHelper } from './MarkdownWordStorage';
 import { defaultSRS } from './SpacedRepetitionSystem';
@@ -55,51 +55,70 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
             posStats,
             progressStats,
         };
-    }, [words]);
-
+    }, [words]); // iOS 风格统计卡片
     const renderStatCard = (
         title: string,
         value: number,
         subtitle: string,
         color: string,
+        icon: string,
     ) => (
         <div
             style={{
-                padding: '25px',
+                padding: '24px',
                 backgroundColor: '#ffffff',
-                borderRadius: '12px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                borderRadius: '16px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                 textAlign: 'center',
-                border: `3px solid ${color}`,
+                border: 'none',
+                fontFamily:
+                    '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+                transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
             }}>
             <div
                 style={{
-                    fontSize: '36px',
-                    fontWeight: 'bold',
+                    fontSize: '40px',
+                    marginBottom: '8px',
+                }}>
+                {icon}
+            </div>
+            <div
+                style={{
+                    fontSize: '48px',
+                    fontWeight: '700',
                     color: color,
                     marginBottom: '8px',
+                    letterSpacing: '-1.5px',
                 }}>
                 {value}
             </div>
             <div
                 style={{
-                    fontSize: '16px',
+                    fontSize: '17px',
                     fontWeight: '600',
-                    color: '#2c3e50',
+                    color: '#1C1C1E',
                     marginBottom: '4px',
                 }}>
                 {title}
             </div>
             <div
                 style={{
-                    fontSize: '12px',
-                    color: '#7f8c8d',
+                    fontSize: '13px',
+                    color: '#8E8E93',
+                    fontWeight: '400',
                 }}>
                 {subtitle}
             </div>
         </div>
-    );
-
+    ); // iOS 风格柱状图
     const renderBarChart = (
         data: Record<string, number>,
         title: string,
@@ -111,19 +130,28 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
             <div
                 style={{
                     backgroundColor: '#ffffff',
-                    borderRadius: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    padding: '25px',
-                    marginBottom: '25px',
+                    borderRadius: '16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    padding: '24px',
+                    marginBottom: '20px',
+                    fontFamily:
+                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                 }}>
-                <h3 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>
+                <h3
+                    style={{
+                        margin: '0 0 20px 0',
+                        color: '#1C1C1E',
+                        fontSize: '20px',
+                        fontWeight: '600',
+                        letterSpacing: '-0.3px',
+                    }}>
                     {title}
                 </h3>
                 <div
                     style={{
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '10px',
+                        gap: '12px',
                     }}>
                     {Object.entries(data)
                         .sort(([, a], [, b]) => b - a)
@@ -138,8 +166,9 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                                 <div
                                     style={{
                                         width: '120px',
-                                        fontSize: '14px',
-                                        color: '#555',
+                                        fontSize: '15px',
+                                        color: '#48484A',
+                                        fontWeight: '500',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
@@ -149,9 +178,9 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                                 <div style={{ flex: 1, margin: '0 15px' }}>
                                     <div
                                         style={{
-                                            height: '20px',
-                                            backgroundColor: '#f0f0f0',
-                                            borderRadius: '10px',
+                                            height: '24px',
+                                            backgroundColor: '#F2F2F7',
+                                            borderRadius: '12px',
                                             overflow: 'hidden',
                                         }}>
                                         <div
@@ -161,17 +190,19 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                                                     (value / maxValue) * 100
                                                 }%`,
                                                 backgroundColor: color,
-                                                transition: 'width 0.3s ease',
+                                                transition:
+                                                    'width 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                                borderRadius: '12px',
                                             }}
                                         />
                                     </div>
                                 </div>
                                 <div
                                     style={{
-                                        width: '40px',
+                                        width: '50px',
                                         textAlign: 'right',
-                                        fontSize: '14px',
-                                        fontWeight: 'bold',
+                                        fontSize: '15px',
+                                        fontWeight: '600',
                                         color: color,
                                     }}>
                                     {value}
@@ -183,8 +214,8 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                     <div
                         style={{
                             textAlign: 'center',
-                            color: '#999',
-                            fontSize: '14px',
+                            color: '#8E8E93',
+                            fontSize: '15px',
                             padding: '40px',
                         }}>
                         暂无数据
@@ -193,59 +224,108 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
             </div>
         );
     };
-
     return (
-        <div style={{ padding: '30px' }}>
-            {/* 总体统计 */}
+        <div
+            style={{
+                padding: '30px',
+                fontFamily:
+                    '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+            }}>
+            {/* iOS 风格页面标题 */}
+            <div
+                style={{
+                    background:
+                        'linear-gradient(135deg, #34C759 0%, #30D158 100%)',
+                    padding: '32px 28px',
+                    borderRadius: '20px',
+                    marginBottom: '24px',
+                    boxShadow: '0 4px 16px rgba(52, 199, 89, 0.2)',
+                }}>
+                <h1
+                    style={{
+                        margin: 0,
+                        color: 'white',
+                        fontSize: '34px',
+                        fontWeight: '700',
+                        letterSpacing: '-1px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                    }}>
+                    📊 数据统计
+                </h1>
+                <p
+                    style={{
+                        margin: '8px 0 0 0',
+                        color: 'rgba(255,255,255,0.85)',
+                        fontSize: '17px',
+                        fontWeight: '400',
+                    }}>
+                    全面了解您的学习进度与成果
+                </p>
+            </div>
+
+            {/* 总体统计卡片 */}
             <div
                 style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                    gap: '20px',
-                    marginBottom: '40px',
+                    gap: '16px',
+                    marginBottom: '24px',
                 }}>
                 {renderStatCard(
                     '总单词',
                     stats.srsStats.total,
                     '词汇库大小',
-                    '#3498db',
+                    '#007AFF',
+                    '📚',
                 )}
                 {renderStatCard(
                     '待学习',
                     stats.srsStats.dueToday,
                     '今日任务',
-                    '#e74c3c',
+                    '#FF3B30',
+                    '⏰',
                 )}
                 {renderStatCard(
                     '正确率',
                     Math.round(stats.srsStats.accuracy),
                     '%',
-                    '#27ae60',
+                    '#34C759',
+                    '✅',
                 )}
                 {renderStatCard(
                     '新单词',
                     stats.srsStats.new,
                     '尚未开始学习',
-                    '#9b59b6',
+                    '#AF52DE',
+                    '🆕',
                 )}
             </div>
 
-            {/* 学习进度饼图风格 */}
+            {/* iOS 风格学习进度卡片 */}
             <div
                 style={{
                     backgroundColor: '#ffffff',
-                    borderRadius: '12px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    padding: '25px',
-                    marginBottom: '25px',
+                    borderRadius: '16px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    padding: '24px',
+                    marginBottom: '20px',
                 }}>
-                <h3 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>
+                <h3
+                    style={{
+                        margin: '0 0 20px 0',
+                        color: '#1C1C1E',
+                        fontSize: '20px',
+                        fontWeight: '600',
+                        letterSpacing: '-0.3px',
+                    }}>
                     学习进度分布
                 </h3>
                 <div
                     style={{
                         display: 'flex',
-                        gap: '20px',
+                        gap: '24px',
                         alignItems: 'center',
                         flexWrap: 'wrap',
                     }}>
@@ -254,48 +334,81 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
+                            padding: '12px 16px',
+                            backgroundColor: '#FFEBEE',
+                            borderRadius: '12px',
                         }}>
                         <div
                             style={{
-                                width: '20px',
-                                height: '20px',
-                                backgroundColor: '#ff6b6b',
+                                width: '12px',
+                                height: '12px',
+                                backgroundColor: '#FF3B30',
                                 borderRadius: '50%',
                             }}
                         />
-                        <span>未开始: {stats.progressStats.notStarted}</span>
+                        <span
+                            style={{
+                                fontSize: '15px',
+                                fontWeight: '500',
+                                color: '#1C1C1E',
+                            }}>
+                            未开始:{' '}
+                            <strong>{stats.progressStats.notStarted}</strong>
+                        </span>
                     </div>
                     <div
                         style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
+                            padding: '12px 16px',
+                            backgroundColor: '#FFF3E0',
+                            borderRadius: '12px',
                         }}>
                         <div
                             style={{
-                                width: '20px',
-                                height: '20px',
-                                backgroundColor: '#ffd93d',
+                                width: '12px',
+                                height: '12px',
+                                backgroundColor: '#FF9500',
                                 borderRadius: '50%',
                             }}
                         />
-                        <span>学习中: {stats.progressStats.learning}</span>
+                        <span
+                            style={{
+                                fontSize: '15px',
+                                fontWeight: '500',
+                                color: '#1C1C1E',
+                            }}>
+                            学习中:{' '}
+                            <strong>{stats.progressStats.learning}</strong>
+                        </span>
                     </div>
                     <div
                         style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
+                            padding: '12px 16px',
+                            backgroundColor: '#E8F5E9',
+                            borderRadius: '12px',
                         }}>
                         <div
                             style={{
-                                width: '20px',
-                                height: '20px',
-                                backgroundColor: '#6bcf7f',
+                                width: '12px',
+                                height: '12px',
+                                backgroundColor: '#34C759',
                                 borderRadius: '50%',
                             }}
                         />
-                        <span>已毕业: {stats.progressStats.graduated}</span>
+                        <span
+                            style={{
+                                fontSize: '15px',
+                                fontWeight: '500',
+                                color: '#1C1C1E',
+                            }}>
+                            已毕业:{' '}
+                            <strong>{stats.progressStats.graduated}</strong>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -305,56 +418,107 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                 style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                    gap: '25px',
+                    gap: '20px',
                 }}>
-                {renderBarChart(stats.categoryStats, '分类统计', '#3498db')}
-                {renderBarChart(stats.levelStats, '等级统计', '#e67e22')}
-                {renderBarChart(stats.posStats, '词性统计', '#9b59b6')}
+                {renderBarChart(stats.categoryStats, '📂 分类统计', '#007AFF')}
+                {renderBarChart(stats.levelStats, '📊 等级统计', '#FF9500')}
+                {renderBarChart(stats.posStats, '📝 词性统计', '#AF52DE')}
             </div>
 
-            {/* 学习建议 */}
+            {/* iOS 风格学习建议卡片 */}
             <div
                 style={{
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: '12px',
-                    padding: '25px',
-                    marginTop: '25px',
-                    border: '1px solid #e9ecef',
+                    backgroundColor: '#F2F2F7',
+                    borderRadius: '16px',
+                    padding: '24px',
+                    marginTop: '20px',
+                    border: 'none',
                 }}>
-                <h3 style={{ margin: '0 0 15px 0', color: '#2c3e50' }}>
-                    📈 学习建议
+                <h3
+                    style={{
+                        margin: '0 0 16px 0',
+                        color: '#1C1C1E',
+                        fontSize: '20px',
+                        fontWeight: '600',
+                        letterSpacing: '-0.3px',
+                    }}>
+                    💡 学习建议
                 </h3>
-                <div style={{ color: '#555', lineHeight: '1.6' }}>
+                <div
+                    style={{
+                        color: '#48484A',
+                        lineHeight: '1.8',
+                        fontSize: '15px',
+                    }}>
                     {stats.srsStats.dueToday > 20 && (
-                        <p>
-                            • 今日待学习单词较多({stats.srsStats.dueToday}
+                        <p
+                            style={{
+                                margin: '0 0 12px 0',
+                                padding: '12px 16px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '10px',
+                                borderLeft: '3px solid #FF9500',
+                            }}>
+                            ⚠️ 今日待学习单词较多(
+                            <strong>{stats.srsStats.dueToday}</strong>
                             个)，建议分批完成，避免疲劳
                         </p>
                     )}
                     {stats.srsStats.accuracy < 60 && (
-                        <p>
-                            • 当前正确率较低(
-                            {Math.round(stats.srsStats.accuracy)}
-                            %)，建议降低学习强度，专注复习已学单词
+                        <p
+                            style={{
+                                margin: '0 0 12px 0',
+                                padding: '12px 16px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '10px',
+                                borderLeft: '3px solid #FF3B30',
+                            }}>
+                            📉 当前正确率较低(
+                            <strong>
+                                {Math.round(stats.srsStats.accuracy)}%
+                            </strong>
+                            )，建议降低学习强度，专注复习已学单词
                         </p>
                     )}
                     {stats.srsStats.new > 50 && (
-                        <p>
-                            • 新单词较多({stats.srsStats.new}
+                        <p
+                            style={{
+                                margin: '0 0 12px 0',
+                                padding: '12px 16px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '10px',
+                                borderLeft: '3px solid #AF52DE',
+                            }}>
+                            📚 新单词较多(<strong>{stats.srsStats.new}</strong>
                             个)，建议每日稳定添加新单词，避免积压
                         </p>
                     )}
                     {stats.srsStats.accuracy >= 80 && (
-                        <p>
-                            • 👏 学习状态良好！正确率达到
-                            {Math.round(stats.srsStats.accuracy)}
-                            %，可以适当增加学习量
+                        <p
+                            style={{
+                                margin: '0 0 12px 0',
+                                padding: '12px 16px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '10px',
+                                borderLeft: '3px solid #34C759',
+                            }}>
+                            🎉 学习状态良好！正确率达到
+                            <strong>
+                                {Math.round(stats.srsStats.accuracy)}%
+                            </strong>
+                            ，可以适当增加学习量
                         </p>
                     )}
                     {stats.srsStats.dueToday === 0 && (
-                        <p>
-                            • 🎉
-                            今日学习任务完成！保持这个节奏，词汇量会稳步提升
+                        <p
+                            style={{
+                                margin: '0',
+                                padding: '12px 16px',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '10px',
+                                borderLeft: '3px solid #34C759',
+                            }}>
+                            ✨ 今日学习任务完成！保持这个节奏，词汇量会稳步提升
                         </p>
                     )}
                 </div>
