@@ -114,35 +114,53 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
     useEffect(() => {
         loadStudyCards();
     }, [words, studyLimit]);
-
     const renderStudyStats = () => (
         <div
             style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '20px',
-                marginBottom: '30px',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                gap: '12px',
+                marginBottom: '24px',
             }}>
             <div
                 style={{
-                    padding: '20px',
-                    backgroundColor: '#e3f2fd',
-                    borderRadius: '12px',
+                    padding: '20px 16px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '16px',
                     textAlign: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(0,0,0,0.04)',
+                    transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow =
+                        '0 4px 12px rgba(0,0,0,0.08)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow =
+                        '0 2px 8px rgba(0,0,0,0.04)';
                 }}>
                 <div
                     style={{
-                        fontSize: '32px',
-                        fontWeight: 'bold',
-                        color: '#1976d2',
+                        fontSize: '40px',
+                        fontWeight: '700',
+                        color: '#007AFF',
+                        letterSpacing: '-0.5px',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                     }}>
                     {stats.dueToday}
                 </div>
                 <div
                     style={{
-                        fontSize: '14px',
-                        color: '#555',
-                        marginTop: '5px',
+                        fontSize: '13px',
+                        color: '#8E8E93',
+                        marginTop: '4px',
+                        fontWeight: '500',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                     }}>
                     待学习
                 </div>
@@ -150,24 +168,43 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
 
             <div
                 style={{
-                    padding: '20px',
-                    backgroundColor: '#f3e5f5',
-                    borderRadius: '12px',
+                    padding: '20px 16px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '16px',
                     textAlign: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(0,0,0,0.04)',
+                    transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow =
+                        '0 4px 12px rgba(0,0,0,0.08)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow =
+                        '0 2px 8px rgba(0,0,0,0.04)';
                 }}>
                 <div
                     style={{
-                        fontSize: '32px',
-                        fontWeight: 'bold',
-                        color: '#7b1fa2',
+                        fontSize: '40px',
+                        fontWeight: '700',
+                        color: '#AF52DE',
+                        letterSpacing: '-0.5px',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                     }}>
                     {stats.new}
                 </div>
                 <div
                     style={{
-                        fontSize: '14px',
-                        color: '#555',
-                        marginTop: '5px',
+                        fontSize: '13px',
+                        color: '#8E8E93',
+                        marginTop: '4px',
+                        fontWeight: '500',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                     }}>
                     新单词
                 </div>
@@ -175,24 +212,43 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
 
             <div
                 style={{
-                    padding: '20px',
-                    backgroundColor: '#fff3e0',
-                    borderRadius: '12px',
+                    padding: '20px 16px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '16px',
                     textAlign: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(0,0,0,0.04)',
+                    transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow =
+                        '0 4px 12px rgba(0,0,0,0.08)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow =
+                        '0 2px 8px rgba(0,0,0,0.04)';
                 }}>
                 <div
                     style={{
-                        fontSize: '32px',
-                        fontWeight: 'bold',
-                        color: '#f57c00',
+                        fontSize: '40px',
+                        fontWeight: '700',
+                        color: '#FF9500',
+                        letterSpacing: '-0.5px',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                     }}>
                     {stats.learning}
                 </div>
                 <div
                     style={{
-                        fontSize: '14px',
-                        color: '#555',
-                        marginTop: '5px',
+                        fontSize: '13px',
+                        color: '#8E8E93',
+                        marginTop: '4px',
+                        fontWeight: '500',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                     }}>
                     学习中
                 </div>
@@ -200,24 +256,43 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
 
             <div
                 style={{
-                    padding: '20px',
-                    backgroundColor: '#e8f5e8',
-                    borderRadius: '12px',
+                    padding: '20px 16px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '16px',
                     textAlign: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(0,0,0,0.04)',
+                    transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow =
+                        '0 4px 12px rgba(0,0,0,0.08)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow =
+                        '0 2px 8px rgba(0,0,0,0.04)';
                 }}>
                 <div
                     style={{
-                        fontSize: '32px',
-                        fontWeight: 'bold',
-                        color: '#388e3c',
+                        fontSize: '40px',
+                        fontWeight: '700',
+                        color: '#34C759',
+                        letterSpacing: '-0.5px',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                     }}>
                     {Math.round(stats.accuracy)}%
                 </div>
                 <div
                     style={{
-                        fontSize: '14px',
-                        color: '#555',
-                        marginTop: '5px',
+                        fontSize: '13px',
+                        color: '#8E8E93',
+                        marginTop: '4px',
+                        fontWeight: '500',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                     }}>
                     正确率
                 </div>
@@ -230,29 +305,44 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
 
         const progress =
             ((session.currentIndex + 1) / session.totalCards) * 100;
-
         return (
-            <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '680px', margin: '0 auto' }}>
                 {/* 进度条 */}
                 <div
                     style={{
-                        marginBottom: '30px',
-                        padding: '20px',
-                        backgroundColor: '#f8f9fa',
-                        borderRadius: '12px',
+                        marginBottom: '20px',
+                        padding: '16px 20px',
+                        backgroundColor: '#ffffff',
+                        borderRadius: '16px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                        border: '1px solid rgba(0,0,0,0.04)',
                     }}>
                     <div
                         style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            marginBottom: '10px',
+                            marginBottom: '12px',
                         }}>
-                        <span style={{ fontSize: '14px', color: '#666' }}>
+                        <span
+                            style={{
+                                fontSize: '13px',
+                                color: '#8E8E93',
+                                fontWeight: '500',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            }}>
                             第 {session.currentIndex + 1} / {session.totalCards}{' '}
                             张
                         </span>
-                        <span style={{ fontSize: '14px', color: '#666' }}>
+                        <span
+                            style={{
+                                fontSize: '13px',
+                                color: '#8E8E93',
+                                fontWeight: '500',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            }}>
                             正确率:{' '}
                             {session.studiedCards > 0
                                 ? Math.round(
@@ -267,55 +357,64 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                     <div
                         style={{
                             width: '100%',
-                            height: '8px',
-                            backgroundColor: '#e0e0e0',
-                            borderRadius: '4px',
+                            height: '6px',
+                            backgroundColor: '#F2F2F7',
+                            borderRadius: '3px',
                             overflow: 'hidden',
                         }}>
                         <div
                             style={{
                                 width: `${progress}%`,
                                 height: '100%',
-                                backgroundColor: '#4caf50',
-                                transition: 'width 0.3s ease',
+                                backgroundColor: '#34C759',
+                                transition:
+                                    'width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                borderRadius: '3px',
                             }}
                         />
                     </div>
-                </div>
+                </div>{' '}
                 {/* 单词卡片 */}
                 <div
                     style={{
                         backgroundColor: '#ffffff',
-                        borderRadius: '16px',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                        borderRadius: '20px',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                         overflow: 'hidden',
-                        marginBottom: '30px',
+                        marginBottom: '20px',
+                        border: '1px solid rgba(0,0,0,0.04)',
                     }}>
                     {/* 卡片正面 - 单词 */}
                     <div
                         style={{
-                            padding: '60px 40px',
+                            padding: '48px 32px',
                             textAlign: 'center',
-                            backgroundColor: '#fafafa',
+                            backgroundColor: '#FAFAFA',
                             borderBottom: showAnswer
-                                ? '1px solid #e0e0e0'
+                                ? '1px solid rgba(0,0,0,0.06)'
                                 : 'none',
                         }}>
                         <div
                             style={{
-                                fontSize: '48px',
-                                fontWeight: 'bold',
-                                color: '#2c3e50',
-                                marginBottom: '10px',
+                                fontSize: '52px',
+                                fontWeight: '700',
+                                color: '#1C1C1E',
+                                marginBottom: '8px',
+                                letterSpacing: '-1px',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                             }}>
                             {currentCard.name}
                         </div>
                         {currentCard.pronunciation && (
                             <div
                                 style={{
-                                    fontSize: '18px',
-                                    color: '#7f8c8d',
-                                    fontStyle: 'italic',
+                                    fontSize: '17px',
+                                    color: '#8E8E93',
+                                    fontWeight: '500',
+                                    letterSpacing: '0.2px',
+                                    fontFamily:
+                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                 }}>
                                 [{currentCard.pronunciation}]
                             </div>
@@ -323,13 +422,16 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                         {currentCard.category && (
                             <div
                                 style={{
-                                    marginTop: '15px',
+                                    marginTop: '16px',
                                     display: 'inline-block',
-                                    padding: '5px 12px',
-                                    backgroundColor: '#e3f2fd',
-                                    color: '#1976d2',
-                                    borderRadius: '20px',
-                                    fontSize: '12px',
+                                    padding: '6px 14px',
+                                    backgroundColor: '#007AFF',
+                                    color: '#ffffff',
+                                    borderRadius: '12px',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    fontFamily:
+                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                 }}>
                                 {currentCard.category}
                             </div>
@@ -338,16 +440,19 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
 
                     {/* 卡片背面 - 答案 */}
                     {showAnswer && (
-                        <div style={{ padding: '40px' }}>
+                        <div style={{ padding: '32px 28px' }}>
                             {currentCard.content.map((part, index) => (
                                 <div
                                     key={index}
-                                    style={{ marginBottom: '25px' }}>
+                                    style={{ marginBottom: '24px' }}>
                                     <h4
                                         style={{
-                                            margin: '0 0 15px 0',
-                                            color: '#1976d2',
-                                            fontSize: '18px',
+                                            margin: '0 0 12px 0',
+                                            color: '#007AFF',
+                                            fontSize: '17px',
+                                            fontWeight: '600',
+                                            fontFamily:
+                                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                         }}>
                                         {part.type}
                                     </h4>
@@ -355,15 +460,18 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                                         <div
                                             key={defIndex}
                                             style={{
-                                                marginBottom: '15px',
-                                                paddingLeft: '15px',
-                                                borderLeft: '3px solid #e0e0e0',
+                                                marginBottom: '16px',
+                                                paddingLeft: '16px',
+                                                borderLeft: '3px solid #F2F2F7',
                                             }}>
                                             <div
                                                 style={{
-                                                    fontSize: '16px',
+                                                    fontSize: '15px',
                                                     marginBottom: '10px',
-                                                    lineHeight: '1.5',
+                                                    lineHeight: '1.6',
+                                                    color: '#1C1C1E',
+                                                    fontFamily:
+                                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                                 }}>
                                                 {def.definition}
                                             </div>
@@ -376,17 +484,19 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                                                                 style={{
                                                                     fontSize:
                                                                         '14px',
-                                                                    color: '#666',
-                                                                    fontStyle:
-                                                                        'italic',
+                                                                    color: '#8E8E93',
+                                                                    lineHeight:
+                                                                        '1.5',
                                                                     marginTop:
-                                                                        '5px',
-                                                                    padding:
-                                                                        '8px 12px',
-                                                                    backgroundColor:
-                                                                        '#f8f9fa',
-                                                                    borderRadius:
                                                                         '6px',
+                                                                    padding:
+                                                                        '10px 14px',
+                                                                    backgroundColor:
+                                                                        '#F2F2F7',
+                                                                    borderRadius:
+                                                                        '10px',
+                                                                    fontFamily:
+                                                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                                                                 }}>
                                                                 {example.text}
                                                             </div>
@@ -404,152 +514,169 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                 {/* 操作按钮 */}
                 <div
                     style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        gap: '15px',
-                        flexWrap: 'wrap',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '12px',
+                        marginBottom: '16px',
                     }}>
                     {/* 四个评分按钮始终显示 */}
                     <button
                         onClick={() => handleReviewAnswer(ReviewResult.AGAIN)}
                         style={{
-                            padding: '16px 28px',
+                            padding: '18px 20px',
                             fontSize: '15px',
                             fontWeight: '600',
-                            backgroundColor: '#f44336',
+                            backgroundColor: '#FF3B30',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '24px',
+                            borderRadius: '14px',
                             cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            minHeight: '52px',
-                            minWidth: '100px',
-                            letterSpacing: '0.3px',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            boxShadow: '0 2px 8px rgba(255, 59, 48, 0.25)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            letterSpacing: '-0.2px',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#d32f2f';
-                            e.currentTarget.style.transform =
-                                'translateY(-1px)';
+                            e.currentTarget.style.transform = 'scale(0.98)';
+                            e.currentTarget.style.boxShadow =
+                                '0 4px 12px rgba(255, 59, 48, 0.35)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f44336';
-                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.boxShadow =
+                                '0 2px 8px rgba(255, 59, 48, 0.25)';
                         }}>
-                        1️⃣ 陌生
+                        陌生
                     </button>
 
                     <button
                         onClick={() => handleReviewAnswer(ReviewResult.HARD)}
                         style={{
-                            padding: '16px 28px',
+                            padding: '18px 20px',
                             fontSize: '15px',
                             fontWeight: '600',
-                            backgroundColor: '#ff9800',
+                            backgroundColor: '#FF9500',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '24px',
+                            borderRadius: '14px',
                             cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            minHeight: '52px',
-                            minWidth: '100px',
-                            letterSpacing: '0.3px',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            boxShadow: '0 2px 8px rgba(255, 149, 0, 0.25)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            letterSpacing: '-0.2px',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f57c00';
-                            e.currentTarget.style.transform =
-                                'translateY(-1px)';
+                            e.currentTarget.style.transform = 'scale(0.98)';
+                            e.currentTarget.style.boxShadow =
+                                '0 4px 12px rgba(255, 149, 0, 0.35)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#ff9800';
-                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.boxShadow =
+                                '0 2px 8px rgba(255, 149, 0, 0.25)';
                         }}>
-                        2️⃣ 模糊
+                        模糊
                     </button>
 
                     <button
                         onClick={() => handleReviewAnswer(ReviewResult.GOOD)}
                         style={{
-                            padding: '16px 28px',
+                            padding: '18px 20px',
                             fontSize: '15px',
                             fontWeight: '600',
-                            backgroundColor: '#4caf50',
+                            backgroundColor: '#34C759',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '24px',
+                            borderRadius: '14px',
                             cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            minHeight: '52px',
-                            minWidth: '100px',
-                            letterSpacing: '0.3px',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            boxShadow: '0 2px 8px rgba(52, 199, 89, 0.25)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            letterSpacing: '-0.2px',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#388e3c';
-                            e.currentTarget.style.transform =
-                                'translateY(-1px)';
+                            e.currentTarget.style.transform = 'scale(0.98)';
+                            e.currentTarget.style.boxShadow =
+                                '0 4px 12px rgba(52, 199, 89, 0.35)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#4caf50';
-                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.boxShadow =
+                                '0 2px 8px rgba(52, 199, 89, 0.25)';
                         }}>
-                        3️⃣ 熟悉
+                        熟悉
                     </button>
 
                     <button
                         onClick={() => handleReviewAnswer(ReviewResult.EASY)}
                         style={{
-                            padding: '16px 28px',
+                            padding: '18px 20px',
                             fontSize: '15px',
                             fontWeight: '600',
-                            backgroundColor: '#2196f3',
+                            backgroundColor: '#007AFF',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '24px',
+                            borderRadius: '14px',
                             cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            minHeight: '52px',
-                            minWidth: '100px',
-                            letterSpacing: '0.3px',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            boxShadow: '0 2px 8px rgba(0, 122, 255, 0.25)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            letterSpacing: '-0.2px',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1976d2';
-                            e.currentTarget.style.transform =
-                                'translateY(-1px)';
+                            e.currentTarget.style.transform = 'scale(0.98)';
+                            e.currentTarget.style.boxShadow =
+                                '0 4px 12px rgba(0, 122, 255, 0.35)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#2196f3';
-                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.boxShadow =
+                                '0 2px 8px rgba(0, 122, 255, 0.25)';
                         }}>
-                        4️⃣ 简单
+                        简单
                     </button>
-                </div>
+                </div>{' '}
                 {/* 显示答案按钮 */}
                 {!showAnswer && (
                     <div
                         style={{
                             display: 'flex',
                             justifyContent: 'center',
-                            marginTop: '20px',
                         }}>
                         <button
                             onClick={() => setShowAnswer(true)}
                             style={{
-                                padding: '12px 32px',
-                                fontSize: '14px',
-                                fontWeight: '500',
-                                backgroundColor: '#ffffff',
-                                color: '#1976d2',
-                                border: '2px solid #1976d2',
-                                borderRadius: '24px',
+                                padding: '14px 28px',
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                backgroundColor: '#F2F2F7',
+                                color: '#007AFF',
+                                border: 'none',
+                                borderRadius: '14px',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s ease',
+                                transition:
+                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                letterSpacing: '-0.2px',
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#e3f2fd';
+                                    '#E5E5EA';
+                                e.currentTarget.style.transform = 'scale(0.98)';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    '#ffffff';
+                                    '#F2F2F7';
+                                e.currentTarget.style.transform = 'scale(1)';
                             }}>
                             💡 显示答案
                         </button>
@@ -559,16 +686,18 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                 <div
                     style={{
                         textAlign: 'center',
-                        marginTop: '20px',
+                        marginTop: '16px',
                         fontSize: '12px',
-                        color: '#999',
+                        color: '#C7C7CC',
+                        fontWeight: '500',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                     }}>
                     快捷键: 1-陌生 | 2-模糊 | 3-熟悉 | 4-简单 | 空格-显示答案
                 </div>
             </div>
         );
     };
-
     const renderSessionComplete = () => {
         if (!session || session.currentIndex < session.totalCards) return null;
 
@@ -586,69 +715,130 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
             <div
                 style={{
                     textAlign: 'center',
-                    padding: '60px 40px',
+                    padding: '48px 40px',
                     backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                    maxWidth: '600px',
+                    borderRadius: '20px',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                    maxWidth: '560px',
                     margin: '0 auto',
+                    border: '1px solid rgba(0,0,0,0.04)',
                 }}>
-                <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎉</div>
-                <h2 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>
+                <div style={{ fontSize: '72px', marginBottom: '16px' }}>🎉</div>
+                <h2
+                    style={{
+                        margin: '0 0 12px 0',
+                        color: '#1C1C1E',
+                        fontSize: '28px',
+                        fontWeight: '700',
+                        letterSpacing: '-0.5px',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+                    }}>
                     学习完成！
                 </h2>
                 <div
                     style={{
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr 1fr',
-                        gap: '20px',
-                        margin: '30px 0',
+                        gap: '16px',
+                        margin: '32px 0',
                     }}>
-                    <div>
+                    <div
+                        style={{
+                            padding: '20px 16px',
+                            backgroundColor: '#F2F2F7',
+                            borderRadius: '14px',
+                        }}>
                         <div
                             style={{
-                                fontSize: '24px',
-                                fontWeight: 'bold',
-                                color: '#1976d2',
+                                fontSize: '32px',
+                                fontWeight: '700',
+                                color: '#007AFF',
+                                letterSpacing: '-0.5px',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                             }}>
                             {session.studiedCards}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>
+                        <div
+                            style={{
+                                fontSize: '12px',
+                                color: '#8E8E93',
+                                marginTop: '4px',
+                                fontWeight: '500',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            }}>
                             已学习
                         </div>
                     </div>
-                    <div>
+                    <div
+                        style={{
+                            padding: '20px 16px',
+                            backgroundColor: '#F2F2F7',
+                            borderRadius: '14px',
+                        }}>
                         <div
                             style={{
-                                fontSize: '24px',
-                                fontWeight: 'bold',
-                                color: '#4caf50',
+                                fontSize: '32px',
+                                fontWeight: '700',
+                                color: '#34C759',
+                                letterSpacing: '-0.5px',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                             }}>
                             {accuracy}%
                         </div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>
+                        <div
+                            style={{
+                                fontSize: '12px',
+                                color: '#8E8E93',
+                                marginTop: '4px',
+                                fontWeight: '500',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            }}>
                             正确率
                         </div>
                     </div>
-                    <div>
+                    <div
+                        style={{
+                            padding: '20px 16px',
+                            backgroundColor: '#F2F2F7',
+                            borderRadius: '14px',
+                        }}>
                         <div
                             style={{
-                                fontSize: '24px',
-                                fontWeight: 'bold',
-                                color: '#ff9800',
+                                fontSize: '32px',
+                                fontWeight: '700',
+                                color: '#FF9500',
+                                letterSpacing: '-0.5px',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                             }}>
-                            {duration}min
+                            {duration}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>
-                            用时
+                        <div
+                            style={{
+                                fontSize: '12px',
+                                color: '#8E8E93',
+                                marginTop: '4px',
+                                fontWeight: '500',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            }}>
+                            分钟
                         </div>
                     </div>
                 </div>
                 <p
                     style={{
-                        color: '#666',
-                        fontSize: '14px',
-                        margin: '20px 0',
+                        color: '#8E8E93',
+                        fontSize: '15px',
+                        margin: '24px 0 0 0',
+                        lineHeight: '1.5',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                     }}>
                     继续保持学习，明天还有更多单词等着你！
                 </p>
@@ -684,39 +874,41 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
         return (
             <div
                 style={{
-                    padding: '32px 40px',
+                    padding: '32px 24px',
                     minHeight: '100%',
                     display: 'flex',
                     flexDirection: 'column',
+                    backgroundColor: '#F9F9F9',
                 }}>
                 {session && session.currentIndex < session.totalCards
                     ? renderStudyCard()
                     : renderSessionComplete()}
-                <div style={{ textAlign: 'center', marginTop: '30px' }}>
+                <div style={{ textAlign: 'center', marginTop: '24px' }}>
                     <button
                         onClick={endStudySession}
                         style={{
                             padding: '14px 32px',
                             fontSize: '15px',
-                            fontWeight: '500',
-                            backgroundColor: '#6c757d',
-                            color: 'white',
+                            fontWeight: '600',
+                            backgroundColor: '#F2F2F7',
+                            color: '#8E8E93',
                             border: 'none',
-                            borderRadius: '28px',
+                            borderRadius: '14px',
                             cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            minHeight: '48px',
-                            letterSpacing: '0.3px',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            letterSpacing: '-0.2px',
                             outline: 'none',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#5a6268';
-                            e.currentTarget.style.transform =
-                                'translateY(-1px)';
+                            e.currentTarget.style.backgroundColor = '#E5E5EA';
+                            e.currentTarget.style.transform = 'scale(0.98)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#6c757d';
-                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.backgroundColor = '#F2F2F7';
+                            e.currentTarget.style.transform = 'scale(1)';
                         }}>
                         结束学习
                     </button>
@@ -727,10 +919,11 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
     return (
         <div
             style={{
-                padding: '32px 40px',
+                padding: '32px 24px',
                 minHeight: '100%',
                 display: 'flex',
                 flexDirection: 'column',
+                backgroundColor: '#F9F9F9',
             }}>
             {renderStudyStats()}
 
@@ -739,111 +932,180 @@ const SpacedRepetitionLearning: React.FC<SpacedRepetitionLearningProps> = ({
                 style={{
                     backgroundColor: '#ffffff',
                     borderRadius: '20px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    padding: '48px 56px',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+                    padding: '48px 40px',
                     textAlign: 'center',
-                    maxWidth: '700px',
+                    maxWidth: '600px',
                     margin: '0 auto',
-                    border: '1px solid #f1f3f4',
+                    border: '1px solid rgba(0,0,0,0.04)',
                 }}>
                 <h2
                     style={{
-                        margin: '0 0 16px 0',
-                        color: '#1f2937',
-                        fontSize: '28px',
+                        margin: '0 0 12px 0',
+                        color: '#1C1C1E',
+                        fontSize: '32px',
                         fontWeight: '700',
-                        letterSpacing: '-0.5px',
+                        letterSpacing: '-0.8px',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
                     }}>
                     开始间隔学习
                 </h2>
                 <p
                     style={{
-                        color: '#666',
-                        fontSize: '16px',
-                        margin: '0 0 30px 0',
+                        color: '#8E8E93',
+                        fontSize: '17px',
+                        margin: '0 0 32px 0',
+                        lineHeight: '1.5',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                     }}>
                     {stats.dueToday > 0
                         ? `今天有 ${stats.dueToday} 个单词需要复习`
                         : '🎉 今天的学习已完成！'}
                 </p>{' '}
-                <div style={{ marginBottom: '40px' }}>
+                <div style={{ marginBottom: '36px' }}>
                     <label
                         style={{
                             display: 'block',
                             marginBottom: '12px',
                             fontSize: '15px',
                             fontWeight: '600',
-                            color: '#374151',
+                            color: '#1C1C1E',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                         }}>
-                        学习数量上限:
+                        学习数量上限
                     </label>
                     <select
                         value={studyLimit}
                         onChange={(e) =>
                             setStudyLimit(parseInt(e.target.value))
                         }
-                        style={{
-                            padding: '14px 20px',
-                            fontSize: '15px',
-                            fontWeight: '500',
-                            border: '2px solid #e5e7eb',
-                            borderRadius: '12px',
-                            backgroundColor: '#ffffff',
-                            color: '#374151',
-                            outline: 'none',
-                            cursor: 'pointer',
-                            transition: 'border-color 0.3s ease',
-                            minWidth: '160px',
+                        style={
+                            {
+                                padding: '14px 40px 14px 20px',
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                border: '2px solid #007AFF',
+                                borderRadius: '12px',
+                                backgroundColor: '#ffffff',
+                                color: '#1C1C1E',
+                                outline: 'none',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                minWidth: '200px',
+                                fontFamily:
+                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                                // 添加关键样式确保文字可见
+                                WebkitAppearance: 'none',
+                                MozAppearance: 'none',
+                                appearance: 'none',
+                                lineHeight: '1.5',
+                                height: 'auto',
+                                textAlign: 'left',
+                                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007AFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 12px center',
+                                backgroundSize: '20px',
+                            } as React.CSSProperties
+                        }
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = '#0066CC';
+                            e.currentTarget.style.boxShadow =
+                                '0 4px 12px rgba(0,122,255,0.15)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = '#007AFF';
+                            e.currentTarget.style.boxShadow =
+                                '0 2px 8px rgba(0,0,0,0.08)';
                         }}
                         onFocus={(e) => {
-                            e.currentTarget.style.borderColor = '#1976d2';
+                            e.currentTarget.style.backgroundColor = '#F0F8FF';
+                            e.currentTarget.style.borderColor = '#0066CC';
+                            e.currentTarget.style.boxShadow =
+                                '0 0 0 4px rgba(0, 122, 255, 0.15)';
                         }}
                         onBlur={(e) => {
-                            e.currentTarget.style.borderColor = '#e5e7eb';
+                            e.currentTarget.style.backgroundColor = '#ffffff';
+                            e.currentTarget.style.borderColor = '#007AFF';
+                            e.currentTarget.style.boxShadow =
+                                '0 2px 8px rgba(0,0,0,0.08)';
                         }}>
-                        <option value={10}>10 张卡片</option>
-                        <option value={20}>20 张卡片</option>
-                        <option value={50}>50 张卡片</option>
-                        <option value={100}>100 张卡片</option>
+                        <option
+                            value={10}
+                            style={{
+                                color: '#1C1C1E',
+                                backgroundColor: '#ffffff',
+                                padding: '10px',
+                            }}>
+                            10 张卡片
+                        </option>
+                        <option
+                            value={20}
+                            style={{
+                                color: '#1C1C1E',
+                                backgroundColor: '#ffffff',
+                                padding: '10px',
+                            }}>
+                            20 张卡片
+                        </option>
+                        <option
+                            value={50}
+                            style={{
+                                color: '#1C1C1E',
+                                backgroundColor: '#ffffff',
+                                padding: '10px',
+                            }}>
+                            50 张卡片
+                        </option>
+                        <option
+                            value={100}
+                            style={{
+                                color: '#1C1C1E',
+                                backgroundColor: '#ffffff',
+                                padding: '10px',
+                            }}>
+                            100 张卡片
+                        </option>
                     </select>
                 </div>
                 <button
                     onClick={startStudySession}
                     disabled={stats.dueToday === 0}
                     style={{
-                        padding: '20px 60px',
-                        fontSize: '18px',
-                        fontWeight: '700',
+                        padding: '16px 48px',
+                        fontSize: '17px',
+                        fontWeight: '600',
                         backgroundColor:
-                            stats.dueToday > 0 ? '#1976d2' : '#e0e0e0',
-                        color: stats.dueToday > 0 ? 'white' : '#9e9e9e',
+                            stats.dueToday > 0 ? '#007AFF' : '#E5E5EA',
+                        color: stats.dueToday > 0 ? '#ffffff' : '#C7C7CC',
                         border: 'none',
-                        borderRadius: '40px',
+                        borderRadius: '14px',
                         cursor: stats.dueToday > 0 ? 'pointer' : 'not-allowed',
-                        transition: 'all 0.3s ease',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                         boxShadow:
                             stats.dueToday > 0
-                                ? '0 6px 20px rgba(25,118,210,0.3)'
+                                ? '0 4px 12px rgba(0, 122, 255, 0.25)'
                                 : 'none',
-                        minHeight: '64px',
-                        letterSpacing: '0.5px',
+                        letterSpacing: '-0.3px',
+                        fontFamily:
+                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
                         outline: 'none',
                     }}
                     onMouseEnter={(e) => {
                         if (stats.dueToday > 0) {
-                            e.currentTarget.style.backgroundColor = '#1565c0';
-                            e.currentTarget.style.transform =
-                                'translateY(-2px)';
+                            e.currentTarget.style.transform = 'scale(0.98)';
                             e.currentTarget.style.boxShadow =
-                                '0 8px 25px rgba(25,118,210,0.4)';
+                                '0 6px 16px rgba(0, 122, 255, 0.35)';
                         }
                     }}
                     onMouseLeave={(e) => {
                         if (stats.dueToday > 0) {
-                            e.currentTarget.style.backgroundColor = '#1976d2';
-                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.transform = 'scale(1)';
                             e.currentTarget.style.boxShadow =
-                                '0 6px 20px rgba(25,118,210,0.3)';
+                                '0 4px 12px rgba(0, 122, 255, 0.25)';
                         }
                     }}>
                     {stats.dueToday > 0 ? '开始学习' : '暂无待学习单词'}
