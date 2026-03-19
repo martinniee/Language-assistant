@@ -113,15 +113,18 @@ const WordCard: React.FC<{
         return (
             <div
                 style={{
-                    padding: '20px',
+                    padding: '16px',
                     border: 'none',
                     borderRadius: '16px',
-                    cursor: 'pointer',
                     transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
                     backgroundColor: '#ffffff',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                     fontFamily:
                         '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    minWidth: 0,
                 }}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.boxShadow =
@@ -133,130 +136,69 @@ const WordCard: React.FC<{
                         '0 2px 8px rgba(0,0,0,0.04)';
                     e.currentTarget.style.transform = 'translateY(0)';
                 }}>
+                {/* 标题行：单词名 + 等级 badge */}
                 <div
                     style={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: 12,
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        minWidth: 0,
                     }}>
                     <h3
                         style={{
                             margin: 0,
-                            fontSize: '20px',
-                            fontWeight: '600',
+                            fontSize: '18px',
+                            fontWeight: '700',
                             color: '#1C1C1E',
                             letterSpacing: '-0.3px',
+                            flex: 1,
+                            minWidth: 0,
+                            wordBreak: 'break-word',
+                            overflow: 'hidden',
                         }}>
                         <HighlightText
                             text={word.name}
                             searchTerm={searchTerm}
                         />
                     </h3>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onEdit();
-                            }}
-                            style={{
-                                padding: '8px 14px',
-                                fontSize: '13px',
-                                backgroundColor: '#F2F2F7',
-                                border: 'none',
-                                borderRadius: '10px',
-                                cursor: 'pointer',
-                                color: '#007AFF',
-                                fontWeight: '600',
-                                transition:
-                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                fontFamily:
-                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    '#E5E5EA';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    '#F2F2F7';
-                            }}>
-                            <Edit2 size={16} /> 编辑
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete();
-                            }}
-                            style={{
-                                padding: '8px 14px',
-                                fontSize: '13px',
-                                backgroundColor: '#FFEBEE',
-                                border: 'none',
-                                borderRadius: '10px',
-                                cursor: 'pointer',
-                                color: '#FF3B30',
-                                fontWeight: '600',
-                                transition:
-                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                fontFamily:
-                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    '#FF3B30';
-                                e.currentTarget.style.color = '#ffffff';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    '#FFEBEE';
-                                e.currentTarget.style.color = '#FF3B30';
-                            }}>
-                            <Trash2 size={16} /> 删除
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onJumpToSource();
-                            }}
-                            style={{
-                                padding: '8px 14px',
-                                fontSize: '13px',
-                                backgroundColor: '#E3F2FD',
-                                border: 'none',
-                                borderRadius: '10px',
-                                cursor: 'pointer',
-                                color: '#007AFF',
-                                fontWeight: '600',
-                                transition:
-                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                fontFamily:
-                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    '#007AFF';
-                                e.currentTarget.style.color = '#ffffff';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                    '#E3F2FD';
-                                e.currentTarget.style.color = '#007AFF';
-                            }}>
-                            <Play size={16} /> 跳转
-                        </button>
-                    </div>
+                    <span
+                        style={{
+                            flexShrink: 0,
+                            padding: '3px 8px',
+                            backgroundColor:
+                                WordHelper.getLevel(word) === '高级'
+                                    ? '#FFEBEE'
+                                    : WordHelper.getLevel(word) === '中级'
+                                    ? '#FFF3E0'
+                                    : '#E8F5E9',
+                            color:
+                                WordHelper.getLevel(word) === '高级'
+                                    ? '#FF3B30'
+                                    : WordHelper.getLevel(word) === '中级'
+                                    ? '#FF9500'
+                                    : '#34C759',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                        }}>
+                        {WordHelper.getLevel(word)}
+                    </span>
                 </div>
 
+                {/* 内容区：点击查看详情 */}
                 <div
                     onClick={onViewDetail}
-                    style={{ cursor: 'pointer' }}>
+                    style={{ cursor: 'pointer', minWidth: 0 }}>
                     <p
                         style={{
-                            margin: '8px 0',
-                            fontSize: '15px',
+                            margin: '4px 0',
+                            fontSize: '14px',
                             color: '#8E8E93',
                             lineHeight: '1.5',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                         }}>
                         <strong style={{ color: '#48484A' }}>发音:</strong>{' '}
                         {enableFullHighlight ? (
@@ -270,55 +212,103 @@ const WordCard: React.FC<{
                     </p>
                     <p
                         style={{
-                            margin: '8px 0',
-                            fontSize: '15px',
+                            margin: '4px 0',
+                            fontSize: '14px',
                             color: '#8E8E93',
                             lineHeight: '1.5',
                         }}>
                         <strong style={{ color: '#48484A' }}>分类:</strong>{' '}
-                        {enableFullHighlight ? (
-                            <HighlightText
-                                text={WordHelper.getCategory(word)}
-                                searchTerm={searchTerm}
-                            />
-                        ) : (
-                            WordHelper.getCategory(word)
-                        )}
+                        <span
+                            style={{
+                                display: 'inline-block',
+                                padding: '2px 8px',
+                                backgroundColor: '#E3F2FD',
+                                color: '#007AFF',
+                                borderRadius: '10px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                            }}>
+                            {enableFullHighlight ? (
+                                <HighlightText
+                                    text={WordHelper.getCategory(word)}
+                                    searchTerm={searchTerm}
+                                />
+                            ) : (
+                                WordHelper.getCategory(word)
+                            )}
+                        </span>
                     </p>
-                    <p
-                        style={{
-                            margin: '8px 0',
-                            fontSize: '15px',
-                            color: '#8E8E93',
-                            lineHeight: '1.5',
-                        }}>
-                        <strong style={{ color: '#48484A' }}>标签:</strong>{' '}
-                        {enableFullHighlight ? (
-                            <HighlightText
-                                text={WordHelper.getTags(word).join(', ')}
-                                searchTerm={searchTerm}
-                            />
-                        ) : (
-                            WordHelper.getTags(word).join(', ')
-                        )}
-                    </p>
+                    {WordHelper.getTags(word).length > 0 && (
+                        <div
+                            style={{
+                                margin: '4px 0',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '4px',
+                                alignItems: 'center',
+                            }}>
+                            <strong
+                                style={{
+                                    fontSize: '14px',
+                                    color: '#48484A',
+                                    flexShrink: 0,
+                                }}>
+                                标签:
+                            </strong>
+                            {WordHelper.getTags(word)
+                                .slice(0, 3)
+                                .map((tag, index) => (
+                                    <span
+                                        key={index}
+                                        style={{
+                                            padding: '2px 8px',
+                                            backgroundColor: '#E8F5E9',
+                                            color: '#34C759',
+                                            borderRadius: '10px',
+                                            fontSize: '12px',
+                                            fontWeight: '500',
+                                        }}>
+                                        {enableFullHighlight ? (
+                                            <HighlightText
+                                                text={tag}
+                                                searchTerm={searchTerm}
+                                            />
+                                        ) : (
+                                            tag
+                                        )}
+                                    </span>
+                                ))}
+                            {WordHelper.getTags(word).length > 3 && (
+                                <span
+                                    style={{
+                                        fontSize: '12px',
+                                        color: '#8E8E93',
+                                    }}>
+                                    +{WordHelper.getTags(word).length - 3}
+                                </span>
+                            )}
+                        </div>
+                    )}
 
                     {word.notes && word.notes.trim() && (
                         <p
-                            style={{
-                                margin: '12px 0 8px 0',
-                                fontSize: '15px',
-                                color: '#8E8E93',
-                                fontStyle: 'normal',
-                                backgroundColor: '#FFF9E6',
-                                padding: '10px 12px',
-                                borderRadius: '10px',
-                                borderLeft: '3px solid #FF9500',
-                                lineHeight: '1.5',
-                            }}>
-                            <strong style={{ color: '#FF9500' }}>
-                                <Activity size={16} /> 备注:
-                            </strong>{' '}
+                            style={
+                                {
+                                    margin: '6px 0 0 0',
+                                    fontSize: '13px',
+                                    color: '#8E8E93',
+                                    backgroundColor: '#FFF9E6',
+                                    padding: '8px 10px',
+                                    borderRadius: '10px',
+                                    borderLeft: '3px solid #FF9500',
+                                    lineHeight: '1.5',
+                                    overflow: 'hidden',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                } as React.CSSProperties
+                            }>
+                            <strong style={{ color: '#FF9500' }}>备注:</strong>{' '}
                             {enableFullHighlight ? (
                                 <HighlightText
                                     text={word.notes}
@@ -332,31 +322,125 @@ const WordCard: React.FC<{
 
                     <div
                         style={{
-                            marginTop: 12,
-                            fontSize: '13px',
-                            color: '#C7C7CC',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
+                            marginTop: '8px',
+                            fontSize: '12px',
+                            color: '#007AFF',
+                            fontWeight: '500',
+                            textAlign: 'right',
                         }}>
-                        <span
-                            style={{
-                                padding: '4px 10px',
-                                backgroundColor: '#F2F2F7',
-                                borderRadius: '8px',
-                                color: '#8E8E93',
-                                fontWeight: '500',
-                            }}>
-                            等级: {WordHelper.getLevel(word)}
-                        </span>
-                        <span
-                            style={{
-                                color: '#007AFF',
-                                fontWeight: '500',
-                            }}>
-                            点击查看详情 →
-                        </span>
+                        点击查看详情 →
                     </div>
+                </div>
+
+                {/* 操作按钮行 */}
+                <div
+                    style={{
+                        display: 'flex',
+                        gap: '6px',
+                        borderTop: '1px solid #F2F2F7',
+                        paddingTop: '10px',
+                        marginTop: '2px',
+                    }}>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit();
+                        }}
+                        style={{
+                            flex: 1,
+                            padding: '7px 0',
+                            fontSize: '13px',
+                            backgroundColor: '#F2F2F7',
+                            border: 'none',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            color: '#007AFF',
+                            fontWeight: '600',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#E5E5EA';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#F2F2F7';
+                        }}>
+                        <Edit2 size={14} /> 编辑
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete();
+                        }}
+                        style={{
+                            flex: 1,
+                            padding: '7px 0',
+                            fontSize: '13px',
+                            backgroundColor: '#FFEBEE',
+                            border: 'none',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            color: '#FF3B30',
+                            fontWeight: '600',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#FF3B30';
+                            e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#FFEBEE';
+                            e.currentTarget.style.color = '#FF3B30';
+                        }}>
+                        <Trash2 size={14} /> 删除
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onJumpToSource();
+                        }}
+                        style={{
+                            flex: 1,
+                            padding: '7px 0',
+                            fontSize: '13px',
+                            backgroundColor: '#E3F2FD',
+                            border: 'none',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            color: '#007AFF',
+                            fontWeight: '600',
+                            transition:
+                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                            fontFamily:
+                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#007AFF';
+                            e.currentTarget.style.color = '#ffffff';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#E3F2FD';
+                            e.currentTarget.style.color = '#007AFF';
+                        }}>
+                        <Play size={14} /> 跳转
+                    </button>
                 </div>
             </div>
         );
