@@ -7,12 +7,15 @@ import {
     PluginSettingTab,
     App,
     Setting,
+    Platform,
 } from 'obsidian';
+import { jumpToWord } from './utils/utils.ts';
 import { createRoot } from 'react-dom/client';
 import * as React from 'react';
 import MainApp from './MainApp';
 import { MarkdownWordStorage, WordHelper } from './MarkdownWordStorage';
 import type { Word } from './MarkdownWordStorage';
+import { formatTimestamp } from './utils/date';
 
 const VIEW_TYPE_WORD_MANAGER = 'word-manager-view';
 
@@ -41,15 +44,16 @@ export default class LanguageAssistantPlugin extends Plugin {
             // 加载设置
             await this.loadSettings();
         } catch (error) {
-            console.error('❌ 加载设置失败:', error);
+            console.error('加载设置失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 加载插件设置失败: ${errorMessage}，将使用默认设置`);
+            new Notice(`加载插件设置失败: ${errorMessage}，将使用默认设置`);
             this.settings = { ...DEFAULT_SETTINGS };
         }
 
         this.registerView(
             VIEW_TYPE_WORD_MANAGER,
+            // NOTE: WordManagerView 创建的位置
             (leaf) => new WordManagerView(leaf, this),
         );
 
@@ -57,15 +61,15 @@ export default class LanguageAssistantPlugin extends Plugin {
         this.addSettingTab(new LanguageAssistantSettingTab(this.app, this));
         this.addCommand({
             id: 'roll-dice',
-            name: '🎲 Roll a Dice',
+            name: 'Roll a Dice',
             callback: () => {
                 const result = Math.floor(Math.random() * 6) + 1;
-                new Notice(`🎲 你掷出了：${result}`);
+                new Notice(`你掷出了：${result}`);
             },
         });
         this.addCommand({
             id: 'open-word-manager',
-            name: '📖 打开单词管理页面',
+            name: '打开单词管理页面',
             callback: () => this.openWordManagerLeaf(),
         });
         // 添加 ribon 按钮
@@ -85,10 +89,10 @@ export default class LanguageAssistantPlugin extends Plugin {
         try {
             await this.saveData(this.settings);
         } catch (error) {
-            console.error('❌ 保存设置失败:', error);
+            console.error('保存设置失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 保存插件设置失败: ${errorMessage}`);
+            new Notice(`保存插件设置失败: ${errorMessage}`);
             throw error;
         }
     }
@@ -99,7 +103,19 @@ export default class LanguageAssistantPlugin extends Plugin {
     }
 
     async openWordManagerLeaf() {
-        const leaf = this.app.workspace.getRightLeaf(false);
+        const existingLeaf =
+            this.app.workspace.getLeavesOfType(VIEW_TYPE_WORD_MANAGER)[0];
+        if (existingLeaf) {
+            this.app.workspace.revealLeaf(existingLeaf);
+            if (existingLeaf.view instanceof WordManagerView) {
+                await existingLeaf.view.refreshWords();
+            }
+            return;
+        }
+
+        const leaf = Platform.isMobile
+            ? this.app.workspace.getLeaf(true)
+            : this.app.workspace.getRightLeaf(false);
         if (leaf) {
             await leaf.setViewState({
                 type: VIEW_TYPE_WORD_MANAGER,
@@ -110,7 +126,7 @@ export default class LanguageAssistantPlugin extends Plugin {
     }
 }
 
-class WordManagerView extends ItemView {
+export class WordManagerView extends ItemView {
     root: ReturnType<typeof createRoot> | null = null;
     private wordStorage: MarkdownWordStorage;
     private words: Word[] = [];
@@ -130,7 +146,7 @@ class WordManagerView extends ItemView {
     // 更新存储文件路径
     public updateStoragePath(newPath: string) {
         console.log(
-            `📁 更新存储路径: ${this.plugin.settings.wordsFilePath} → ${newPath}`,
+            `更新存储路径: ${this.plugin.settings.wordsFilePath} → ${newPath}`,
         );
         this.wordStorage = new MarkdownWordStorage(this.app.vault, newPath);
         // 重新加载数据
@@ -148,81 +164,9 @@ class WordManagerView extends ItemView {
     }
 
     // 跳转到单词文件中的指定单词位置
+    // NOTE: 重构该方法
     private async jumpToWordInMarkdown(wordId: string): Promise<void> {
-        try {
-            console.log('🔍 正在跳转到单词ID:', wordId);
-
-            // 使用设置中的文件路径
-            const filePath = this.plugin.settings.wordsFilePath;
-            const tFile = this.app.vault.getFileByPath(filePath);
-            if (!tFile) {
-                new Notice(`❌ 未找到文件: ${filePath}`);
-                return;
-            }
-
-            // 读取文件内容
-            const content = await this.app.vault.read(tFile);
-            const lines = content.split('\n');
-
-            // 查找包含指定ID的行
-            let targetLine = -1;
-            let foundWordName = '';
-            for (let i = 0; i < lines.length; i++) {
-                // 支持新格式 %%meta{"id":"xxx"}%% 和旧格式 ID: xxx
-                if (
-                    lines[i].includes(`"id":"${wordId}"`) || // 新格式
-                    lines[i].includes(`ID: ${wordId}`) || // 旧格式
-                    lines[i].includes(`id: ${wordId}`) // 旧格式小写
-                ) {
-                    // 找到单词标题行（通常在ID行前面几行）
-                    for (let j = i; j >= Math.max(0, i - 10); j--) {
-                        if (lines[j].startsWith('#')) {
-                            targetLine = j;
-                            foundWordName = lines[j]
-                                .replace(/^#+\s*/, '')
-                                .trim();
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-
-            if (targetLine >= 0) {
-                // 打开文件并跳转到指定行
-                const leaf = this.app.workspace.getLeaf(false);
-                if (leaf) {
-                    await leaf.openFile(tFile);
-
-                    // 等待一小段时间确保文件已打开
-                    setTimeout(() => {
-                        // 获取编辑器并跳转到行
-                        const view = leaf.view;
-                        if (view && 'editor' in view && view.editor) {
-                            const editor = view.editor as any;
-                            editor.setCursor({ line: targetLine, ch: 0 });
-                            editor.scrollIntoView({
-                                from: { line: targetLine, ch: 0 },
-                                to: { line: targetLine, ch: 0 },
-                            });
-                        }
-                    }, 100);
-
-                    new Notice(
-                        `✅ 已跳转到单词 "${foundWordName}" (行 ${
-                            targetLine + 1
-                        })`,
-                    );
-                }
-            } else {
-                new Notice(`❌ 在 words.md 中未找到ID为 ${wordId} 的单词`);
-            }
-        } catch (error) {
-            console.error('❌ 跳转失败:', error);
-            const errorMessage =
-                error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 跳转到markdown失败: ${errorMessage}`);
-        }
+        jumpToWord.bind(this, wordId)();
     }
 
     getViewType() {
@@ -232,14 +176,31 @@ class WordManagerView extends ItemView {
     getDisplayText() {
         return '单词管理';
     }
+
+    public async refreshWords(): Promise<void> {
+        console.log('刷新已打开的单词管理视图...');
+        try {
+            const parseResult =
+                await this.wordStorage.loadWordsWithDuplicateInfo();
+            this.words = parseResult.words;
+            this.renderComponent();
+        } catch (error) {
+            console.error('刷新单词管理视图失败:', error);
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+            new Notice(`刷新单词管理视图失败: ${errorMessage}`);
+        }
+    }
+
     async onOpen() {
-        console.log('🔄 正在加载单词数据...');
+        console.log('正在加载单词数据...');
         try {
             // 从 words.md 文件加载现有单词数据，包含重复信息
             const parseResult =
                 await this.wordStorage.loadWordsWithDuplicateInfo();
+            // NOTE: words 从这里加载
             this.words = parseResult.words;
-            console.log(`✅ 成功加载 ${this.words.length} 个单词`);
+            console.log(`成功加载 ${this.words.length} 个单词`);
 
             // 显示重复信息给用户
             if (parseResult.duplicates.length > 0) {
@@ -247,28 +208,28 @@ class WordManagerView extends ItemView {
                     .map((d) => `"${d.name}"`)
                     .join(', ');
                 new Notice(
-                    `⚠️ 发现重复单词: ${duplicateNames}。已自动去重，保留了最新版本。`,
+                    `发现重复单词: ${duplicateNames}。已自动去重，保留了最新版本。`,
                     8000,
                 );
                 console.warn(
-                    `⚠️ 发现 ${parseResult.duplicates.length} 个重复单词，详细信息请查看控制台`,
+                    `发现 ${parseResult.duplicates.length} 个重复单词，详细信息请查看控制台`,
                 );
             }
 
             if (this.words.length === 0) {
-                new Notice('📝 未找到单词数据，您可以开始添加新单词！');
+                new Notice('未找到单词数据，您可以开始添加新单词！');
             } else {
                 const message =
                     parseResult.duplicates.length > 0
-                        ? `📚 加载了 ${this.words.length} 个单词 (已去重)`
-                        : `📚 加载了 ${this.words.length} 个单词`;
+                        ? `加载了 ${this.words.length} 个单词 (已去重)`
+                        : `加载了 ${this.words.length} 个单词`;
                 new Notice(message);
             }
         } catch (error) {
-            console.error('❌ 加载单词失败:', error);
+            console.error('加载单词失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 加载单词失败: ${errorMessage}`);
+            new Notice(`加载单词失败: ${errorMessage}`);
             this.words = [];
         }
 
@@ -291,7 +252,7 @@ class WordManagerView extends ItemView {
                 }),
             );
             console.log(
-                `🔄 界面已重新渲染 (key: ${this.renderKey}, words: ${this.words.length})`,
+                `界面已重新渲染 (key: ${this.renderKey}, words: ${this.words.length})`,
             );
         }
     } // 静默渲染：仅更新数据，不改变 key，保持UI状态
@@ -309,24 +270,24 @@ class WordManagerView extends ItemView {
                 }),
             );
             console.log(
-                `🔇 静默更新数据 (key: ${this.renderKey}, words: ${this.words.length})`,
+                `静默更新数据 (key: ${this.renderKey}, words: ${this.words.length})`,
             );
         }
     }
 
     // 强制刷新界面的辅助方法（会重置UI状态）
     private forceRefreshUI() {
-        console.log('🔄 强制刷新UI...');
+        console.log('强制刷新UI...');
         this.renderComponent();
 
         // 使用 setTimeout 确保在下一个事件循环中再次刷新
         setTimeout(() => {
-            console.log('🔄 延迟刷新UI...');
+            console.log('延迟刷新UI...');
             this.renderComponent();
         }, 100);
     }
     private async handleAddWord(word: Word) {
-        console.log('➕ 尝试添加新单词:', word.name);
+        console.log('尝试添加新单词:', word.name);
         try {
             // 检查是否已存在同名单词
             const existingIndex = this.words.findIndex(
@@ -334,7 +295,7 @@ class WordManagerView extends ItemView {
             );
             if (existingIndex >= 0) {
                 new Notice(
-                    `❌ 单词 "${word.name}" 已存在！请使用编辑功能或选择不同名称`,
+                    `单词 "${word.name}" 已存在！请使用编辑功能或选择不同名称`,
                 );
                 return;
             } // 如果没有ID，生成一个新的
@@ -345,33 +306,34 @@ class WordManagerView extends ItemView {
 
             // 添加到本地数组
             this.words.push(word);
-            console.log('📝 单词已添加到本地数组，正在保存到文件...'); // 立即更新界面显示新数据
+            console.log('单词已添加到本地数组，正在保存到文件...'); // 立即更新界面显示新数据
             this.forceRefreshUI();
 
             // 保存到 words.md 文件
             await this.wordStorage.saveWords(this.words);
-            console.log('💾 已保存到 words.md 文件');
+            console.log('已保存到 words.md 文件');
 
             // 保存成功后再次确保界面更新
             this.forceRefreshUI();
 
-            new Notice(`✅ 成功添加单词 "${word.name}" 并保存到 words.md`);
+            new Notice(`成功添加单词 "${word.name}" 并保存到 words.md`);
         } catch (error) {
-            console.error('❌ 添加单词失败:', error);
+            console.error('添加单词失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 添加单词失败: ${errorMessage}`);
+            new Notice(`添加单词失败: ${errorMessage}`);
             // 如果保存失败，从数组中移除
             this.words = this.words.filter((w) => w.name !== word.name);
             this.renderComponent();
         }
     }
+    // NOTE: handleEditWord 的定义位置
     private async handleEditWord(
         editedWord: Word,
         originalWord?: Word,
         silent: boolean = false,
     ) {
-        console.log('✏️ 尝试编辑单词:', editedWord.name);
+        console.log('尝试编辑单词:', editedWord.name);
         try {
             // 如果提供了原始单词信息，使用原始单词名称查找
             const searchName = originalWord
@@ -389,37 +351,55 @@ class WordManagerView extends ItemView {
                     );
                     if (nameExists) {
                         new Notice(
-                            `❌ 单词 "${editedWord.name}" 已存在！请选择不同的名称`,
+                            `单词 "${editedWord.name}" 已存在！请选择不同的名称`,
                         );
                         return;
                     }
                 } // 更新本地数组
-                this.words[index] = editedWord;
-                console.log('📝 单词已更新到本地数组，正在保存到文件...'); // 保存到文件
+                const existingWord = this.words[index];
+                const wordToSave: Word = silent
+                    ? editedWord
+                    : {
+                          ...editedWord,
+                          itemMeta: {
+                              ...existingWord.itemMeta,
+                              ...editedWord.itemMeta,
+                              id:
+                                  editedWord.itemMeta?.id ||
+                                  existingWord.itemMeta.id,
+                              createAt:
+                                  editedWord.itemMeta?.createAt ||
+                                  existingWord.itemMeta.createAt,
+                              lastUpdate: formatTimestamp(),
+                          },
+                      };
+
+                this.words[index] = wordToSave;
+                console.log('单词已更新到本地数组，正在保存到文件...'); // 保存到文件
                 await this.wordStorage.saveWords(this.words);
-                console.log('💾 已保存到 words.md 文件');
+                console.log('已保存到 words.md 文件');
 
                 // 非静默模式：强制刷新UI（重置状态），显示通知
                 if (!silent) {
                     this.forceRefreshUI();
                     new Notice(
-                        `✅ 成功编辑单词 "${editedWord.name}" 并保存到 words.md`,
+                        `成功编辑单词 "${editedWord.name}" 并保存到 words.md`,
                     );
                 } else {
                     // 静默模式：仅更新数据，不重置UI状态
                     console.log(
-                        '🔇 静默更新模式：已保存到文件和内存，仅更新数据不重置UI状态',
+                        '静默更新模式：已保存到文件和内存，仅更新数据不重置UI状态',
                     );
                     this.renderComponentSilently();
                 }
             } else {
-                new Notice(`❌ 未找到要编辑的单词 "${searchName}"`);
+                new Notice(`未找到要编辑的单词 "${searchName}"`);
             }
         } catch (error) {
-            console.error('❌ 编辑单词失败:', error);
+            console.error('编辑单词失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 编辑单词失败: ${errorMessage}`);
+            new Notice(`编辑单词失败: ${errorMessage}`);
             // 发生错误时也要刷新界面，恢复原始状态
             this.forceRefreshUI();
         }
@@ -427,7 +407,7 @@ class WordManagerView extends ItemView {
 
     // 批量更新单词（用于元数据管理等操作）
     private async handleBatchUpdateWords(updatedWords: Word[]) {
-        console.log(`🔄 批量更新 ${updatedWords.length} 个单词...`);
+        console.log(`批量更新 ${updatedWords.length} 个单词...`);
         try {
             // 更新本地数组中的单词
             updatedWords.forEach((updatedWord) => {
@@ -436,7 +416,7 @@ class WordManagerView extends ItemView {
                 );
                 if (index >= 0) {
                     this.words[index] = updatedWord;
-                    console.log(`📝 更新单词: ${updatedWord.name}`);
+                    console.log(`更新单词: ${updatedWord.name}`);
                 }
             });
 
@@ -445,19 +425,19 @@ class WordManagerView extends ItemView {
 
             // 保存到文件
             await this.wordStorage.saveWords(this.words);
-            console.log('💾 批量更新已保存到 words.md 文件');
+            console.log('批量更新已保存到 words.md 文件');
 
             // 保存成功后再次确保界面更新
             this.forceRefreshUI();
 
             new Notice(
-                `✅ 已批量更新 ${updatedWords.length} 个单词并保存到文档`,
+                `已批量更新 ${updatedWords.length} 个单词并保存到文档`,
             );
         } catch (error) {
-            console.error('❌ 批量更新单词失败:', error);
+            console.error('批量更新单词失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 批量更新单词失败: ${errorMessage}`);
+            new Notice(`批量更新单词失败: ${errorMessage}`);
             // 发生错误时也要刷新界面
             this.forceRefreshUI();
             throw error;
@@ -465,7 +445,7 @@ class WordManagerView extends ItemView {
     }
 
     private async handleDeleteWord(wordName: string) {
-        console.log('🗑️ 尝试删除单词:', wordName);
+        console.log('尝试删除单词:', wordName);
         try {
             const originalLength = this.words.length;
 
@@ -473,32 +453,32 @@ class WordManagerView extends ItemView {
             this.words = this.words.filter((w) => w.name !== wordName);
 
             if (this.words.length < originalLength) {
-                console.log('📝 单词已从本地数组移除，正在保存到文件...'); // 立即更新界面显示删除后的数据
+                console.log('单词已从本地数组移除，正在保存到文件...'); // 立即更新界面显示删除后的数据
                 this.forceRefreshUI();
 
                 // 保存到文件
                 await this.wordStorage.saveWords(this.words);
-                console.log('💾 已保存到 words.md 文件');
+                console.log('已保存到 words.md 文件');
 
                 // 保存成功后再次确保界面更新
                 this.forceRefreshUI();
 
-                new Notice(`✅ 成功删除单词 "${wordName}" 并更新 words.md`);
+                new Notice(`成功删除单词 "${wordName}" 并更新 words.md`);
             } else {
-                new Notice(`❌ 未找到要删除的单词 "${wordName}"`);
+                new Notice(`未找到要删除的单词 "${wordName}"`);
             }
         } catch (error) {
-            console.error('❌ 删除单词失败:', error);
+            console.error('删除单词失败:', error);
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            new Notice(`❌ 删除单词失败: ${errorMessage}`);
+            new Notice(`删除单词失败: ${errorMessage}`);
             // 发生错误时也要刷新界面
             this.forceRefreshUI();
         }
     }
 
     async onClose() {
-        console.log('📴 关闭单词管理界面');
+        console.log('关闭单词管理界面');
         if (this.root) {
             this.root.unmount();
             this.root = null;
@@ -521,7 +501,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         containerEl.empty();
 
         // 标题
-        containerEl.createEl('h2', { text: '📚 Language Assistant 设置' }); // 存储位置设置（带自动补全功能）
+        containerEl.createEl('h2', { text: 'Language Assistant 设置' }); // 存储位置设置（带自动补全功能）
         this.createPathInputWithSuggestion(containerEl);
 
         // 路径示例说明
@@ -529,13 +509,13 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
             cls: 'setting-item-description',
         });
         exampleEl.innerHTML = `
-            <strong>🔒 隐私保护示例：</strong><br>
+            <strong>隐私保护示例：</strong><br>
             • <code>words.md</code> - 存储在根目录（默认）<br>
             • <code>private/words.md</code> - 存储在私有文件夹<br>
             • <code>.hidden/vocabulary.md</code> - 存储在隐藏文件夹<br>
             • <code>documents/language/my-words.md</code> - 存储在深层目录<br>
             <br>
-            <strong>💡 提示：</strong>使用文件夹可以更好地组织和保护您的单词数据
+            <strong>提示：</strong>使用文件夹可以更好地组织和保护您的单词数据
         `;
 
         // 当前状态显示
@@ -544,7 +524,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         });
         statusEl.innerHTML = `
             <div class="setting-item-info">
-                <div class="setting-item-name">📊 当前状态</div>
+                <div class="setting-item-name">当前状态</div>
                 <div class="setting-item-description">
                     <strong>存储路径：</strong><code>${this.plugin.settings.wordsFilePath}</code><br>
                     <strong>完整路径：</strong><code>vault/${this.plugin.settings.wordsFilePath}</code>
@@ -562,7 +542,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         });
         actionsInfo.createEl('div', {
             cls: 'setting-item-name',
-            text: '🔧 快速操作',
+            text: '快速操作',
         });
 
         const actionsControl = actionsEl.createEl('div', {
@@ -571,7 +551,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
 
         // 检查文件是否存在按钮
         const checkButton = actionsControl.createEl('button', {
-            text: '🔍 检查文件',
+            text: '检查文件',
             cls: 'mod-cta',
         });
         checkButton.onclick = async () => {
@@ -579,21 +559,22 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
             const file = this.app.vault.getFileByPath(filePath);
 
             if (file) {
-                new Notice(`✅ 文件存在: ${filePath}`);
-                console.log('📂 文件信息:', file);
+                new Notice(`文件存在: ${filePath}`);
+                console.log('文件信息:', file);
             } else {
                 new Notice(
-                    `❓ 文件不存在: ${filePath}，将在首次添加单词时自动创建`,
+                    `文件不存在: ${filePath}，将在首次添加单词时自动创建`,
                 );
             }
         };
 
         // 重置为默认路径按钮
         const resetButton = actionsControl.createEl('button', {
-            text: '🔄 重置默认',
+            text: '重置默认',
             cls: 'mod-warning',
         });
         resetButton.style.marginLeft = '10px';
+        // NOTE: 重置 Word.md 路径会重置
         resetButton.onclick = async () => {
             if (confirm('确定要重置存储路径为默认值 (words.md) 吗？')) {
                 this.plugin.settings.wordsFilePath =
@@ -608,6 +589,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
                     .getLeavesOfType(VIEW_TYPE_WORD_MANAGER)
                     .forEach((leaf) => {
                         if (leaf.view instanceof WordManagerView) {
+                            // NOTE: this 是 leaf.view
                             leaf.view.updateStoragePath(
                                 DEFAULT_SETTINGS.wordsFilePath,
                             );
@@ -615,7 +597,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
                     });
 
                 new Notice(
-                    `✅ 存储路径已重置为默认值: ${DEFAULT_SETTINGS.wordsFilePath}`,
+                    `存储路径已重置为默认值: ${DEFAULT_SETTINGS.wordsFilePath}`,
                 );
             }
         };
@@ -630,7 +612,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         warningEl.style.border = '1px solid #ffeaa7';
         warningEl.style.borderRadius = '4px';
         warningEl.innerHTML = `
-            <strong>⚠️ 重要提示：</strong><br>
+            <strong>重要提示：</strong><br>
             • 更改存储路径不会自动迁移现有数据<br>
             • 如需迁移，请手动复制文件到新位置<br>
             • 建议先备份现有单词数据<br>
@@ -643,7 +625,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
      */
     private createPathInputWithSuggestion(containerEl: HTMLElement): void {
         const setting = new Setting(containerEl)
-            .setName('📁 存储文件路径')
+            .setName('存储文件路径')
             .setDesc('设置单词数据的存储位置（支持自动补全）');
 
         const inputContainer = setting.controlEl.createEl('div', {
@@ -655,7 +637,7 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         // 创建输入框
         const input = inputContainer.createEl('input', {
             type: 'text',
-            placeholder: '输入文件路径... (如: words.md)',
+            placeholder: '输入 Markdown 文件路径，例如 words.md',
             value: this.plugin.settings.wordsFilePath,
         });
         input.style.width = '100%';
@@ -663,21 +645,9 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
 
         // 创建建议下拉列表容器
         const suggestionContainer = inputContainer.createEl('div', {
-            cls: 'suggestion-container',
+            cls: 'la-path-suggestion-container',
         });
-        suggestionContainer.style.position = 'absolute';
-        suggestionContainer.style.top = '100%';
-        suggestionContainer.style.left = '0';
-        suggestionContainer.style.right = '0';
-        suggestionContainer.style.backgroundColor = 'var(--background-primary)';
-        suggestionContainer.style.border =
-            '1px solid var(--background-modifier-border)';
-        suggestionContainer.style.borderRadius = '4px';
-        suggestionContainer.style.maxHeight = '200px';
-        suggestionContainer.style.overflowY = 'auto';
-        suggestionContainer.style.zIndex = '1000';
         suggestionContainer.style.display = 'none';
-        suggestionContainer.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
 
         // 当前选中的建议索引
         let selectedIndex = -1;
@@ -747,14 +717,9 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
 
             suggestions.forEach((suggestion, index) => {
                 const item = suggestionContainer.createEl('div', {
-                    cls: 'suggestion-item',
+                    cls: 'la-path-suggestion-item',
                     text: suggestion,
                 });
-
-                item.style.padding = '8px 12px';
-                item.style.cursor = 'pointer';
-                item.style.borderBottom =
-                    '1px solid var(--background-modifier-border-hover)';
 
                 // 高亮匹配部分
                 const query = input.value.toLowerCase();
@@ -769,21 +734,24 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
                         );
                         const afterMatch = text.substring(index + query.length);
 
-                        item.innerHTML = `${beforeMatch}<strong style="color: var(--accent-color)">${match}</strong>${afterMatch}`;
+                        item.empty();
+                        item.createSpan({ text: beforeMatch });
+                        item.createEl('strong', { text: match });
+                        item.createSpan({ text: afterMatch });
                     }
                 }
 
                 // 添加文件状态指示器
                 const file = this.app.vault.getAbstractFileByPath(suggestion);
                 const statusIndicator = item.createEl('span', {
-                    cls: 'suggestion-status',
+                    cls: 'la-path-suggestion-status',
                 });
                 statusIndicator.style.float = 'right';
                 statusIndicator.style.fontSize = '12px';
                 statusIndicator.style.opacity = '0.7';
 
                 if (file) {
-                    statusIndicator.textContent = '✓ 存在';
+                    statusIndicator.textContent = '存在';
                     statusIndicator.style.color = '#22c55e';
                 } else {
                     statusIndicator.textContent = '+ 新建';
@@ -806,7 +774,9 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
         // 更新选中状态
         const updateSelection = (): void => {
             const items =
-                suggestionContainer.querySelectorAll('.suggestion-item');
+                suggestionContainer.querySelectorAll(
+                    '.la-path-suggestion-item',
+                );
             items.forEach((item, index) => {
                 if (index === selectedIndex) {
                     (item as HTMLElement).style.backgroundColor =
@@ -835,16 +805,16 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
                             }
                         });
 
-                    new Notice(`✅ 存储路径已更新为: ${suggestion}`);
+                    new Notice(`存储路径已更新为: ${suggestion}`);
 
                     // 刷新设置页面以显示新状态
                     this.display();
                 }
             } catch (error) {
-                console.error('❌ 更新存储路径失败:', error);
+                console.error('更新存储路径失败:', error);
                 const errorMessage =
                     error instanceof Error ? error.message : String(error);
-                new Notice(`❌ 更新存储路径失败: ${errorMessage}`);
+                new Notice(`更新存储路径失败: ${errorMessage}`);
             }
         };
 
@@ -918,19 +888,19 @@ class LanguageAssistantSettingTab extends PluginSettingTab {
      */
     private validatePath(path: string): boolean {
         if (!path || path.trim() === '') {
-            new Notice('❌ 路径不能为空');
+            new Notice('路径不能为空');
             return false;
         }
 
         if (!path.endsWith('.md')) {
-            new Notice('❌ 文件必须以 .md 结尾');
+            new Notice('文件必须以 .md 结尾');
             return false;
         }
 
         // 检查路径中是否包含非法字符
         const invalidChars = /[<>:"|?*]/;
         if (invalidChars.test(path)) {
-            new Notice('❌ 路径包含非法字符');
+            new Notice('路径包含非法字符');
             return false;
         }
 

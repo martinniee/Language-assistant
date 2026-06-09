@@ -1,19 +1,16 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { Word, WordHelper } from './MarkdownWordStorage';
 import {
-    MoreHorizontal,
     Plus,
     Search,
     Trash2,
     Edit2,
-    Play,
     ChevronLeft,
     ChevronRight,
     Activity,
     BookOpen,
     Filter,
     Grid,
-    List,
     ChevronUp,
     ChevronDown,
     Tag,
@@ -28,707 +25,29 @@ import {
     AlignLeft,
     MessageSquare,
 } from 'lucide-react';
+import { PARTS_OF_SPEECH_GROUPS } from './data/data';
+import { WordManagerProps } from './types/WordManagerType';
+import {
+    createEmptyWord,
+    getWordId,
+    getWordQueryCount,
+} from './utils/wordManager';
+import {
+    WordCard,
+    WordDetailOutline,
+} from './components/word-manager';
+import { RichText } from './components/common';
+import { parseTimestamp } from './utils/date';
 
-// 使用 WordHelper 创建空白单词
-const createEmptyWord = (): Word => WordHelper.createEmpty();
+type WordSortKey = 'name' | 'date' | 'recentAdded' | 'queryCount' | 'category';
 
-const getWordId = (word: Word): string => WordHelper.getId(word);
-const getWordQueryCount = (word: Word): number =>
-    WordHelper.getQueryCount(word);
-
-// 预定义词性选项 - 分组显示
-const PARTS_OF_SPEECH_GROUPS = {
-    基础词性: ['名词', '动词', '形容词', '副词'],
-    功能词性: ['介词', '代词', '连词', '感叹词'],
-    特殊词性: ['助动词', '情态动词', '数词', '冠词'],
-    动词形式: ['不定式', '动名词', '分词'],
+const getSortableTimestamp = (
+    value?: string | null,
+    fallbackValue?: string | null,
+): number => {
+    const parsed = parseTimestamp(value) || parseTimestamp(fallbackValue);
+    return parsed ? parsed.getTime() : 0;
 };
-
-interface WordManagerProps {
-    words: Word[];
-    onAdd: (word: Word) => void;
-    onEdit: (word: Word, originalWord?: Word, silent?: boolean) => void;
-    onDelete: (name: string) => void;
-    onJumpToSource: (wordId: string) => void;
-}
-
-// 高亮文本组件 - 优化版本
-const HighlightText: React.FC<{ text: string; searchTerm: string }> =
-    React.memo(({ text, searchTerm }) => {
-        const highlightedContent = useMemo(() => {
-            if (!searchTerm || !text) {
-                return <span>{text}</span>;
-            }
-
-            const escapedTerm = searchTerm.replace(
-                /[.*+?^${}()|[\]\\]/g,
-                '\\$&',
-            );
-            const parts = text.split(new RegExp(`(${escapedTerm})`, 'gi'));
-
-            return (
-                <span>
-                    {parts.map((part, index) =>
-                        part.toLowerCase() === searchTerm.toLowerCase() ? (
-                            <span
-                                key={index}
-                                style={{
-                                    backgroundColor: '#ffeb3b',
-                                    color: '#000',
-                                    padding: '1px 2px',
-                                    borderRadius: '2px',
-                                    fontWeight: 'bold',
-                                }}>
-                                {part}
-                            </span>
-                        ) : (
-                            <span key={index}>{part}</span>
-                        ),
-                    )}
-                </span>
-            );
-        }, [text, searchTerm]);
-        return highlightedContent;
-    });
-
-// 缩略卡片组件 - iOS 风格
-const WordCard: React.FC<{
-    word: Word;
-    searchTerm: string;
-    onEdit: () => void;
-    onDelete: () => void;
-    onViewDetail: () => void;
-    onJumpToSource: () => void;
-    enableFullHighlight: boolean;
-}> = React.memo(
-    ({
-        word,
-        searchTerm,
-        onEdit,
-        onDelete,
-        onViewDetail,
-        onJumpToSource,
-        enableFullHighlight,
-    }) => {
-        return (
-            <div
-                style={{
-                    padding: '16px',
-                    border: 'none',
-                    borderRadius: '16px',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                    backgroundColor: '#ffffff',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                    fontFamily:
-                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px',
-                    minWidth: 0,
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow =
-                        '0 4px 16px rgba(0,0,0,0.08)';
-                    e.currentTarget.style.transform = 'translateY(-3px)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow =
-                        '0 2px 8px rgba(0,0,0,0.04)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                }}>
-                {/* 标题行：单词名 + 等级 badge */}
-                <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        minWidth: 0,
-                    }}>
-                    <h3
-                        style={{
-                            margin: 0,
-                            fontSize: '18px',
-                            fontWeight: '700',
-                            color: '#1C1C1E',
-                            letterSpacing: '-0.3px',
-                            flex: 1,
-                            minWidth: 0,
-                            wordBreak: 'break-word',
-                            overflow: 'hidden',
-                        }}>
-                        <HighlightText
-                            text={word.name}
-                            searchTerm={searchTerm}
-                        />
-                    </h3>
-                    <span
-                        style={{
-                            flexShrink: 0,
-                            padding: '3px 8px',
-                            backgroundColor:
-                                WordHelper.getLevel(word) === '高级'
-                                    ? '#FFEBEE'
-                                    : WordHelper.getLevel(word) === '中级'
-                                    ? '#FFF3E0'
-                                    : '#E8F5E9',
-                            color:
-                                WordHelper.getLevel(word) === '高级'
-                                    ? '#FF3B30'
-                                    : WordHelper.getLevel(word) === '中级'
-                                    ? '#FF9500'
-                                    : '#34C759',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                        }}>
-                        {WordHelper.getLevel(word)}
-                    </span>
-                </div>
-
-                {/* 内容区：点击查看详情 */}
-                <div
-                    onClick={onViewDetail}
-                    style={{ cursor: 'pointer', minWidth: 0 }}>
-                    <p
-                        style={{
-                            margin: '4px 0',
-                            fontSize: '14px',
-                            color: '#8E8E93',
-                            lineHeight: '1.5',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                        }}>
-                        <strong style={{ color: '#48484A' }}>发音:</strong>{' '}
-                        {enableFullHighlight ? (
-                            <HighlightText
-                                text={word.pronunciation}
-                                searchTerm={searchTerm}
-                            />
-                        ) : (
-                            word.pronunciation
-                        )}
-                    </p>
-                    <p
-                        style={{
-                            margin: '4px 0',
-                            fontSize: '14px',
-                            color: '#8E8E93',
-                            lineHeight: '1.5',
-                        }}>
-                        <strong style={{ color: '#48484A' }}>分类:</strong>{' '}
-                        <span
-                            style={{
-                                display: 'inline-block',
-                                padding: '2px 8px',
-                                backgroundColor: '#E3F2FD',
-                                color: '#007AFF',
-                                borderRadius: '10px',
-                                fontSize: '12px',
-                                fontWeight: '600',
-                            }}>
-                            {enableFullHighlight ? (
-                                <HighlightText
-                                    text={WordHelper.getCategory(word)}
-                                    searchTerm={searchTerm}
-                                />
-                            ) : (
-                                WordHelper.getCategory(word)
-                            )}
-                        </span>
-                    </p>
-                    {WordHelper.getTags(word).length > 0 && (
-                        <div
-                            style={{
-                                margin: '4px 0',
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: '4px',
-                                alignItems: 'center',
-                            }}>
-                            <strong
-                                style={{
-                                    fontSize: '14px',
-                                    color: '#48484A',
-                                    flexShrink: 0,
-                                }}>
-                                标签:
-                            </strong>
-                            {WordHelper.getTags(word)
-                                .slice(0, 3)
-                                .map((tag, index) => (
-                                    <span
-                                        key={index}
-                                        style={{
-                                            padding: '2px 8px',
-                                            backgroundColor: '#E8F5E9',
-                                            color: '#34C759',
-                                            borderRadius: '10px',
-                                            fontSize: '12px',
-                                            fontWeight: '500',
-                                        }}>
-                                        {enableFullHighlight ? (
-                                            <HighlightText
-                                                text={tag}
-                                                searchTerm={searchTerm}
-                                            />
-                                        ) : (
-                                            tag
-                                        )}
-                                    </span>
-                                ))}
-                            {WordHelper.getTags(word).length > 3 && (
-                                <span
-                                    style={{
-                                        fontSize: '12px',
-                                        color: '#8E8E93',
-                                    }}>
-                                    +{WordHelper.getTags(word).length - 3}
-                                </span>
-                            )}
-                        </div>
-                    )}
-
-                    {word.notes && word.notes.trim() && (
-                        <p
-                            style={
-                                {
-                                    margin: '6px 0 0 0',
-                                    fontSize: '13px',
-                                    color: '#8E8E93',
-                                    backgroundColor: '#FFF9E6',
-                                    padding: '8px 10px',
-                                    borderRadius: '10px',
-                                    borderLeft: '3px solid #FF9500',
-                                    lineHeight: '1.5',
-                                    overflow: 'hidden',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: 'vertical',
-                                } as React.CSSProperties
-                            }>
-                            <strong style={{ color: '#FF9500' }}>备注:</strong>{' '}
-                            {enableFullHighlight ? (
-                                <HighlightText
-                                    text={word.notes}
-                                    searchTerm={searchTerm}
-                                />
-                            ) : (
-                                word.notes
-                            )}
-                        </p>
-                    )}
-
-                    <div
-                        style={{
-                            marginTop: '8px',
-                            fontSize: '12px',
-                            color: '#007AFF',
-                            fontWeight: '500',
-                            textAlign: 'right',
-                        }}>
-                        点击查看详情 →
-                    </div>
-                </div>
-
-                {/* 操作按钮行 */}
-                <div
-                    style={{
-                        display: 'flex',
-                        gap: '6px',
-                        borderTop: '1px solid #F2F2F7',
-                        paddingTop: '10px',
-                        marginTop: '2px',
-                    }}>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit();
-                        }}
-                        style={{
-                            flex: 1,
-                            padding: '7px 0',
-                            fontSize: '13px',
-                            backgroundColor: '#F2F2F7',
-                            border: 'none',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            color: '#007AFF',
-                            fontWeight: '600',
-                            transition:
-                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                            fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#E5E5EA';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#F2F2F7';
-                        }}>
-                        <Edit2 size={14} /> 编辑
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete();
-                        }}
-                        style={{
-                            flex: 1,
-                            padding: '7px 0',
-                            fontSize: '13px',
-                            backgroundColor: '#FFEBEE',
-                            border: 'none',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            color: '#FF3B30',
-                            fontWeight: '600',
-                            transition:
-                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                            fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#FF3B30';
-                            e.currentTarget.style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#FFEBEE';
-                            e.currentTarget.style.color = '#FF3B30';
-                        }}>
-                        <Trash2 size={14} /> 删除
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onJumpToSource();
-                        }}
-                        style={{
-                            flex: 1,
-                            padding: '7px 0',
-                            fontSize: '13px',
-                            backgroundColor: '#E3F2FD',
-                            border: 'none',
-                            borderRadius: '10px',
-                            cursor: 'pointer',
-                            color: '#007AFF',
-                            fontWeight: '600',
-                            transition:
-                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                            fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#007AFF';
-                            e.currentTarget.style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#E3F2FD';
-                            e.currentTarget.style.color = '#007AFF';
-                        }}>
-                        <Play size={14} /> 跳转
-                    </button>
-                </div>
-            </div>
-        );
-    },
-);
-
-// 列表视图单词组件 - iOS 风格
-const WordListItem: React.FC<{
-    word: Word;
-    searchTerm: string;
-    onEdit: () => void;
-    onDelete: () => void;
-    onViewDetail: () => void;
-    onJumpToSource: () => void;
-    enableFullHighlight: boolean;
-    isLast?: boolean;
-}> = React.memo(
-    ({
-        word,
-        searchTerm,
-        onEdit,
-        onDelete,
-        onViewDetail,
-        onJumpToSource,
-        enableFullHighlight,
-        isLast = false,
-    }) => {
-        return (
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '16px 20px',
-                    border: 'none',
-                    borderBottom: isLast
-                        ? 'none'
-                        : '1px solid rgba(0,0,0,0.06)',
-                    borderRadius: isLast ? '0 0 16px 16px' : '0',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                    backgroundColor: '#ffffff',
-                    minHeight: '68px',
-                    fontFamily:
-                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#F2F2F7';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ffffff';
-                }}
-                onClick={onViewDetail}>
-                {/* 单词名称 */}
-                <div
-                    style={{
-                        flex: '0 0 200px',
-                        fontWeight: '600',
-                        fontSize: '17px',
-                        color: '#1C1C1E',
-                        letterSpacing: '-0.3px',
-                    }}>
-                    <HighlightText
-                        text={word.name}
-                        searchTerm={searchTerm}
-                    />
-                </div>
-                {/* 发音 */}
-                <div
-                    style={{
-                        flex: '0 0 180px',
-                        fontSize: '15px',
-                        color: '#8E8E93',
-                    }}>
-                    {enableFullHighlight ? (
-                        <HighlightText
-                            text={word.pronunciation}
-                            searchTerm={searchTerm}
-                        />
-                    ) : (
-                        word.pronunciation
-                    )}
-                </div>
-                {/* 分类 */}
-                <div style={{ flex: '0 0 120px', fontSize: '15px' }}>
-                    <span
-                        style={{
-                            padding: '4px 12px',
-                            backgroundColor: '#E3F2FD',
-                            color: '#007AFF',
-                            borderRadius: 14,
-                            fontSize: '13px',
-                            fontWeight: '600',
-                        }}>
-                        {enableFullHighlight ? (
-                            <HighlightText
-                                text={WordHelper.getCategory(word)}
-                                searchTerm={searchTerm}
-                            />
-                        ) : (
-                            WordHelper.getCategory(word)
-                        )}
-                    </span>
-                </div>
-                {/* 标签 */}
-                <div style={{ flex: '1', fontSize: '15px' }}>
-                    {' '}
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        {WordHelper.getTags(word)
-                            .slice(0, 3)
-                            .map((tag, index) => (
-                                <span
-                                    key={index}
-                                    style={{
-                                        padding: '4px 10px',
-                                        backgroundColor: '#E8F5E9',
-                                        color: '#34C759',
-                                        borderRadius: 12,
-                                        fontSize: '12px',
-                                        fontWeight: '500',
-                                    }}>
-                                    {enableFullHighlight ? (
-                                        <HighlightText
-                                            text={tag}
-                                            searchTerm={searchTerm}
-                                        />
-                                    ) : (
-                                        tag
-                                    )}
-                                </span>
-                            ))}
-                        {WordHelper.getTags(word).length > 3 && (
-                            <span
-                                style={{
-                                    fontSize: '12px',
-                                    color: '#8E8E93',
-                                    fontWeight: '500',
-                                }}>
-                                +{WordHelper.getTags(word).length - 3}
-                            </span>
-                        )}
-                    </div>
-                </div>
-                {/* 查询次数 */}
-                <div
-                    style={{
-                        flex: '0 0 80px',
-                        fontSize: '15px',
-                        color: '#8E8E93',
-                        textAlign: 'center',
-                        fontWeight: '500',
-                    }}>
-                    {getWordQueryCount(word)}
-                </div>
-                {/* 等级 */}
-                <div
-                    style={{
-                        flex: '0 0 60px',
-                        fontSize: '13px',
-                        textAlign: 'center',
-                    }}>
-                    <span
-                        style={{
-                            padding: '4px 8px',
-                            backgroundColor:
-                                WordHelper.getLevel(word) === '高级'
-                                    ? '#FFEBEE'
-                                    : WordHelper.getLevel(word) === '中级'
-                                    ? '#FFF3E0'
-                                    : '#E8F5E9',
-                            color:
-                                WordHelper.getLevel(word) === '高级'
-                                    ? '#FF3B30'
-                                    : WordHelper.getLevel(word) === '中级'
-                                    ? '#FF9500'
-                                    : '#34C759',
-                            borderRadius: 10,
-                            fontSize: '12px',
-                            fontWeight: '600',
-                        }}>
-                        {WordHelper.getLevel(word)}
-                    </span>
-                </div>
-                {/* 操作按钮 */}
-                <div
-                    style={{
-                        flex: '0 0 140px',
-                        display: 'flex',
-                        gap: '6px',
-                        justifyContent: 'flex-end',
-                    }}>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit();
-                        }}
-                        style={{
-                            padding: '6px 12px',
-                            fontSize: '12px',
-                            backgroundColor: '#F2F2F7',
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            color: '#007AFF',
-                            fontWeight: '600',
-                            transition:
-                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                            fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#E5E5EA';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#F2F2F7';
-                        }}>
-                        <Edit2 size={16} />
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete();
-                        }}
-                        style={{
-                            padding: '6px 12px',
-                            fontSize: '12px',
-                            backgroundColor: '#FFEBEE',
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            color: '#FF3B30',
-                            fontWeight: '600',
-                            transition:
-                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                            fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#FF3B30';
-                            e.currentTarget.style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#FFEBEE';
-                            e.currentTarget.style.color = '#FF3B30';
-                        }}>
-                        <Trash2 size={16} />
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onJumpToSource();
-                        }}
-                        style={{
-                            padding: '6px 12px',
-                            fontSize: '12px',
-                            backgroundColor: '#E3F2FD',
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            color: '#007AFF',
-                            fontWeight: '600',
-                            transition:
-                                'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                            fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#007AFF';
-                            e.currentTarget.style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#E3F2FD';
-                            e.currentTarget.style.color = '#007AFF';
-                        }}>
-                        <Play size={16} />
-                    </button>
-                </div>
-            </div>
-        );
-    },
-);
-
-interface WordManagerProps {
-    words: Word[];
-    onAdd: (word: Word) => void;
-    onEdit: (word: Word, originalWord?: Word, silent?: boolean) => void;
-    onDelete: (name: string) => void;
-    onJumpToSource: (wordId: string) => void;
-}
 
 export default function WordManagerMarkdown({
     words,
@@ -746,18 +65,80 @@ export default function WordManagerMarkdown({
     );
     const [currentWord, setCurrentWord] = useState<Word | null>(null);
 
-    // 添加搜索框引用
+    // 娣诲姞鎼滅储妗嗗紩鐢?
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const rootRef = useRef<HTMLDivElement>(null);
+    const listScrollTopRef = useRef(0);
+    const shouldRestoreListScrollRef = useRef(false);
 
-    // 添加快捷键支持
+    /**
+     * 获取当前插件内容区的滚动容器，列表和详情共用该容器。
+     */
+    const getScrollContainer = useCallback((): HTMLElement | null => {
+        try {
+            const root = rootRef.current;
+            if (!root) return null;
+            return root.closest('.la-content') as HTMLElement | null;
+        } catch (error) {
+            console.error('获取滚动容器失败:', error);
+            return null;
+        }
+    }, []);
+
+    /**
+     * 记录单词列表当前滚动位置，详情返回时恢复用户离开前的位置。
+     */
+    const saveListScrollPosition = useCallback(() => {
+        try {
+            const scrollContainer = getScrollContainer();
+            if (!scrollContainer) return;
+            listScrollTopRef.current = scrollContainer.scrollTop;
+        } catch (error) {
+            console.error('保存单词列表滚动位置失败:', error);
+        }
+    }, [getScrollContainer]);
+
+    React.useLayoutEffect(() => {
+        if (viewMode !== 'list' || !shouldRestoreListScrollRef.current) return;
+
+        try {
+            const scrollContainer = getScrollContainer();
+            if (!scrollContainer) return;
+
+            scrollContainer.scrollTo({
+                top: listScrollTopRef.current,
+                left: 0,
+                behavior: 'auto',
+            });
+            shouldRestoreListScrollRef.current = false;
+        } catch (error) {
+            console.error('恢复单词列表滚动位置失败:', error);
+        }
+    }, [getScrollContainer, viewMode]);
+
+
+    // 娣诲姞蹇嵎閿敮鎸?
     React.useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Ctrl+F 或 Cmd+F 或 / 快捷键聚焦搜索框
+            const root = rootRef.current;
+            const target = e.target as Node | null;
+            if (!root || !target || !root.contains(target)) return;
+
+            const element = e.target as HTMLElement | null;
+            const tagName = element?.tagName.toLowerCase();
+            const isTypingTarget =
+                tagName === 'input' ||
+                tagName === 'textarea' ||
+                tagName === 'select' ||
+                element?.isContentEditable;
+            if (e.key === '/' && isTypingTarget) return;
+
+            // Ctrl+F 鎴?Cmd+F 鎴?/ 蹇嵎閿仛鐒︽悳绱㈡
             if (((e.ctrlKey || e.metaKey) && e.key === 'f') || e.key === '/') {
                 e.preventDefault();
                 if (searchInputRef.current) {
                     searchInputRef.current.focus();
-                    console.log('⌨️ 快捷键聚焦搜索框');
+                    console.log('鈱笍 蹇嵎閿仛鐒︽悳绱㈡');
                 }
             }
         };
@@ -766,38 +147,38 @@ export default function WordManagerMarkdown({
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    // 监控数据变化 - 避免频繁打印
+    // 鐩戞帶鏁版嵁鍙樺寲 - 閬垮厤棰戠箒鎵撳嵃
     React.useEffect(() => {
         console.log(
-            `📝 WordManager received ${words.length} words, updating interface`,
+            `馃摑 WordManager received ${words.length} words, updating interface`,
         );
     }, [words.length]);
 
-    // 监控 words 数组内容变化 - 使用 useMemo 优化
+    // 鐩戞帶 words 鏁扮粍鍐呭鍙樺寲 - 浣跨敤 useMemo 浼樺寲
     const wordsHash = useMemo(() => {
         return words.map((w) => w.name).join(',');
     }, [words]);
 
     React.useEffect(() => {
         console.log(
-            `🔄 Words data changed, hash: ${wordsHash.slice(0, 50)}...`,
+            `馃攧 Words data changed, hash: ${wordsHash.slice(0, 50)}...`,
         );
     }, [wordsHash]);
 
-    // 监控视图模式变化
+    // 鐩戞帶瑙嗗浘妯″紡鍙樺寲
     React.useEffect(() => {
-        console.log('🎯 ViewMode changed to:', viewMode);
+        console.log('馃幆 ViewMode changed to:', viewMode);
     }, [viewMode]);
 
-    // 监控当前单词变化
+    // 鐩戞帶褰撳墠鍗曡瘝鍙樺寲
     React.useEffect(() => {
         console.log(
-            '📖 CurrentWord changed to:',
+            '馃摉 CurrentWord changed to:',
             currentWord ? currentWord.name : 'null',
         );
     }, [currentWord]);
 
-    // 新增：标签和分类过滤状态
+    // 鏂板锛氭爣绛惧拰鍒嗙被杩囨护鐘舵€?
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
@@ -806,22 +187,20 @@ export default function WordManagerMarkdown({
     >([]);
     const [showFilters, setShowFilters] = useState(false);
 
-    // 新增：展示功能状态
-    const [displayMode, setDisplayMode] = useState<'list' | 'grid'>('grid');
-    const [sortBy, setSortBy] = useState<
-        'name' | 'date' | 'queryCount' | 'category'
-    >('name');
+    // 鏂板锛氬睍绀哄姛鑳界姸鎬?
+    const displayMode: 'grid' | 'list' = 'grid';
+    const [sortBy, setSortBy] = useState<WordSortKey>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(12); // 新增：错误提示状态
-    const [errorMessage, setErrorMessage] = useState(''); // 新增：新建标签输入状态
+    const [itemsPerPage, setItemsPerPage] = useState(12); // 鏂板锛氶敊璇彁绀虹姸鎬?
+    const [errorMessage, setErrorMessage] = useState(''); // 鏂板锛氭柊寤烘爣绛捐緭鍏ョ姸鎬?
     const [newTagInput, setNewTagInput] = useState('');
 
-    // 优化的搜索函数 - 提前退出和缓存
+    // 浼樺寲鐨勬悳绱㈠嚱鏁?- 鎻愬墠閫€鍑哄拰缂撳瓨
     const searchInWord = useCallback((word: Word, term: string): boolean => {
         if (!term) return true;
 
-        const lowerTerm = term.toLowerCase(); // 基本字段搜索 - 提前退出
+        const lowerTerm = term.toLowerCase(); // 鍩烘湰瀛楁鎼滅储 - 鎻愬墠閫€鍑?
         if (word.name.toLowerCase().includes(lowerTerm)) return true;
         if (WordHelper.getCategory(word).toLowerCase().includes(lowerTerm))
             return true;
@@ -832,7 +211,7 @@ export default function WordManagerMarkdown({
         if (word.notes && word.notes.toLowerCase().includes(lowerTerm))
             return true;
 
-        // 标签搜索
+        // 鏍囩鎼滅储
         if (
             WordHelper.getTags(word).some((tag) =>
                 tag.toLowerCase().includes(lowerTerm),
@@ -840,7 +219,7 @@ export default function WordManagerMarkdown({
         )
             return true;
 
-        // 详细内容搜索 - 优化嵌套循环
+        // 璇︾粏鍐呭鎼滅储 - 浼樺寲宓屽寰幆
         for (const part of word.content) {
             if (part.type.toLowerCase().includes(lowerTerm)) return true;
 
@@ -848,7 +227,7 @@ export default function WordManagerMarkdown({
                 if (def.definition.toLowerCase().includes(lowerTerm))
                     return true;
 
-                // 只在必要时搜索例句
+                // 鍙湪蹇呰鏃舵悳绱緥鍙?
                 for (const example of def.examples) {
                     if (example.text.toLowerCase().includes(lowerTerm))
                         return true;
@@ -858,7 +237,7 @@ export default function WordManagerMarkdown({
         return false;
     }, []);
 
-    // 提取所有唯一的标签和分类
+    // 鎻愬彇鎵€鏈夊敮涓€鐨勬爣绛惧拰鍒嗙被
     const allTags = useMemo(() => {
         const tagSet = new Set<string>();
         words.forEach((word) => {
@@ -877,7 +256,7 @@ export default function WordManagerMarkdown({
         return Array.from(categorySet).sort();
     }, [words]);
 
-    // 提取所有唯一的等级
+    // 鎻愬彇鎵€鏈夊敮涓€鐨勭瓑绾?
     const allLevels = useMemo(() => {
         const levelSet = new Set<string>();
         words.forEach((word) => {
@@ -887,7 +266,7 @@ export default function WordManagerMarkdown({
         return Array.from(levelSet).sort();
     }, [words]);
 
-    // 提取所有唯一的词性
+    // 鎻愬彇鎵€鏈夊敮涓€鐨勮瘝鎬?
     const allPartsOfSpeech = useMemo(() => {
         const partsOfSpeechSet = new Set<string>();
         words.forEach((word) => {
@@ -895,13 +274,13 @@ export default function WordManagerMarkdown({
                 partsOfSpeechSet.add(word.partsOfSpeech.trim());
         });
         return Array.from(partsOfSpeechSet).sort();
-    }, [words]); // 综合过滤函数：搜索 + 标签 + 分类 + 等级 + 词性
+    }, [words]); // 缁煎悎杩囨护鍑芥暟锛氭悳绱?+ 鏍囩 + 鍒嗙被 + 绛夌骇 + 璇嶆€?
     const applyFilters = useCallback(
         (word: Word): boolean => {
-            // 搜索过滤
+            // 鎼滅储杩囨护
             if (!searchInWord(word, searchTerm)) return false;
 
-            // 标签过滤
+            // 鏍囩杩囨护
             if (selectedTags.length > 0) {
                 const hasSelectedTag = selectedTags.some((selectedTag) =>
                     WordHelper.getTags(word).some(
@@ -911,7 +290,7 @@ export default function WordManagerMarkdown({
                 if (!hasSelectedTag) return false;
             }
 
-            // 分类过滤
+            // 鍒嗙被杩囨护
             if (selectedCategories.length > 0) {
                 if (
                     !selectedCategories.includes(
@@ -921,13 +300,13 @@ export default function WordManagerMarkdown({
                     return false;
             }
 
-            // 等级过滤
+            // 绛夌骇杩囨护
             if (selectedLevels.length > 0) {
                 if (!selectedLevels.includes(WordHelper.getLevel(word).trim()))
                     return false;
             }
 
-            // 词性过滤
+            // 璇嶆€ц繃婊?
             if (selectedPartsOfSpeech.length > 0) {
                 if (!selectedPartsOfSpeech.includes(word.partsOfSpeech.trim()))
                     return false;
@@ -943,12 +322,12 @@ export default function WordManagerMarkdown({
             selectedLevels,
             selectedPartsOfSpeech,
         ],
-    ); // 使用 useMemo 缓存过滤结果
+    ); // 浣跨敤 useMemo 缂撳瓨杩囨护缁撴灉
     const filteredWords = useMemo(() => {
         return words.filter(applyFilters);
     }, [words, applyFilters]);
 
-    // 排序逻辑
+    // 鎺掑簭閫昏緫
     const sortedWords = useMemo(() => {
         const sorted = [...filteredWords];
 
@@ -966,9 +345,27 @@ export default function WordManagerMarkdown({
                 case 'queryCount':
                     compareResult = getWordQueryCount(a) - getWordQueryCount(b);
                     break;
+                case 'recentAdded':
+                    compareResult =
+                        getSortableTimestamp(
+                            a.itemMeta?.createAt,
+                            a.itemMeta?.lastUpdate,
+                        ) -
+                        getSortableTimestamp(
+                            b.itemMeta?.createAt,
+                            b.itemMeta?.lastUpdate,
+                        );
+                    break;
                 case 'date':
-                    // 假设按字母顺序作为时间替代（实际项目中应该有时间戳字段）
-                    compareResult = a.name.localeCompare(b.name);
+                    compareResult =
+                        getSortableTimestamp(
+                            a.itemMeta?.lastUpdate,
+                            a.itemMeta?.createAt,
+                        ) -
+                        getSortableTimestamp(
+                            b.itemMeta?.lastUpdate,
+                            b.itemMeta?.createAt,
+                        );
                     break;
                 default:
                     compareResult = 0;
@@ -980,25 +377,26 @@ export default function WordManagerMarkdown({
         return sorted;
     }, [filteredWords, sortBy, sortOrder]);
 
-    // 分页逻辑
+    // 鍒嗛〉閫昏緫
     const paginatedWords = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         return sortedWords.slice(startIndex, endIndex);
-    }, [sortedWords, currentPage, itemsPerPage]); // 总页数
+    }, [sortedWords, currentPage, itemsPerPage]); // 鎬婚〉鏁?
     const totalPages = Math.ceil(sortedWords.length / itemsPerPage);
     const [form, setForm] = useState<Word>(createEmptyWord());
+    // NOTE: 澶勭悊鎻愪氦閫昏緫
     const handleSubmit = useCallback(() => {
-        // 清除之前的错误消息
+        // 娓呴櫎涔嬪墠鐨勯敊璇秷鎭?
         setErrorMessage('');
 
-        // 验证单词名称不能为空
+        // 楠岃瘉鍗曡瘝鍚嶇О涓嶈兘涓虹┖
         if (!form.name.trim()) {
             setErrorMessage('单词名称不能为空');
             return;
         }
 
-        // 检查单词名称是否重复
+        // 妫€鏌ュ崟璇嶅悕绉版槸鍚﹂噸澶?
         const trimmedName = form.name.trim();
         const isDuplicate = words.some(
             (word) =>
@@ -1011,13 +409,13 @@ export default function WordManagerMarkdown({
             return;
         }
 
-        // 记录操作类型用于调试
+        // 璁板綍鎿嶄綔绫诲瀷鐢ㄤ簬璋冭瘯
         const operation = editTarget ? '编辑' : '添加';
-        console.log(`🔄 ${operation}单词操作开始:`, trimmedName);
+        console.log(`馃攧 ${operation}鍗曡瘝鎿嶄綔寮€濮?`, trimmedName);
 
         try {
             if (editTarget) {
-                // 编辑时保留原有元数据
+                // 缂栬緫鏃朵繚鐣欏師鏈夊厓鏁版嵁
                 onEdit(
                     {
                         ...form,
@@ -1026,27 +424,27 @@ export default function WordManagerMarkdown({
                     editTarget,
                 );
                 setEditTarget(null);
-                console.log(`✅ ${operation}单词请求已发送，等待界面更新`);
+                console.log(`鉁?${operation}鍗曡瘝璇锋眰宸插彂閫侊紝绛夊緟鐣岄潰鏇存柊`);
             } else {
-                // 添加新单词时，让后端生成ID
+                // 娣诲姞鏂板崟璇嶆椂锛岃鍚庣鐢熸垚ID
                 onAdd({ ...form, name: trimmedName });
-                console.log(`✅ ${operation}单词请求已发送，等待界面更新`);
+                console.log(`鉁?${operation}鍗曡瘝璇锋眰宸插彂閫侊紝绛夊緟鐣岄潰鏇存柊`);
             }
 
-            // 重置表单和错误消息
+            // 閲嶇疆琛ㄥ崟鍜岄敊璇秷鎭?
             setForm(createEmptyWord());
             setErrorMessage('');
             setNewTagInput('');
             setShowAdd(false);
 
-            // 如果在详细视图中，返回列表视图以查看更新
+            // 濡傛灉鍦ㄨ缁嗚鍥句腑锛岃繑鍥炲垪琛ㄨ鍥句互鏌ョ湅鏇存柊
             if (viewMode === 'detail') {
                 setViewMode('list');
                 setCurrentWord(null);
-                console.log('🔄 返回列表视图以查看更新');
+                console.log('返回列表视图以查看更新');
             }
         } catch (error) {
-            console.error(`❌ ${operation}单词时发生错误:`, error);
+            console.error(`鉂?${operation}鍗曡瘝鏃跺彂鐢熼敊璇?`, error);
             setErrorMessage(`${operation}失败，请重试`);
         }
     }, [editTarget, form, onEdit, onAdd, words, viewMode]);
@@ -1056,11 +454,11 @@ export default function WordManagerMarkdown({
             ...word,
             content: JSON.parse(JSON.stringify(word.content)),
         });
-        setNewTagInput(''); // 重置新标签输入
+        setNewTagInput(''); // 閲嶇疆鏂版爣绛捐緭鍏?
         setShowAdd(true);
     }, []);
 
-    // 标签和分类过滤处理函数
+    // 鏍囩鍜屽垎绫昏繃婊ゅ鐞嗗嚱鏁?
     const handleTagToggle = useCallback((tag: string) => {
         setSelectedTags((prev) =>
             prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
@@ -1096,7 +494,7 @@ export default function WordManagerMarkdown({
         setSelectedLevels([]);
         setSelectedPartsOfSpeech([]);
         setSearchTerm('');
-        console.log('🔄 清除所有筛选');
+        console.log('清除所有筛选');
     }, []);
     const handleAddPart = useCallback(() => {
         setForm((f) => ({
@@ -1137,7 +535,7 @@ export default function WordManagerMarkdown({
             });
         },
         [],
-    ); // 删除功能的回调函数 - 带确认提示
+    ); // 鍒犻櫎鍔熻兘鐨勫洖璋冨嚱鏁?- 甯︾‘璁ゆ彁绀?
     const handleRemovePart = useCallback(
         (partIndex: number) => {
             const partType = form.content[partIndex].type || '未命名词性';
@@ -1145,9 +543,9 @@ export default function WordManagerMarkdown({
 
             if (
                 window.confirm(
-                    `确定要删除词性"${partType}"吗？\n` +
-                        `这将同时删除该词性下的 ${definitionsCount} 个定义及其所有例句。\n\n` +
-                        `此操作无法撤销。`,
+                    `确定要删除词性“${partType}”吗？\n` +
+                        `这会同时删除该词性下的 ${definitionsCount} 个定义和所有例句。\n\n` +
+                        '此操作无法撤销。',
                 )
             ) {
                 setForm((f) => {
@@ -1174,9 +572,9 @@ export default function WordManagerMarkdown({
 
             if (
                 window.confirm(
-                    `确定要删除定义"${shortDefinition}"吗？\n` +
-                        `这将同时删除该定义下的 ${examplesCount} 个例句。\n\n` +
-                        `此操作无法撤销。`,
+                    `确定要删除定义“${shortDefinition}”吗？\n` +
+                        `这会同时删除该定义下的 ${examplesCount} 个例句。\n\n` +
+                        '此操作无法撤销。',
                 )
             ) {
                 setForm((f) => {
@@ -1201,8 +599,8 @@ export default function WordManagerMarkdown({
 
             if (
                 window.confirm(
-                    `确定要删除例句"${shortExample}"吗？\n\n` +
-                        `此操作无法撤销。`,
+                    `确定要删除例句“${shortExample}”吗？\n\n` +
+                        '此操作无法撤销。',
                 )
             ) {
                 setForm((f) => {
@@ -1216,24 +614,26 @@ export default function WordManagerMarkdown({
             }
         },
         [form.content],
-    ); // 页面模式切换函数 - 只有通过搜索/筛选后查看才增加查询次数
+    ); // 椤甸潰妯″紡鍒囨崲鍑芥暟 - 鍙湁閫氳繃鎼滅储/绛涢€夊悗鏌ョ湅鎵嶅鍔犳煡璇㈡鏁?
     const handleViewWord = useCallback(
         (word: Word) => {
-            console.log('🔍 handleViewWord called for word:', word.name);
+            console.log('馃攳 handleViewWord called for word:', word.name);
 
-            // 动态读取当前搜索框的值，避免闭包问题
-            // 不能依赖 useCallback 的 searchTerm，因为可能捕获旧值
+            // 鍔ㄦ€佽鍙栧綋鍓嶆悳绱㈡鐨勫€硷紝閬垮厤闂寘闂
+            // 涓嶈兘渚濊禆 useCallback 鐨?searchTerm锛屽洜涓哄彲鑳芥崟鑾锋棫鍊?
+            saveListScrollPosition();
+
             const currentSearchTerm = searchInputRef.current?.value || '';
             const hasSearchQuery = currentSearchTerm.trim() !== '';
 
-            console.log('🔍 hasSearchQuery:', hasSearchQuery);
-            console.log('🔍 current searchTerm from ref:', currentSearchTerm);
-            console.log('📊 Current viewCount:', word.itemMeta?.viewCount || 0);
+            console.log('馃攳 hasSearchQuery:', hasSearchQuery);
+            console.log('馃攳 current searchTerm from ref:', currentSearchTerm);
+            console.log('馃搳 Current viewCount:', word.itemMeta?.viewCount || 0);
 
             let updatedWord: Word;
 
             if (hasSearchQuery) {
-                // 搜索框有内容时，增加查询次数
+                // 鎼滅储妗嗘湁鍐呭鏃讹紝澧炲姞鏌ヨ娆℃暟
                 updatedWord = {
                     ...word,
                     itemMeta: {
@@ -1242,45 +642,46 @@ export default function WordManagerMarkdown({
                     },
                 };
                 console.log(
-                    '📊 New viewCount will be:',
+                    '馃搳 New viewCount will be:',
                     updatedWord.itemMeta.viewCount,
                 );
             } else {
-                // 搜索框为空时，不增加查询次数
+                // 鎼滅储妗嗕负绌烘椂锛屼笉澧炲姞鏌ヨ娆℃暟
                 updatedWord = word;
-                console.log('📊 No search query - viewCount unchanged');
+                console.log('馃搳 No search query - viewCount unchanged');
             }
 
-            // 首先立即设置视图状态
-            console.log('📝 Setting currentWord and switching to detail view');
+            // 棣栧厛绔嬪嵆璁剧疆瑙嗗浘鐘舵€?
+            console.log('馃摑 Setting currentWord and switching to detail view');
             setCurrentWord(updatedWord);
             setViewMode('detail');
 
-            // 只有在搜索框有内容时才更新后端数据
+            // 鍙湁鍦ㄦ悳绱㈡鏈夊唴瀹规椂鎵嶆洿鏂板悗绔暟鎹?
             if (hasSearchQuery) {
                 setTimeout(() => {
-                    // 静默更新到后端（不显示通知）
+                    // 闈欓粯鏇存柊鍒板悗绔紙涓嶆樉绀洪€氱煡锛?
                     console.log(
-                        '📊 Silent update to backend with viewCount:',
+                        '馃搳 Silent update to backend with viewCount:',
                         updatedWord.itemMeta.viewCount,
                     );
                     onEdit(updatedWord, word, true);
                 }, 10);
             }
 
-            console.log('✅ View mode changed to detail, currentWord set');
+            console.log('鉁?View mode changed to detail, currentWord set');
         },
-        [onEdit],
+        [onEdit, saveListScrollPosition],
     );
     const handleBackToList = useCallback(() => {
-        console.log('🔙 返回列表');
+        console.log('馃敊 杩斿洖鍒楄〃');
+        shouldRestoreListScrollRef.current = true;
         setViewMode('list');
         setCurrentWord(null);
 
-        // 💡 不需要调用 onRefresh()
-        // 因为 viewCount 已经通过 onEdit 静默模式更新到内存中
-        // 调用 onRefresh() 会导致整个组件重新渲染，丢失筛选条件
-    }, []); // 带确认提示的单词删除函数
+        // 馃挕 涓嶉渶瑕佽皟鐢?onRefresh()
+        // 鍥犱负 viewCount 宸茬粡閫氳繃 onEdit 闈欓粯妯″紡鏇存柊鍒板唴瀛樹腑
+        // 璋冪敤 onRefresh() 浼氬鑷存暣涓粍浠堕噸鏂版覆鏌擄紝涓㈠け绛涢€夋潯浠?
+    }, []); // 甯︾‘璁ゆ彁绀虹殑鍗曡瘝鍒犻櫎鍑芥暟
     const handleDeleteWord = useCallback(
         (word: Word) => {
             const wordName = word.name;
@@ -1301,57 +702,51 @@ export default function WordManagerMarkdown({
 
             if (
                 window.confirm(
-                    `确定要删除单词"${wordName}"吗？\n\n` +
+                    `确定要删除单词“${wordName}”吗？\n\n` +
                         `单词信息：\n` +
-                        `• 分类：${wordCategory}\n` +
-                        `• 包含 ${definitionsCount} 个定义\n` +
-                        `• 包含 ${examplesCount} 个例句\n\n` +
-                        `此操作将永久删除该单词的所有信息，无法撤销。`,
+                        `- 分类：${wordCategory}\n` +
+                        `- 包含 ${definitionsCount} 个定义\n` +
+                        `- 包含 ${examplesCount} 个例句\n\n` +
+                        '此操作会永久删除该单词的所有信息，无法撤销。',
                 )
             ) {
-                console.log(`🗑️ 删除单词操作开始:`, wordName);
+                console.log(`馃棏锔?鍒犻櫎鍗曡瘝鎿嶄綔寮€濮?`, wordName);
 
-                // 如果当前在详细视图中且正在查看要删除的单词，先返回列表
+                // 濡傛灉褰撳墠鍦ㄨ缁嗚鍥句腑涓旀鍦ㄦ煡鐪嬭鍒犻櫎鐨勫崟璇嶏紝鍏堣繑鍥炲垪琛?
                 if (
                     viewMode === 'detail' &&
                     currentWord &&
                     currentWord.name === wordName
                 ) {
+                    shouldRestoreListScrollRef.current = true;
                     setViewMode('list');
                     setCurrentWord(null);
                     console.log(
-                        '🔄 从详细视图返回列表视图（因为正在删除当前查看的单词）',
+                        '馃攧 浠庤缁嗚鍥捐繑鍥炲垪琛ㄨ鍥撅紙鍥犱负姝ｅ湪鍒犻櫎褰撳墠鏌ョ湅鐨勫崟璇嶏級',
                     );
                 }
 
                 onDelete(wordName);
-                console.log('✅ 删除单词请求已发送，等待界面更新');
+                console.log('鉁?鍒犻櫎鍗曡瘝璇锋眰宸插彂閫侊紝绛夊緟鐣岄潰鏇存柊');
             }
         },
         [onDelete, viewMode, currentWord],
     );
     return (
-        <div
-            style={{
-                height: '100vh',
-                overflow: 'auto',
-                padding: '20px 20px 60px 20px',
-                boxSizing: 'border-box',
-            }}>
-            {' '}
+        <div className="la-word-manager" ref={rootRef}>
             {viewMode === 'list' && (
                 <>
-                    {/* iOS 风格标题栏 */}
+                    {/* iOS 椋庢牸鏍囬鏍?*/}
                     <div
                         style={{
                             background:
-                                'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+                                'var(--la-gradient-accent)',
                             padding: '32px 28px',
-                            borderRadius: '20px',
+                            borderRadius: 'var(--la-radius-lg)',
                             marginBottom: '24px',
-                            boxShadow: '0 4px 16px rgba(0, 122, 255, 0.2)',
+                            boxShadow: 'var(--la-shadow-sm)',
                             fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+                                'var(--la-font-display)',
                         }}>
                         <h1
                             style={{
@@ -1359,7 +754,7 @@ export default function WordManagerMarkdown({
                                 color: 'white',
                                 fontSize: '34px',
                                 fontWeight: '700',
-                                letterSpacing: '-1px',
+                                letterSpacing: '0',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '12px',
@@ -1369,24 +764,24 @@ export default function WordManagerMarkdown({
                         <p
                             style={{
                                 margin: '8px 0 0 0',
-                                color: 'rgba(255,255,255,0.85)',
+                                color: 'var(--la-on-accent-muted)',
                                 fontSize: '17px',
                                 fontWeight: '400',
                             }}>
                             管理您的单词库，让学习更高效
                         </p>
                     </div>
-                    {/* iOS 风格搜索和操作栏 */}
+                    {/* iOS 椋庢牸鎼滅储鍜屾搷浣滄爮 */}
                     <div
                         style={{
-                            background: '#ffffff',
+                            background: 'var(--la-surface)',
                             padding: '20px',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             marginBottom: '24px',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            boxShadow: 'var(--la-shadow-sm)',
                             border: 'none',
                             fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                'var(--la-font)',
                         }}>
                         {' '}
                         <div
@@ -1397,7 +792,7 @@ export default function WordManagerMarkdown({
                                 flexWrap: 'wrap',
                                 zIndex: 1,
                             }}>
-                            {/* iOS 风格搜索框 — 图标内嵌 */}
+                            {/* iOS 椋庢牸鎼滅储妗?鈥?鍥炬爣鍐呭祵 */}
                             <div
                                 style={{
                                     flex: 1,
@@ -1408,7 +803,7 @@ export default function WordManagerMarkdown({
                                 }}>
                                 <Search
                                     size={16}
-                                    color="#8E8E93"
+                                    color="var(--la-text-muted)"
                                     style={{
                                         position: 'absolute',
                                         left: '14px',
@@ -1426,30 +821,69 @@ export default function WordManagerMarkdown({
                                     }}
                                     style={{
                                         width: '100%',
-                                        padding: '12px 16px 12px 40px',
+                                        padding: searchTerm
+                                            ? '12px 48px 12px 40px'
+                                            : '12px 16px 12px 40px',
                                         border: 'none',
-                                        borderRadius: '12px',
+                                        borderRadius: 'var(--la-radius-sm)',
                                         fontSize: '15px',
-                                        backgroundColor: '#F2F2F7',
+                                        backgroundColor: 'var(--la-surface-subtle)',
                                         transition: 'background-color 0.2s',
                                         outline: 'none',
-                                        color: '#1C1C1E',
-                                        WebkitTextFillColor: '#1C1C1E',
+                                        color: 'var(--la-text-strong)',
+                                        WebkitTextFillColor: 'var(--la-text-strong)',
                                         fontFamily:
-                                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                            'var(--la-font)',
                                     }}
                                     onFocus={(e) => {
                                         e.currentTarget.style.backgroundColor =
-                                            '#E5E5EA';
+                                            'var(--la-border)';
                                     }}
                                     onBlur={(e) => {
                                         e.currentTarget.style.backgroundColor =
-                                            '#F2F2F7';
+                                            'var(--la-surface-subtle)';
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                     onMouseDown={(e) => e.stopPropagation()}
                                     tabIndex={0}
                                 />
+                                {searchTerm && (
+                                    <button
+                                        type="button"
+                                        aria-label="清除搜索内容"
+                                        title="清除搜索内容"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSearchTerm('');
+                                            setCurrentPage(1);
+                                            searchInputRef.current?.focus();
+                                        }}
+                                        onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                        }}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            width: '30px',
+                                            height: '30px',
+                                            minWidth: '30px',
+                                            minHeight: '30px',
+                                            padding: 0,
+                                            border: 'none',
+                                            borderRadius: '999px',
+                                            backgroundColor:
+                                                'color-mix(in srgb, var(--la-text-muted) 12%, transparent)',
+                                            color: 'var(--la-text-muted)',
+                                            boxShadow: 'none',
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}>
+                                        <X size={16} />
+                                    </button>
+                                )}
                             </div>
                             {searchTerm && (
                                 <label
@@ -1458,7 +892,7 @@ export default function WordManagerMarkdown({
                                         alignItems: 'center',
                                         gap: 6,
                                         fontSize: '15px',
-                                        color: '#8E8E93',
+                                        color: 'var(--la-text-muted)',
                                         whiteSpace: 'nowrap',
                                         cursor: 'pointer',
                                     }}>
@@ -1480,58 +914,58 @@ export default function WordManagerMarkdown({
                                 </label>
                             )}
 
-                            {/* iOS 风格添加按钮 */}
+                            {/* iOS 椋庢牸娣诲姞鎸夐挳 */}
                             <button
                                 onClick={() => setShowAdd(true)}
                                 style={{
                                     padding: '12px 20px',
-                                    backgroundColor: '#007AFF',
+                                    backgroundColor: 'var(--la-accent)',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     cursor: 'pointer',
                                     fontSize: '15px',
                                     fontWeight: '600',
                                     boxShadow:
-                                        '0 2px 8px rgba(0, 122, 255, 0.25)',
+                                        '0 2px 8px color-mix(in srgb, var(--la-accent) 22%, transparent)',
                                     transition:
                                         'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '6px',
                                     fontFamily:
-                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                        'var(--la-font)',
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.backgroundColor =
-                                        '#0051D5';
+                                        'var(--la-accent-strong)';
                                     e.currentTarget.style.transform =
                                         'translateY(-1px)';
                                     e.currentTarget.style.boxShadow =
-                                        '0 4px 12px rgba(0, 122, 255, 0.35)';
+                                        '0 4px 12px color-mix(in srgb, var(--la-accent) 30%, transparent)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.backgroundColor =
-                                        '#007AFF';
+                                        'var(--la-accent)';
                                     e.currentTarget.style.transform =
                                         'translateY(0)';
                                     e.currentTarget.style.boxShadow =
-                                        '0 2px 8px rgba(0, 122, 255, 0.25)';
+                                        '0 2px 8px color-mix(in srgb, var(--la-accent) 22%, transparent)';
                                 }}>
                                 <Plus size={16} /> 添加单词
                             </button>
 
-                            {/* iOS 风格筛选按钮 */}
+                            {/* iOS 椋庢牸绛涢€夋寜閽?*/}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
                                 style={{
                                     padding: '12px 16px',
                                     backgroundColor: showFilters
-                                        ? '#E3F2FD'
-                                        : '#F2F2F7',
-                                    color: showFilters ? '#007AFF' : '#8E8E93',
+                                        ? 'var(--la-accent-bg)'
+                                        : 'var(--la-surface-subtle)',
+                                    color: showFilters ? 'var(--la-accent)' : 'var(--la-text-muted)',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     cursor: 'pointer',
                                     fontSize: '15px',
                                     fontWeight: '600',
@@ -1541,18 +975,18 @@ export default function WordManagerMarkdown({
                                     alignItems: 'center',
                                     gap: '6px',
                                     fontFamily:
-                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                        'var(--la-font)',
                                 }}
                                 onMouseEnter={(e) => {
                                     if (!showFilters) {
                                         e.currentTarget.style.backgroundColor =
-                                            '#E5E5EA';
+                                            'var(--la-border)';
                                     }
                                 }}
                                 onMouseLeave={(e) => {
                                     if (!showFilters) {
                                         e.currentTarget.style.backgroundColor =
-                                            '#F2F2F7';
+                                            'var(--la-surface-subtle)';
                                     }
                                 }}>
                                 <Filter size={16} /> 筛选
@@ -1563,9 +997,9 @@ export default function WordManagerMarkdown({
                                     0 && (
                                     <span
                                         style={{
-                                            background: '#dc3545',
+                                            background: 'var(--la-danger)',
                                             color: 'white',
-                                            borderRadius: '12px',
+                                            borderRadius: 'var(--la-radius-sm)',
                                             padding: '2px 6px',
                                             fontSize: '12px',
                                             fontWeight: 'bold',
@@ -1581,102 +1015,104 @@ export default function WordManagerMarkdown({
                             </button>
                         </div>
                     </div>
-                    {/* iOS 风格展示控制栏 */}
+                    {/* iOS 椋庢牸灞曠ず鎺у埗鏍?*/}
                     <div
                         style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
+                            gap: '16px',
+                            flexWrap: 'wrap',
                             marginBottom: '20px',
                             padding: '16px 20px',
-                            backgroundColor: '#ffffff',
-                            borderRadius: '16px',
+                            backgroundColor: 'var(--la-surface)',
+                            borderRadius: 'var(--la-radius-md)',
                             border: 'none',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            boxShadow: 'var(--la-shadow-sm)',
                             fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                'var(--la-font)',
                         }}>
                         <div
                             style={{
                                 display: 'flex',
                                 gap: 16,
                                 alignItems: 'center',
+                                flexWrap: 'wrap',
                             }}>
-                            {/* iOS 风格视图模式切换 */}
+                            {/* iOS 椋庢牸瑙嗗浘妯″紡鍒囨崲 */}
                             <div
                                 style={{
-                                    display: 'flex',
+                                    display: 'none',
                                     alignItems: 'center',
                                     gap: 8,
                                 }}>
                                 <span
                                     style={{
                                         fontSize: '15px',
-                                        color: '#8E8E93',
+                                        color: 'var(--la-text-muted)',
                                         fontWeight: '500',
                                     }}>
-                                    视图:
+                                    
                                 </span>
                                 <div
                                     style={{
                                         display: 'flex',
-                                        backgroundColor: '#F2F2F7',
-                                        borderRadius: '10px',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        borderRadius: 'var(--la-radius-xs)',
                                         padding: '3px',
                                         gap: '2px',
                                     }}>
                                     <button
-                                        onClick={() => setDisplayMode('grid')}
+                                        type="button"
                                         style={{
+                                            display: 'none',
                                             padding: '8px 14px',
                                             fontSize: '14px',
                                             backgroundColor:
                                                 displayMode === 'grid'
-                                                    ? '#007AFF'
+                                                    ? 'var(--la-accent)'
                                                     : 'transparent',
                                             color:
                                                 displayMode === 'grid'
-                                                    ? '#ffffff'
-                                                    : '#8E8E93',
+                                                    ? 'var(--la-surface)'
+                                                    : 'var(--la-text-muted)',
                                             border: 'none',
-                                            borderRadius: '8px',
+                                            borderRadius: 'var(--la-radius-xs)',
                                             cursor: 'pointer',
                                             fontWeight: '600',
                                             transition:
                                                 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                             fontFamily:
-                                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                                'var(--la-font)',
                                         }}>
                                         <Grid size={16} /> 网格
                                     </button>
                                     <button
-                                        onClick={() => setDisplayMode('list')}
+                                        type="button"
+                                        aria-hidden="true"
                                         style={{
+                                            display: 'none',
                                             padding: '8px 14px',
                                             fontSize: '14px',
                                             backgroundColor:
-                                                displayMode === 'list'
-                                                    ? '#007AFF'
-                                                    : 'transparent',
+                                                'transparent',
                                             color:
-                                                displayMode === 'list'
-                                                    ? '#ffffff'
-                                                    : '#8E8E93',
+                                                'var(--la-text-muted)',
                                             border: 'none',
-                                            borderRadius: '8px',
+                                            borderRadius: 'var(--la-radius-xs)',
                                             cursor: 'pointer',
                                             fontWeight: '600',
                                             transition:
                                                 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                             fontFamily:
-                                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                                'var(--la-font)',
                                         }}>
-                                        <List size={16} /> 列表
+                                        列表
                                     </button>
                                 </div>
                             </div>
 
-                            {/* iOS 风格排序选择 */}
+                            {/* iOS 椋庢牸鎺掑簭閫夋嫨 */}
                             <div
                                 style={{
                                     display: 'flex',
@@ -1686,32 +1122,45 @@ export default function WordManagerMarkdown({
                                 <span
                                     style={{
                                         fontSize: '15px',
-                                        color: '#8E8E93',
+                                        color: 'var(--la-text-muted)',
                                         fontWeight: '500',
                                     }}>
                                     排序:
                                 </span>
                                 <select
                                     value={sortBy}
-                                    onChange={(e) =>
-                                        setSortBy(e.target.value as any)
-                                    }
+                                    onChange={(e) => {
+                                        const nextSortBy = e.target
+                                            .value as WordSortKey;
+                                        setSortBy(nextSortBy);
+                                        if (nextSortBy === 'recentAdded') {
+                                            setSortOrder('desc');
+                                        }
+                                        setCurrentPage(1);
+                                    }}
                                     style={{
-                                        padding: '8px 12px',
+                                        width: '128px',
+                                        height: '44px',
+                                        padding: '0 38px 0 18px',
                                         fontSize: '14px',
+                                        lineHeight: '44px',
                                         border: 'none',
-                                        borderRadius: '10px',
-                                        backgroundColor: '#F2F2F7',
-                                        color: '#1C1C1E',
+                                        borderRadius: 'var(--la-radius-xs)',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        color: 'var(--la-text-strong)',
                                         fontWeight: '500',
                                         cursor: 'pointer',
                                         outline: 'none',
+                                        appearance: 'none',
+                                        WebkitAppearance: 'none',
+                                        textIndent: '0',
                                         fontFamily:
-                                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                            'var(--la-font)',
                                     }}>
                                     <option value="name">名称</option>
                                     <option value="category">分类</option>
                                     <option value="queryCount">查询次数</option>
+                                    <option value="recentAdded">最近添加</option>
                                     <option value="date">时间</option>
                                 </select>
                                 <button
@@ -1725,22 +1174,22 @@ export default function WordManagerMarkdown({
                                     style={{
                                         padding: '8px 12px',
                                         fontSize: '16px',
-                                        backgroundColor: '#F2F2F7',
+                                        backgroundColor: 'var(--la-surface-subtle)',
                                         border: 'none',
-                                        borderRadius: '10px',
+                                        borderRadius: 'var(--la-radius-xs)',
                                         cursor: 'pointer',
-                                        color: '#007AFF',
+                                        color: 'var(--la-accent)',
                                         fontWeight: '600',
                                         transition:
                                             'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                     }}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.backgroundColor =
-                                            '#E5E5EA';
+                                            'var(--la-border)';
                                     }}
                                     onMouseLeave={(e) => {
                                         e.currentTarget.style.backgroundColor =
-                                            '#F2F2F7';
+                                            'var(--la-surface-subtle)';
                                     }}>
                                     {sortOrder === 'asc' ? (
                                         <ChevronUp size={16} />
@@ -1750,7 +1199,7 @@ export default function WordManagerMarkdown({
                                 </button>
                             </div>
 
-                            {/* iOS 风格每页显示数量 */}
+                            {/* iOS 椋庢牸姣忛〉鏄剧ず鏁伴噺 */}
                             <div
                                 style={{
                                     display: 'flex',
@@ -1760,7 +1209,7 @@ export default function WordManagerMarkdown({
                                 <span
                                     style={{
                                         fontSize: '15px',
-                                        color: '#8E8E93',
+                                        color: 'var(--la-text-muted)',
                                         fontWeight: '500',
                                     }}>
                                     每页:
@@ -1772,17 +1221,23 @@ export default function WordManagerMarkdown({
                                         setCurrentPage(1);
                                     }}
                                     style={{
-                                        padding: '8px 12px',
+                                        width: '84px',
+                                        height: '44px',
+                                        padding: '0 30px 0 18px',
                                         fontSize: '14px',
+                                        lineHeight: '44px',
                                         border: 'none',
-                                        borderRadius: '10px',
-                                        backgroundColor: '#F2F2F7',
-                                        color: '#1C1C1E',
+                                        borderRadius: 'var(--la-radius-xs)',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        color: 'var(--la-text-strong)',
                                         fontWeight: '500',
                                         cursor: 'pointer',
                                         outline: 'none',
+                                        appearance: 'none',
+                                        WebkitAppearance: 'none',
+                                        textIndent: '0',
                                         fontFamily:
-                                            '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                            'var(--la-font)',
                                     }}>
                                     <option value={6}>6</option>
                                     <option value={12}>12</option>
@@ -1792,12 +1247,14 @@ export default function WordManagerMarkdown({
                             </div>
                         </div>
 
-                        {/* iOS 风格结果统计 */}
+                        {/* iOS 椋庢牸缁撴灉缁熻 */}
                         <div
                             style={{
                                 fontSize: '15px',
-                                color: '#8E8E93',
+                                color: 'var(--la-text-muted)',
                                 fontWeight: '500',
+                                marginLeft: 'auto',
+                                whiteSpace: 'nowrap',
                             }}>
                             显示{' '}
                             {Math.min(
@@ -1812,18 +1269,18 @@ export default function WordManagerMarkdown({
                             / 共 {sortedWords.length} 个
                         </div>
                     </div>
-                    {/* iOS 风格过滤器面板 */}
+                    {/* iOS 椋庢牸杩囨护鍣ㄩ潰鏉?*/}
                     {showFilters && (
                         <div
                             style={{
                                 marginBottom: 20,
                                 padding: 20,
                                 border: 'none',
-                                borderRadius: 16,
-                                backgroundColor: '#ffffff',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                borderRadius: 'var(--la-radius-md)',
+                                backgroundColor: 'var(--la-surface)',
+                                boxShadow: 'var(--la-shadow-sm)',
                                 fontFamily:
-                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                    'var(--la-font)',
                             }}>
                             <div
                                 style={{
@@ -1837,37 +1294,37 @@ export default function WordManagerMarkdown({
                                         margin: 0,
                                         fontSize: '20px',
                                         fontWeight: '600',
-                                        color: '#1C1C1E',
+                                        color: 'var(--la-text-strong)',
                                     }}>
-                                    过滤选项
+                                    筛选选项
                                 </h3>
                                 <button
                                     onClick={clearAllFilters}
                                     style={{
                                         padding: '8px 16px',
                                         fontSize: '14px',
-                                        backgroundColor: '#F2F2F7',
+                                        backgroundColor: 'var(--la-surface-subtle)',
                                         border: 'none',
-                                        borderRadius: '10px',
+                                        borderRadius: 'var(--la-radius-xs)',
                                         cursor: 'pointer',
-                                        color: '#FF3B30',
+                                        color: 'var(--la-danger)',
                                         fontWeight: '600',
                                         transition:
                                             'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                     }}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.backgroundColor =
-                                            '#FFEBEE';
+                                            'var(--la-danger-bg)';
                                     }}
                                     onMouseLeave={(e) => {
                                         e.currentTarget.style.backgroundColor =
-                                            '#F2F2F7';
+                                            'var(--la-surface-subtle)';
                                     }}>
                                     清除筛选
                                 </button>
                             </div>
 
-                            {/* 分类过滤 */}
+                            {/* 鍒嗙被杩囨护 */}
                             {allCategories.length > 0 && (
                                 <div style={{ marginBottom: 20 }}>
                                     <div
@@ -1875,9 +1332,9 @@ export default function WordManagerMarkdown({
                                             fontSize: '15px',
                                             fontWeight: '600',
                                             marginBottom: 10,
-                                            color: '#48484A',
+                                            color: 'var(--text-muted)',
                                         }}>
-                                        分类筛选:
+                                        分类筛选
                                     </div>
                                     <div
                                         style={{
@@ -1900,15 +1357,15 @@ export default function WordManagerMarkdown({
                                                         selectedCategories.includes(
                                                             category,
                                                         )
-                                                            ? '#007AFF'
-                                                            : '#F2F2F7',
+                                                            ? 'var(--la-accent)'
+                                                            : 'var(--la-surface-subtle)',
                                                     color: selectedCategories.includes(
                                                         category,
                                                     )
-                                                        ? '#fff'
-                                                        : '#1C1C1E',
+                                                        ? 'var(--text-on-accent)'
+                                                        : 'var(--la-text-strong)',
                                                     border: 'none',
-                                                    borderRadius: '14px',
+                                                    borderRadius: 'var(--la-radius-sm)',
                                                     cursor: 'pointer',
                                                     fontWeight: '500',
                                                     transition:
@@ -1917,14 +1374,14 @@ export default function WordManagerMarkdown({
                                                 {category}
                                                 {selectedCategories.includes(
                                                     category,
-                                                ) && ' ✓'}
+                                                ) && <Check size={14} />}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* 标签过滤 */}
+                            {/* 鏍囩杩囨护 */}
                             {allTags.length > 0 && (
                                 <div style={{ marginBottom: 20 }}>
                                     <div
@@ -1932,9 +1389,9 @@ export default function WordManagerMarkdown({
                                             fontSize: '15px',
                                             fontWeight: '600',
                                             marginBottom: 10,
-                                            color: '#48484A',
+                                            color: 'var(--text-muted)',
                                         }}>
-                                        标签筛选:
+                                        标签筛选
                                     </div>
                                     <div
                                         style={{
@@ -1955,15 +1412,15 @@ export default function WordManagerMarkdown({
                                                         selectedTags.includes(
                                                             tag,
                                                         )
-                                                            ? '#34C759'
-                                                            : '#F2F2F7',
+                                                            ? 'var(--la-success)'
+                                                            : 'var(--la-surface-subtle)',
                                                     color: selectedTags.includes(
                                                         tag,
                                                     )
-                                                        ? '#fff'
-                                                        : '#1C1C1E',
+                                                        ? 'var(--text-on-accent)'
+                                                        : 'var(--la-text-strong)',
                                                     border: 'none',
-                                                    borderRadius: '14px',
+                                                    borderRadius: 'var(--la-radius-sm)',
                                                     cursor: 'pointer',
                                                     fontWeight: '500',
                                                     transition:
@@ -1971,14 +1428,14 @@ export default function WordManagerMarkdown({
                                                 }}>
                                                 {tag}
                                                 {selectedTags.includes(tag) &&
-                                                    ' ✓'}
+                                                    <Check size={14} />}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* 等级过滤 */}
+                            {/* 绛夌骇杩囨护 */}
                             {allLevels.length > 0 && (
                                 <div style={{ marginBottom: 20 }}>
                                     <div
@@ -1986,9 +1443,9 @@ export default function WordManagerMarkdown({
                                             fontSize: '15px',
                                             fontWeight: '600',
                                             marginBottom: 10,
-                                            color: '#48484A',
+                                            color: 'var(--text-muted)',
                                         }}>
-                                        等级筛选:
+                                        等级筛选
                                     </div>
                                     <div
                                         style={{
@@ -2009,15 +1466,15 @@ export default function WordManagerMarkdown({
                                                         selectedLevels.includes(
                                                             level,
                                                         )
-                                                            ? '#FF9500'
-                                                            : '#F2F2F7',
+                                                            ? 'var(--la-warning)'
+                                                            : 'var(--la-surface-subtle)',
                                                     color: selectedLevels.includes(
                                                         level,
                                                     )
-                                                        ? '#fff'
-                                                        : '#1C1C1E',
+                                                        ? 'var(--text-on-accent)'
+                                                        : 'var(--la-text-strong)',
                                                     border: 'none',
-                                                    borderRadius: '14px',
+                                                    borderRadius: 'var(--la-radius-sm)',
                                                     cursor: 'pointer',
                                                     fontWeight: '500',
                                                     transition:
@@ -2026,14 +1483,14 @@ export default function WordManagerMarkdown({
                                                 {level}
                                                 {selectedLevels.includes(
                                                     level,
-                                                ) && ' ✓'}
+                                                ) && <Check size={14} />}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* 词性过滤 */}
+                            {/* 璇嶆€ц繃婊?*/}
                             {allPartsOfSpeech.length > 0 && (
                                 <div>
                                     <div
@@ -2041,9 +1498,9 @@ export default function WordManagerMarkdown({
                                             fontSize: '15px',
                                             fontWeight: '600',
                                             marginBottom: 10,
-                                            color: '#48484A',
+                                            color: 'var(--text-muted)',
                                         }}>
-                                        词性筛选:
+                                        词性筛选
                                     </div>
                                     <div
                                         style={{
@@ -2067,15 +1524,15 @@ export default function WordManagerMarkdown({
                                                             selectedPartsOfSpeech.includes(
                                                                 partsOfSpeech,
                                                             )
-                                                                ? '#AF52DE'
-                                                                : '#F2F2F7',
+                                                                ? 'var(--la-purple)'
+                                                                : 'var(--la-surface-subtle)',
                                                         color: selectedPartsOfSpeech.includes(
                                                             partsOfSpeech,
                                                         )
-                                                            ? '#fff'
-                                                            : '#1C1C1E',
+                                                            ? 'var(--text-on-accent)'
+                                                            : 'var(--la-text-strong)',
                                                         border: 'none',
-                                                        borderRadius: '14px',
+                                                        borderRadius: 'var(--la-radius-sm)',
                                                         cursor: 'pointer',
                                                         fontWeight: '500',
                                                         transition:
@@ -2084,7 +1541,7 @@ export default function WordManagerMarkdown({
                                                     {partsOfSpeech}
                                                     {selectedPartsOfSpeech.includes(
                                                         partsOfSpeech,
-                                                    ) && ' ✓'}
+                                                    ) && <Check size={14} />}
                                                 </button>
                                             ),
                                         )}
@@ -2103,7 +1560,7 @@ export default function WordManagerMarkdown({
                             <span
                                 style={{
                                     fontSize: '0.7em',
-                                    color: '#666',
+                                    color: 'var(--text-muted)',
                                     marginLeft: '10px',
                                 }}>
                                 (找到 {sortedWords.length} / {words.length}{' '}
@@ -2122,73 +1579,43 @@ export default function WordManagerMarkdown({
                             </span>
                         )}
                     </h2>{' '}
-                    {/* 列表视图表头 */}
-                    {displayMode === 'list' && paginatedWords.length > 0 && (
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '12px 15px',
-                                backgroundColor: '#f8f9fa',
-                                border: '1px solid #dee2e6',
-                                borderRadius: '8px 8px 0 0',
-                                fontWeight: '600',
-                                fontSize: '13px',
-                                color: '#495057',
-                                borderBottom: '2px solid #dee2e6',
-                            }}>
-                            <div style={{ flex: '0 0 200px' }}>📝 单词名称</div>
-                            <div style={{ flex: '0 0 180px' }}>🔊 发音</div>
-                            <div style={{ flex: '0 0 120px' }}>📂 分类</div>
-                            <div style={{ flex: '1' }}>🏷️ 标签</div>
+                    {/* 鍒楄〃瑙嗗浘琛ㄥご */}
+                    {false && paginatedWords.length > 0 && (
+                        <div className="la-word-list-header">
+                            <div style={{ flex: '0 0 200px' }}>单词名称</div>
+                            <div style={{ flex: '0 0 180px' }}>发音</div>
+                            <div style={{ flex: '0 0 120px' }}>分类</div>
+                            <div style={{ flex: '1' }}>标签</div>
                             <div
                                 style={{
                                     flex: '0 0 80px',
                                     textAlign: 'center',
                                 }}>
-                                🔢 查询次数
+                                查询次数
                             </div>
                             <div
                                 style={{
                                     flex: '0 0 60px',
                                     textAlign: 'center',
                                 }}>
-                                📊 等级
+                                等级
                             </div>
                             <div
                                 style={{
                                     flex: '0 0 120px',
                                     textAlign: 'center',
                                 }}>
-                                ⚙️ 操作
+                                操作
                             </div>
                         </div>
                     )}
-                    {/* 单词展示区域 */}
+                    {/* 鍗曡瘝灞曠ず鍖哄煙 */}
                     <div
-                        style={{
-                            display: displayMode === 'grid' ? 'grid' : 'block',
-                            gap: displayMode === 'grid' ? 15 : 0,
-                            gridTemplateColumns:
-                                displayMode === 'grid'
-                                    ? 'repeat(auto-fill, minmax(300px, 1fr))'
-                                    : 'none',
-                            marginTop:
-                                displayMode === 'list' &&
-                                paginatedWords.length > 0
-                                    ? 0
-                                    : 20,
-                        }}>
+                        className={`la-word-results is-${displayMode}${
+                            paginatedWords.length === 0 ? ' is-empty' : ''
+                        }`}>
                         {paginatedWords.length === 0 ? (
-                            <div
-                                style={{
-                                    textAlign: 'center',
-                                    color: '#666',
-                                    padding: '40px',
-                                    border: '1px dashed #ccc',
-                                    borderRadius: '8px',
-                                    gridColumn: '1 / -1',
-                                }}>
+                            <div className="la-word-empty-state">
                                 {sortedWords.length === 0
                                     ? searchTerm ||
                                       selectedTags.length > 0 ||
@@ -2198,49 +1625,23 @@ export default function WordManagerMarkdown({
                                     : '没有更多单词了，请返回上一页'}
                             </div>
                         ) : (
-                            paginatedWords.map((word, index) =>
-                                displayMode === 'grid' ? (
-                                    <WordCard
-                                        key={word.name}
-                                        word={word}
-                                        searchTerm={searchTerm}
-                                        onEdit={() => handleEditClick(word)}
-                                        onDelete={() => handleDeleteWord(word)}
-                                        onViewDetail={() =>
-                                            handleViewWord(word)
-                                        }
-                                        onJumpToSource={() =>
-                                            onJumpToSource(getWordId(word))
-                                        }
-                                        enableFullHighlight={
-                                            enableFullHighlight
-                                        }
-                                    />
-                                ) : (
-                                    <WordListItem
-                                        key={word.name}
-                                        word={word}
-                                        searchTerm={searchTerm}
-                                        onEdit={() => handleEditClick(word)}
-                                        onDelete={() => handleDeleteWord(word)}
-                                        onViewDetail={() =>
-                                            handleViewWord(word)
-                                        }
-                                        onJumpToSource={() =>
-                                            onJumpToSource(getWordId(word))
-                                        }
-                                        enableFullHighlight={
-                                            enableFullHighlight
-                                        }
-                                        isLast={
-                                            index === paginatedWords.length - 1
-                                        }
-                                    />
-                                ),
-                            )
+                            paginatedWords.map((word) => (
+                                <WordCard
+                                    key={word.name}
+                                    word={word}
+                                    searchTerm={searchTerm}
+                                    onEdit={() => handleEditClick(word)}
+                                    onDelete={() => handleDeleteWord(word)}
+                                    onViewDetail={() => handleViewWord(word)}
+                                    onJumpToSource={() =>
+                                        onJumpToSource(getWordId(word))
+                                    }
+                                    enableFullHighlight={enableFullHighlight}
+                                />
+                            ))
                         )}
                     </div>{' '}
-                    {/* 分页控件 - iOS 风格 */}
+                    {/* 鍒嗛〉鎺т欢 - iOS 椋庢牸 */}
                     {totalPages > 1 && (
                         <div
                             style={{
@@ -2265,18 +1666,18 @@ export default function WordManagerMarkdown({
                                     gap: 6,
                                     backgroundColor:
                                         currentPage === 1
-                                            ? '#F2F2F7'
-                                            : '#007AFF',
+                                            ? 'var(--la-surface-subtle)'
+                                            : 'var(--la-accent)',
                                     color:
                                         currentPage === 1
-                                            ? '#C7C7CC'
-                                            : '#ffffff',
+                                            ? 'var(--la-border)'
+                                            : 'var(--la-surface)',
                                     WebkitTextFillColor:
                                         currentPage === 1
-                                            ? '#C7C7CC'
-                                            : '#ffffff',
+                                            ? 'var(--la-border)'
+                                            : 'var(--la-surface)',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     cursor:
                                         currentPage === 1
                                             ? 'not-allowed'
@@ -2286,17 +1687,17 @@ export default function WordManagerMarkdown({
                                     boxShadow:
                                         currentPage === 1
                                             ? 'none'
-                                            : '0 2px 8px rgba(0, 122, 255, 0.25)',
+                                            : '0 2px 8px color-mix(in srgb, var(--la-accent) 22%, transparent)',
                                     fontFamily:
-                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                                    letterSpacing: '-0.2px',
+                                        'var(--la-font)',
+                                    letterSpacing: '0',
                                 }}
                                 onMouseEnter={(e) => {
                                     if (currentPage !== 1) {
                                         e.currentTarget.style.transform =
                                             'scale(0.98)';
                                         e.currentTarget.style.boxShadow =
-                                            '0 4px 12px rgba(0, 122, 255, 0.35)';
+                                            '0 4px 12px color-mix(in srgb, var(--la-accent) 30%, transparent)';
                                     }
                                 }}
                                 onMouseLeave={(e) => {
@@ -2304,7 +1705,7 @@ export default function WordManagerMarkdown({
                                         e.currentTarget.style.transform =
                                             'scale(1)';
                                         e.currentTarget.style.boxShadow =
-                                            '0 2px 8px rgba(0, 122, 255, 0.25)';
+                                            '0 2px 8px color-mix(in srgb, var(--la-accent) 22%, transparent)';
                                     }
                                 }}>
                                 <ChevronLeft size={16} /> 上一页
@@ -2334,12 +1735,12 @@ export default function WordManagerMarkdown({
                                                     style={{
                                                         padding: '0 4px',
                                                         fontSize: '15px',
-                                                        color: '#C7C7CC',
+                                                        color: 'var(--la-border)',
                                                         fontWeight: '600',
                                                         lineHeight: '40px',
                                                         userSelect: 'none',
                                                     }}>
-                                                    ···
+                                                    路路路
                                                 </span>
                                             );
                                         }
@@ -2361,25 +1762,25 @@ export default function WordManagerMarkdown({
                                                     ? '700'
                                                     : '500',
                                                 backgroundColor: isCurrentPage
-                                                    ? '#007AFF'
-                                                    : '#F2F2F7',
+                                                    ? 'var(--la-accent)'
+                                                    : 'var(--la-surface-subtle)',
                                                 color: isCurrentPage
-                                                    ? '#ffffff'
-                                                    : '#1C1C1E',
+                                                    ? 'var(--la-surface)'
+                                                    : 'var(--la-text-strong)',
                                                 WebkitTextFillColor:
                                                     isCurrentPage
-                                                        ? '#ffffff'
-                                                        : '#1C1C1E',
+                                                        ? 'var(--la-surface)'
+                                                        : 'var(--la-text-strong)',
                                                 border: 'none',
-                                                borderRadius: '12px',
+                                                borderRadius: 'var(--la-radius-sm)',
                                                 cursor: 'pointer',
                                                 boxShadow: isCurrentPage
-                                                    ? '0 2px 8px rgba(0, 122, 255, 0.30)'
+                                                    ? '0 2px 8px color-mix(in srgb, var(--la-accent) 26%, transparent)'
                                                     : 'none',
                                                 transition:
                                                     'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                                 fontFamily:
-                                                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                                    'var(--la-font)',
                                             }}>
                                             {page}
                                         </button>
@@ -2399,18 +1800,18 @@ export default function WordManagerMarkdown({
                                     fontWeight: '600',
                                     backgroundColor:
                                         currentPage === totalPages
-                                            ? '#F2F2F7'
-                                            : '#007AFF',
+                                            ? 'var(--la-surface-subtle)'
+                                            : 'var(--la-accent)',
                                     color:
                                         currentPage === totalPages
-                                            ? '#C7C7CC'
-                                            : '#ffffff',
+                                            ? 'var(--la-border)'
+                                            : 'var(--la-surface)',
                                     WebkitTextFillColor:
                                         currentPage === totalPages
-                                            ? '#C7C7CC'
-                                            : '#ffffff',
+                                            ? 'var(--la-border)'
+                                            : 'var(--la-surface)',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     cursor:
                                         currentPage === totalPages
                                             ? 'not-allowed'
@@ -2420,10 +1821,10 @@ export default function WordManagerMarkdown({
                                     boxShadow:
                                         currentPage === totalPages
                                             ? 'none'
-                                            : '0 2px 8px rgba(0, 122, 255, 0.25)',
+                                            : '0 2px 8px color-mix(in srgb, var(--la-accent) 22%, transparent)',
                                     fontFamily:
-                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-                                    letterSpacing: '-0.2px',
+                                        'var(--la-font)',
+                                    letterSpacing: '0',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 6,
@@ -2433,7 +1834,7 @@ export default function WordManagerMarkdown({
                                         e.currentTarget.style.transform =
                                             'scale(0.98)';
                                         e.currentTarget.style.boxShadow =
-                                            '0 4px 12px rgba(0, 122, 255, 0.35)';
+                                            '0 4px 12px color-mix(in srgb, var(--la-accent) 30%, transparent)';
                                     }
                                 }}
                                 onMouseLeave={(e) => {
@@ -2441,7 +1842,7 @@ export default function WordManagerMarkdown({
                                         e.currentTarget.style.transform =
                                             'scale(1)';
                                         e.currentTarget.style.boxShadow =
-                                            '0 2px 8px rgba(0, 122, 255, 0.25)';
+                                            '0 2px 8px color-mix(in srgb, var(--la-accent) 22%, transparent)';
                                     }
                                 }}>
                                 下一页 <ChevronRight size={16} />
@@ -2452,50 +1853,26 @@ export default function WordManagerMarkdown({
             )}
             {viewMode === 'detail' && currentWord && (
                 <>
-                    <div style={{ marginBottom: 20 }}>
+                    <div className="la-detail-actions">
                         <button
                             onClick={handleBackToList}
-                            style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#f5f5f5',
-                                border: '1px solid #ccc',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                marginRight: 10,
-                            }}>
+                            className="la-detail-action la-detail-action-secondary">
                             <ChevronLeft size={16} /> 返回列表
                         </button>
                         <button
                             onClick={() => handleEditClick(currentWord)}
-                            style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#007acc',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                            }}>
+                            className="la-detail-action la-detail-action-primary">
                             <Edit2 size={16} /> 编辑单词
                         </button>
                     </div>
 
                     <div
-                        style={{
-                            backgroundColor: '#f9f9f9',
-                            padding: 20,
-                            borderRadius: 8,
-                            border: '1px solid #e0e0e0',
-                        }}>
-                        <h1 style={{ margin: '0 0 20px 0', color: '#333' }}>
+                        className="la-word-detail">
+                        <h1 className="la-word-detail-title">
                             {currentWord.name}
                         </h1>
                         <div
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: 20,
-                                marginBottom: 20,
-                            }}>
+                            className="la-word-detail-meta">
                             <div>
                                 <p>
                                     <strong>发音:</strong>{' '}
@@ -2522,214 +1899,21 @@ export default function WordManagerMarkdown({
                                     <strong>查询次数:</strong>{' '}
                                     {getWordQueryCount(currentWord)}
                                 </p>
-                                {/* 显示备注信息 */}
-                                {currentWord.notes &&
-                                    currentWord.notes.trim() && (
-                                        <p
-                                            style={{
-                                                fontStyle: 'italic',
-                                                backgroundColor: '#fff8e1',
-                                                padding: '8px 12px',
-                                                borderRadius: '6px',
-                                                borderLeft: '4px solid #ffb300',
-                                                marginTop: '10px',
-                                            }}>
-                                            <strong>💡 备注:</strong>{' '}
-                                            {currentWord.notes}
-                                        </p>
-                                    )}
                             </div>
+                            {/* 鏄剧ず澶囨敞淇℃伅 */}
+                            {currentWord.notes &&
+                                currentWord.notes.trim() && (
+                                    <p className="la-word-detail-note">
+                                        <strong>备注:</strong>{' '}
+                                        <RichText text={currentWord.notes} />
+                                    </p>
+                                )}
                         </div>{' '}
-                        <div style={{ marginTop: 30 }}>
-                            <h3 style={{ marginBottom: 15, color: '#555' }}>
+                        <div className="la-word-detail-content">
+                            <h3 className="la-word-detail-section-title">
                                 详细内容
                             </h3>
-                            {currentWord.content &&
-                            currentWord.content.length > 0 ? (
-                                (() => {
-                                    // 更智能的内容过滤和显示逻辑
-                                    const validParts =
-                                        currentWord.content.filter((part) => {
-                                            // 有词性或有有效定义的部分都保留
-                                            return (
-                                                (part.type &&
-                                                    part.type.trim() !== '') ||
-                                                (part.definitions &&
-                                                    part.definitions.some(
-                                                        (def) =>
-                                                            def.definition &&
-                                                            def.definition.trim() !==
-                                                                '',
-                                                    ))
-                                            );
-                                        });
-
-                                    if (validParts.length === 0) {
-                                        return (
-                                            <div
-                                                style={{
-                                                    padding: '20px',
-                                                    textAlign: 'center',
-                                                    color: '#999',
-                                                    fontSize: '14px',
-                                                    backgroundColor: 'white',
-                                                    border: '1px dashed #ccc',
-                                                    borderRadius: '6px',
-                                                }}>
-                                                <MoreHorizontal size={48} />
-                                                暂无有效内容，点击"编辑单词"按钮添加词性、定义和例句
-                                            </div>
-                                        );
-                                    }
-
-                                    return validParts.map((part, partIndex) => (
-                                        <div
-                                            key={partIndex}
-                                            style={{
-                                                marginBottom: 25,
-                                                padding: 15,
-                                                backgroundColor: 'white',
-                                                borderRadius: 6,
-                                                border: '1px solid #ddd',
-                                            }}>
-                                            <h4
-                                                style={{
-                                                    margin: '0 0 15px 0',
-                                                    color: '#007acc',
-                                                }}>
-                                                {part.type &&
-                                                part.type.trim() !== ''
-                                                    ? part.type
-                                                    : '其他'}
-                                            </h4>
-
-                                            {part.definitions &&
-                                            part.definitions.length > 0 ? (
-                                                part.definitions.map(
-                                                    (def, defIndex) => {
-                                                        const hasDefinition =
-                                                            def.definition &&
-                                                            def.definition.trim() !==
-                                                                '';
-                                                        const validExamples =
-                                                            def.examples
-                                                                ? def.examples.filter(
-                                                                      (ex) =>
-                                                                          ex.text &&
-                                                                          ex.text.trim() !==
-                                                                              '',
-                                                                  )
-                                                                : [];
-
-                                                        // 如果既没有定义也没有例句，跳过
-                                                        if (
-                                                            !hasDefinition &&
-                                                            validExamples.length ===
-                                                                0
-                                                        ) {
-                                                            return null;
-                                                        }
-
-                                                        return (
-                                                            <div
-                                                                key={defIndex}
-                                                                style={{
-                                                                    marginBottom: 15,
-                                                                    paddingLeft: 15,
-                                                                    borderLeft:
-                                                                        '3px solid #e0e0e0',
-                                                                }}>
-                                                                <div
-                                                                    style={{
-                                                                        marginBottom: 8,
-                                                                        fontSize:
-                                                                            '16px',
-                                                                    }}>
-                                                                    <strong>
-                                                                        定义:
-                                                                    </strong>{' '}
-                                                                    {hasDefinition ? (
-                                                                        def.definition
-                                                                    ) : (
-                                                                        <span
-                                                                            style={{
-                                                                                color: '#999',
-                                                                                fontStyle:
-                                                                                    'italic',
-                                                                            }}>
-                                                                            暂无定义
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-
-                                                                {validExamples.length >
-                                                                    0 && (
-                                                                    <div>
-                                                                        <strong>
-                                                                            例句:
-                                                                        </strong>
-                                                                        {validExamples.map(
-                                                                            (
-                                                                                example,
-                                                                                exIndex,
-                                                                            ) => (
-                                                                                <div
-                                                                                    key={
-                                                                                        exIndex
-                                                                                    }
-                                                                                    style={{
-                                                                                        marginLeft: 20,
-                                                                                        marginTop: 5,
-                                                                                        fontStyle:
-                                                                                            'italic',
-                                                                                        color: '#666',
-                                                                                        fontSize:
-                                                                                            '14px',
-                                                                                    }}>
-                                                                                    •{' '}
-                                                                                    {
-                                                                                        example.text
-                                                                                    }
-                                                                                </div>
-                                                                            ),
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    },
-                                                )
-                                            ) : (
-                                                <div
-                                                    style={{
-                                                        paddingLeft: 15,
-                                                        borderLeft:
-                                                            '3px solid #e0e0e0',
-                                                        color: '#999',
-                                                        fontStyle: 'italic',
-                                                        fontSize: '14px',
-                                                    }}>
-                                                    暂无定义和例句
-                                                </div>
-                                            )}
-                                        </div>
-                                    ));
-                                })()
-                            ) : (
-                                <div
-                                    style={{
-                                        padding: '20px',
-                                        textAlign: 'center',
-                                        color: '#999',
-                                        fontSize: '14px',
-                                        backgroundColor: 'white',
-                                        border: '1px dashed #ccc',
-                                        borderRadius: '6px',
-                                    }}>
-                                    <MoreHorizontal size={48} />
-                                    暂无详细内容，点击"编辑单词"按钮添加词性、定义和例句
-                                </div>
-                            )}{' '}
+                            <WordDetailOutline word={currentWord} />
                         </div>
                     </div>
                 </>
@@ -2742,7 +1926,7 @@ export default function WordManagerMarkdown({
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.45)',
+                        backgroundColor: 'color-mix(in srgb, black 45%, transparent)',
                         backdropFilter: 'blur(4px)',
                         display: 'flex',
                         justifyContent: 'center',
@@ -2752,24 +1936,24 @@ export default function WordManagerMarkdown({
                     }}>
                     <div
                         style={{
-                            backgroundColor: '#F2F2F7',
-                            borderRadius: '20px',
+                            backgroundColor: 'var(--la-surface-subtle)',
+                            borderRadius: 'var(--la-radius-lg)',
                             maxWidth: '640px',
                             maxHeight: '88vh',
                             overflow: 'auto',
                             width: '100%',
-                            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                            boxShadow: '0 20px 60px color-mix(in srgb, black 30%, transparent)',
                             fontFamily:
-                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                'var(--la-font)',
                         }}>
-                        {/* 弹窗标题栏 */}
+                        {/* 寮圭獥鏍囬鏍?*/}
                         <div
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                                 padding: '20px 24px 16px',
-                                borderBottom: '1px solid rgba(0,0,0,0.08)',
+                                borderBottom: '1px solid color-mix(in srgb, black 10%, transparent)',
                                 backgroundColor: 'white',
                                 borderRadius: '20px 20px 0 0',
                                 position: 'sticky',
@@ -2786,10 +1970,10 @@ export default function WordManagerMarkdown({
                                     style={{
                                         width: 36,
                                         height: 36,
-                                        borderRadius: '10px',
+                                        borderRadius: 'var(--la-radius-xs)',
                                         background: editTarget
-                                            ? 'linear-gradient(135deg, #FF9500 0%, #FF6B00 100%)'
-                                            : 'linear-gradient(135deg, #34C759 0%, #30A14E 100%)',
+                                            ? 'var(--la-gradient-warning)'
+                                            : 'var(--la-gradient-success)',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -2811,14 +1995,14 @@ export default function WordManagerMarkdown({
                                         style={{
                                             fontSize: '18px',
                                             fontWeight: '700',
-                                            color: '#1C1C1E',
+                                            color: 'var(--la-text-strong)',
                                         }}>
                                         {editTarget ? '编辑单词' : '添加单词'}
                                     </div>
                                     <div
                                         style={{
                                             fontSize: '12px',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                         }}>
                                         {editTarget
                                             ? '修改单词信息'
@@ -2838,35 +2022,35 @@ export default function WordManagerMarkdown({
                                     width: 32,
                                     height: 32,
                                     borderRadius: '50%',
-                                    backgroundColor: '#E5E5EA',
+                                    backgroundColor: 'var(--la-border)',
                                     border: 'none',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    color: '#8E8E93',
+                                    color: 'var(--la-text-muted)',
                                 }}>
                                 <X size={16} />
                             </button>
                         </div>
 
-                        {/* 表单内容 */}
+                        {/* 琛ㄥ崟鍐呭 */}
                         <div style={{ padding: '16px 20px 24px' }}>
-                            {/* 基本信息卡片 */}
+                            {/* 鍩烘湰淇℃伅鍗＄墖 */}
                             <div
                                 style={{
                                     backgroundColor: 'white',
-                                    borderRadius: '14px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     padding: '4px 0',
                                     marginBottom: '16px',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                    boxShadow: 'var(--la-shadow-xs)',
                                 }}>
                                 {' '}
-                                {/* 单词名称 */}
+                                {/* 鍗曡瘝鍚嶇О */}
                                 <div
                                     style={{
                                         padding: '14px 16px',
-                                        borderBottom: '1px solid #F2F2F7',
+                                        borderBottom: '1px solid var(--la-surface-subtle)',
                                     }}>
                                     <div
                                         style={{
@@ -2876,14 +2060,14 @@ export default function WordManagerMarkdown({
                                         }}>
                                         <BookMarked
                                             size={16}
-                                            color="#007AFF"
+                                            color="var(--la-accent)"
                                             style={{ flexShrink: 0 }}
                                         />
                                         <label
                                             style={{
                                                 fontSize: '15px',
                                                 fontWeight: '500',
-                                                color: '#1C1C1E',
+                                                color: 'var(--la-text-strong)',
                                                 minWidth: 70,
                                             }}>
                                             单词名称
@@ -2905,7 +2089,7 @@ export default function WordManagerMarkdown({
                                                 border: 'none',
                                                 outline: 'none',
                                                 fontSize: '15px',
-                                                color: '#1C1C1E',
+                                                color: 'var(--la-text-strong)',
                                                 backgroundColor: 'transparent',
                                                 textAlign: 'right',
                                                 minHeight: '24px',
@@ -2920,9 +2104,9 @@ export default function WordManagerMarkdown({
                                                 gap: '6px',
                                                 marginTop: '8px',
                                                 padding: '8px 12px',
-                                                backgroundColor: '#FFF2F2',
-                                                borderRadius: '8px',
-                                                color: '#FF3B30',
+                                                backgroundColor: 'var(--la-danger-bg)',
+                                                borderRadius: 'var(--la-radius-xs)',
+                                                color: 'var(--la-danger)',
                                                 fontSize: '13px',
                                             }}>
                                             <AlertCircle size={14} />
@@ -2930,11 +2114,11 @@ export default function WordManagerMarkdown({
                                         </div>
                                     )}
                                 </div>{' '}
-                                {/* 发音 */}
+                                {/* 鍙戦煶 */}
                                 <div
                                     style={{
                                         padding: '14px 16px',
-                                        borderBottom: '1px solid #F2F2F7',
+                                        borderBottom: '1px solid var(--la-surface-subtle)',
                                     }}>
                                     <div
                                         style={{
@@ -2944,14 +2128,14 @@ export default function WordManagerMarkdown({
                                         }}>
                                         <Hash
                                             size={16}
-                                            color="#007AFF"
+                                            color="var(--la-accent)"
                                             style={{ flexShrink: 0 }}
                                         />
                                         <label
                                             style={{
                                                 fontSize: '15px',
                                                 fontWeight: '500',
-                                                color: '#1C1C1E',
+                                                color: 'var(--la-text-strong)',
                                                 minWidth: 70,
                                             }}>
                                             发音
@@ -2966,13 +2150,13 @@ export default function WordManagerMarkdown({
                                                         e.target.value,
                                                 })
                                             }
-                                            placeholder="如: /ˈwɜːrd/"
+                                            placeholder="如 /word/"
                                             style={{
                                                 flex: 1,
                                                 border: 'none',
                                                 outline: 'none',
                                                 fontSize: '15px',
-                                                color: '#1C1C1E',
+                                                color: 'var(--la-text-strong)',
                                                 backgroundColor: 'transparent',
                                                 textAlign: 'right',
                                                 minHeight: '24px',
@@ -2980,13 +2164,13 @@ export default function WordManagerMarkdown({
                                         />
                                     </div>
                                 </div>
-                                {/* 分类 */}
+                                {/* 鍒嗙被 */}
                                 <div
                                     style={{
                                         padding: '14px 16px',
-                                        borderBottom: '1px solid #F2F2F7',
+                                        borderBottom: '1px solid var(--la-surface-subtle)',
                                     }}>
-                                    {/* 标题行 */}
+                                    {/* 鏍囬琛?*/}
                                     <div
                                         style={{
                                             display: 'flex',
@@ -2996,19 +2180,19 @@ export default function WordManagerMarkdown({
                                         }}>
                                         <Layers
                                             size={16}
-                                            color="#007AFF"
+                                            color="var(--la-accent)"
                                             style={{ flexShrink: 0 }}
                                         />
                                         <label
                                             style={{
                                                 fontSize: '15px',
                                                 fontWeight: '500',
-                                                color: '#1C1C1E',
+                                                color: 'var(--la-text-strong)',
                                             }}>
                                             分类
                                         </label>
                                     </div>{' '}
-                                    {/* 已有分类 pill 选择器 */}
+                                    {/* 宸叉湁鍒嗙被 pill 閫夋嫨鍣?*/}
                                     {allCategories.length > 0 && (
                                         <div
                                             style={{
@@ -3018,7 +2202,7 @@ export default function WordManagerMarkdown({
                                             <div
                                                 style={{
                                                     fontSize: '12px',
-                                                    color: '#8E8E93',
+                                                    color: 'var(--la-text-muted)',
                                                     marginBottom: '6px',
                                                 }}>
                                                 选择已有分类
@@ -3065,14 +2249,14 @@ export default function WordManagerMarkdown({
                                                                             : '400',
                                                                     backgroundColor:
                                                                         isSelected
-                                                                            ? '#007AFF'
-                                                                            : '#F2F2F7',
+                                                                            ? 'var(--la-accent)'
+                                                                            : 'var(--la-surface-subtle)',
                                                                     color: isSelected
-                                                                        ? '#ffffff'
-                                                                        : '#1C1C1E',
+                                                                        ? 'var(--la-surface)'
+                                                                        : 'var(--la-text-strong)',
                                                                     border: isSelected
-                                                                        ? '1.5px solid #007AFF'
-                                                                        : '1.5px solid #E5E5EA',
+                                                                        ? '1.5px solid var(--la-accent)'
+                                                                        : '1.5px solid var(--la-border)',
                                                                     borderRadius:
                                                                         '20px',
                                                                     cursor: 'pointer',
@@ -3099,12 +2283,12 @@ export default function WordManagerMarkdown({
                                             </div>
                                         </div>
                                     )}
-                                    {/* 新建分类输入框 */}
+                                    {/* 鏂板缓鍒嗙被杈撳叆妗?*/}
                                     <div style={{ paddingLeft: '26px' }}>
                                         <div
                                             style={{
                                                 fontSize: '12px',
-                                                color: '#8E8E93',
+                                                color: 'var(--la-text-muted)',
                                                 marginBottom: '5px',
                                             }}>
                                             {allCategories.length > 0
@@ -3137,17 +2321,17 @@ export default function WordManagerMarkdown({
                                                 width: '100%',
                                                 padding: '9px 12px',
                                                 fontSize: '15px',
-                                                border: '1.5px solid #E5E5EA',
-                                                borderRadius: '10px',
-                                                backgroundColor: '#ffffff',
-                                                color: '#1C1C1E',
+                                                border: '1.5px solid var(--la-border)',
+                                                borderRadius: 'var(--la-radius-xs)',
+                                                backgroundColor: 'var(--la-surface)',
+                                                color: 'var(--la-text-strong)',
                                                 outline: 'none',
                                                 boxSizing: 'border-box',
                                             }}
                                         />
                                     </div>
                                 </div>
-                                {/* 等级 */}
+                                {/* 绛夌骇 */}
                                 <div style={{ padding: '14px 16px' }}>
                                     <div
                                         style={{
@@ -3157,14 +2341,14 @@ export default function WordManagerMarkdown({
                                         }}>
                                         <Activity
                                             size={16}
-                                            color="#007AFF"
+                                            color="var(--la-accent)"
                                             style={{ flexShrink: 0 }}
                                         />{' '}
                                         <label
                                             style={{
                                                 fontSize: '15px',
                                                 fontWeight: '500',
-                                                color: '#1C1C1E',
+                                                color: 'var(--la-text-strong)',
                                                 minWidth: 70,
                                             }}>
                                             等级
@@ -3189,20 +2373,20 @@ export default function WordManagerMarkdown({
                                                             text: string;
                                                         }
                                                     > = {
-                                                        初级: {
-                                                            bg: '#34C759',
-                                                            border: '#34C759',
-                                                            text: '#fff',
+                                                        '初级': {
+                                                            bg: 'var(--la-success)',
+                                                            border: 'var(--la-success)',
+                                                            text: 'var(--text-on-accent)',
                                                         },
-                                                        中级: {
-                                                            bg: '#FF9500',
-                                                            border: '#FF9500',
-                                                            text: '#fff',
+                                                        '中级': {
+                                                            bg: 'var(--la-warning)',
+                                                            border: 'var(--la-warning)',
+                                                            text: 'var(--text-on-accent)',
                                                         },
-                                                        高级: {
-                                                            bg: '#FF3B30',
-                                                            border: '#FF3B30',
-                                                            text: '#fff',
+                                                        '高级': {
+                                                            bg: 'var(--la-danger)',
+                                                            border: 'var(--la-danger)',
+                                                            text: 'var(--text-on-accent)',
                                                         },
                                                     };
                                                     return (
@@ -3235,19 +2419,19 @@ export default function WordManagerMarkdown({
                                                                         ? colors[
                                                                               level
                                                                           ].bg
-                                                                        : '#F2F2F7',
+                                                                        : 'var(--la-surface-subtle)',
                                                                 color: isSelected
                                                                     ? colors[
                                                                           level
                                                                       ].text
-                                                                    : '#8E8E93',
+                                                                    : 'var(--la-text-muted)',
                                                                 border: `1.5px solid ${
                                                                     isSelected
                                                                         ? colors[
                                                                               level
                                                                           ]
                                                                               .border
-                                                                        : '#E5E5EA'
+                                                                        : 'var(--la-border)'
                                                                 }`,
                                                                 borderRadius:
                                                                     '10px',
@@ -3267,14 +2451,14 @@ export default function WordManagerMarkdown({
                                 </div>
                             </div>
 
-                            {/* 标签卡片 */}
+                            {/* 鏍囩鍗＄墖 */}
                             <div
                                 style={{
                                     backgroundColor: 'white',
-                                    borderRadius: '14px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     padding: '16px',
                                     marginBottom: '16px',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                    boxShadow: 'var(--la-shadow-xs)',
                                 }}>
                                 <div
                                     style={{
@@ -3285,19 +2469,19 @@ export default function WordManagerMarkdown({
                                     }}>
                                     <Tag
                                         size={16}
-                                        color="#007AFF"
+                                        color="var(--la-accent)"
                                     />
                                     <span
                                         style={{
                                             fontSize: '15px',
                                             fontWeight: '600',
-                                            color: '#1C1C1E',
+                                            color: 'var(--la-text-strong)',
                                         }}>
                                         标签
                                     </span>
                                 </div>
 
-                                {/* 已选标签 */}
+                                {/* 宸查€夋爣绛?*/}
                                 <div
                                     style={{
                                         display: 'flex',
@@ -3305,15 +2489,15 @@ export default function WordManagerMarkdown({
                                         gap: '6px',
                                         minHeight: '38px',
                                         padding: '8px 10px',
-                                        border: '1.5px dashed #C7C7CC',
-                                        borderRadius: '10px',
-                                        backgroundColor: '#F9F9F9',
+                                        border: '1.5px dashed var(--la-border)',
+                                        borderRadius: 'var(--la-radius-xs)',
+                                        backgroundColor: 'var(--la-surface-raised)',
                                         marginBottom: '12px',
                                     }}>
                                     {WordHelper.getTags(form).length === 0 ? (
                                         <span
                                             style={{
-                                                color: '#C7C7CC',
+                                                color: 'var(--la-border)',
                                                 fontSize: '14px',
                                                 lineHeight: '22px',
                                             }}>
@@ -3328,9 +2512,9 @@ export default function WordManagerMarkdown({
                                                         padding:
                                                             '3px 10px 3px 10px',
                                                         background:
-                                                            'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+                                                            'var(--la-gradient-accent)',
                                                         color: 'white',
-                                                        borderRadius: '20px',
+                                                        borderRadius: 'var(--la-radius-lg)',
                                                         fontSize: '13px',
                                                         display: 'flex',
                                                         alignItems: 'center',
@@ -3360,7 +2544,7 @@ export default function WordManagerMarkdown({
                                                         }}
                                                         style={{
                                                             background:
-                                                                'rgba(255,255,255,0.25)',
+                                                                'color-mix(in srgb, white 25%, transparent)',
                                                             border: 'none',
                                                             color: 'white',
                                                             cursor: 'pointer',
@@ -3383,7 +2567,7 @@ export default function WordManagerMarkdown({
                                     )}
                                 </div>
 
-                                {/* 已有标签选择 */}
+                                {/* 宸叉湁鏍囩閫夋嫨 */}
                                 {allTags.length > 0 && (
                                     <div style={{ marginBottom: '12px' }}>
                                         <div
@@ -3393,12 +2577,12 @@ export default function WordManagerMarkdown({
                                                 gap: '6px',
                                                 fontSize: '13px',
                                                 fontWeight: '600',
-                                                color: '#8E8E93',
+                                                color: 'var(--la-text-muted)',
                                                 marginBottom: '8px',
                                             }}>
                                             <BookOpen
                                                 size={13}
-                                                color="#8E8E93"
+                                                color="var(--la-text-muted)"
                                             />
                                             从已有标签中选择:
                                         </div>
@@ -3448,12 +2632,12 @@ export default function WordManagerMarkdown({
                                                             padding: '4px 12px',
                                                             fontSize: '13px',
                                                             backgroundColor:
-                                                                '#F2F2F7',
-                                                            border: '1px solid #E5E5EA',
+                                                                'var(--la-surface-subtle)',
+                                                            border: '1px solid var(--la-border)',
                                                             borderRadius:
                                                                 '20px',
                                                             cursor: 'pointer',
-                                                            color: '#3C3C43',
+                                                            color: 'var(--la-text-strong)',
                                                             display: 'flex',
                                                             alignItems:
                                                                 'center',
@@ -3463,19 +2647,19 @@ export default function WordManagerMarkdown({
                                                         }}
                                                         onMouseEnter={(e) => {
                                                             e.currentTarget.style.backgroundColor =
-                                                                '#34C759';
+                                                                'var(--la-success)';
                                                             e.currentTarget.style.color =
-                                                                '#fff';
+                                                                'var(--text-on-accent)';
                                                             e.currentTarget.style.borderColor =
-                                                                '#34C759';
+                                                                'var(--la-success)';
                                                         }}
                                                         onMouseLeave={(e) => {
                                                             e.currentTarget.style.backgroundColor =
-                                                                '#F2F2F7';
+                                                                'var(--la-surface-subtle)';
                                                             e.currentTarget.style.color =
-                                                                '#3C3C43';
+                                                                'var(--la-text-strong)';
                                                             e.currentTarget.style.borderColor =
-                                                                '#E5E5EA';
+                                                                'var(--la-border)';
                                                         }}>
                                                         <Plus size={12} />
                                                         {tag}
@@ -3485,7 +2669,7 @@ export default function WordManagerMarkdown({
                                     </div>
                                 )}
 
-                                {/* 新建标签输入 */}
+                                {/* 鏂板缓鏍囩杈撳叆 */}
                                 <div>
                                     <div
                                         style={{
@@ -3494,14 +2678,14 @@ export default function WordManagerMarkdown({
                                             gap: '6px',
                                             fontSize: '13px',
                                             fontWeight: '600',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                             marginBottom: '8px',
                                         }}>
                                         <Sparkles
                                             size={13}
-                                            color="#FF9500"
+                                            color="var(--la-warning)"
                                         />
-                                        添加新标签:
+                                        添加新标签
                                     </div>
                                     <div
                                         style={{ display: 'flex', gap: '8px' }}>
@@ -3545,10 +2729,10 @@ export default function WordManagerMarkdown({
                                                 flex: 1,
                                                 padding: '8px 12px',
                                                 fontSize: '14px',
-                                                border: '1px solid #E5E5EA',
-                                                borderRadius: '10px',
-                                                backgroundColor: '#F9F9F9',
-                                                color: '#1C1C1E',
+                                                border: '1px solid var(--la-border)',
+                                                borderRadius: 'var(--la-radius-xs)',
+                                                backgroundColor: 'var(--la-surface-raised)',
+                                                color: 'var(--la-text-strong)',
                                                 outline: 'none',
                                             }}
                                         />
@@ -3585,16 +2769,16 @@ export default function WordManagerMarkdown({
                                                 fontSize: '14px',
                                                 fontWeight: '600',
                                                 background:
-                                                    'linear-gradient(135deg, #34C759 0%, #30A14E 100%)',
+                                                    'var(--la-gradient-success)',
                                                 color: 'white',
                                                 border: 'none',
-                                                borderRadius: '10px',
+                                                borderRadius: 'var(--la-radius-xs)',
                                                 cursor: 'pointer',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: '5px',
                                                 boxShadow:
-                                                    '0 2px 8px rgba(52,199,89,0.3)',
+                                                    '0 2px 8px color-mix(in srgb, var(--la-success) 24%, transparent)',
                                             }}>
                                             <Plus size={14} />
                                             添加
@@ -3603,14 +2787,14 @@ export default function WordManagerMarkdown({
                                 </div>
                             </div>
 
-                            {/* 词性概述卡片 */}
+                            {/* 璇嶆€ф杩板崱鐗?*/}
                             <div
                                 style={{
                                     backgroundColor: 'white',
-                                    borderRadius: '14px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     padding: '16px',
                                     marginBottom: '16px',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                    boxShadow: 'var(--la-shadow-xs)',
                                 }}>
                                 <div
                                     style={{
@@ -3621,19 +2805,19 @@ export default function WordManagerMarkdown({
                                     }}>
                                     <FileText
                                         size={16}
-                                        color="#007AFF"
+                                        color="var(--la-accent)"
                                     />
                                     <span
                                         style={{
                                             fontSize: '15px',
                                             fontWeight: '600',
-                                            color: '#1C1C1E',
+                                            color: 'var(--la-text-strong)',
                                         }}>
-                                        词性概述
+                                        词性概览
                                     </span>
                                 </div>
 
-                                {/* 已选词性展示 */}
+                                {/* 宸查€夎瘝鎬у睍绀?*/}
                                 <div
                                     style={{
                                         display: 'flex',
@@ -3641,9 +2825,9 @@ export default function WordManagerMarkdown({
                                         gap: '6px',
                                         minHeight: '38px',
                                         padding: '8px 10px',
-                                        border: '1.5px dashed #C7C7CC',
-                                        borderRadius: '10px',
-                                        backgroundColor: '#F9F9F9',
+                                        border: '1.5px dashed var(--la-border)',
+                                        borderRadius: 'var(--la-radius-xs)',
+                                        backgroundColor: 'var(--la-surface-raised)',
                                         marginBottom: '14px',
                                     }}>
                                     {form.partsOfSpeech
@@ -3652,7 +2836,7 @@ export default function WordManagerMarkdown({
                                     0 ? (
                                         <span
                                             style={{
-                                                color: '#C7C7CC',
+                                                color: 'var(--la-border)',
                                                 fontSize: '14px',
                                                 lineHeight: '22px',
                                             }}>
@@ -3669,9 +2853,9 @@ export default function WordManagerMarkdown({
                                                         padding:
                                                             '3px 10px 3px 10px',
                                                         background:
-                                                            'linear-gradient(135deg, #5856D6 0%, #3634C7 100%)',
+                                                            'var(--la-gradient-purple)',
                                                         color: 'white',
-                                                        borderRadius: '20px',
+                                                        borderRadius: 'var(--la-radius-lg)',
                                                         fontSize: '13px',
                                                         display: 'flex',
                                                         alignItems: 'center',
@@ -3703,7 +2887,7 @@ export default function WordManagerMarkdown({
                                                         }}
                                                         style={{
                                                             background:
-                                                                'rgba(255,255,255,0.25)',
+                                                                'color-mix(in srgb, white 25%, transparent)',
                                                             border: 'none',
                                                             color: 'white',
                                                             cursor: 'pointer',
@@ -3724,7 +2908,7 @@ export default function WordManagerMarkdown({
                                     )}
                                 </div>
 
-                                {/* 分组词性选项 */}
+                                {/* 鍒嗙粍璇嶆€ч€夐」 */}
                                 {Object.entries(PARTS_OF_SPEECH_GROUPS).map(
                                     ([groupName, options]) => (
                                         <div
@@ -3734,7 +2918,7 @@ export default function WordManagerMarkdown({
                                                 style={{
                                                     fontSize: '12px',
                                                     fontWeight: '600',
-                                                    color: '#8E8E93',
+                                                    color: 'var(--la-text-muted)',
                                                     marginBottom: '6px',
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.5px',
@@ -3826,14 +3010,14 @@ export default function WordManagerMarkdown({
                                                                     '13px',
                                                                 backgroundColor:
                                                                     isSelected
-                                                                        ? '#5856D6'
-                                                                        : '#F2F2F7',
+                                                                        ? 'var(--la-indigo)'
+                                                                        : 'var(--la-surface-subtle)',
                                                                 color: isSelected
                                                                     ? 'white'
-                                                                    : '#3C3C43',
+                                                                    : 'var(--la-text-strong)',
                                                                 border: isSelected
-                                                                    ? '1px solid #5856D6'
-                                                                    : '1px solid #E5E5EA',
+                                                                    ? '1px solid var(--la-indigo)'
+                                                                    : '1px solid var(--la-border)',
                                                                 borderRadius:
                                                                     '20px',
                                                                 cursor: 'pointer',
@@ -3863,14 +3047,14 @@ export default function WordManagerMarkdown({
                                 )}
                             </div>
 
-                            {/* 备注卡片 */}
+                            {/* 澶囨敞鍗＄墖 */}
                             <div
                                 style={{
                                     backgroundColor: 'white',
-                                    borderRadius: '14px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     padding: '16px',
                                     marginBottom: '16px',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                    boxShadow: 'var(--la-shadow-xs)',
                                 }}>
                                 <div
                                     style={{
@@ -3881,20 +3065,20 @@ export default function WordManagerMarkdown({
                                     }}>
                                     <AlignLeft
                                         size={16}
-                                        color="#007AFF"
+                                        color="var(--la-accent)"
                                     />
                                     <span
                                         style={{
                                             fontSize: '15px',
                                             fontWeight: '600',
-                                            color: '#1C1C1E',
+                                            color: 'var(--la-text-strong)',
                                         }}>
                                         备注
                                     </span>
                                     <span
                                         style={{
                                             fontSize: '12px',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                         }}>
                                         记忆技巧、学习笔记等
                                     </span>
@@ -3912,13 +3096,13 @@ export default function WordManagerMarkdown({
                                         width: '100%',
                                         padding: '10px 12px',
                                         fontSize: '14px',
-                                        border: '1px solid #E5E5EA',
-                                        borderRadius: '10px',
+                                        border: '1px solid var(--la-border)',
+                                        borderRadius: 'var(--la-radius-xs)',
                                         resize: 'vertical',
                                         minHeight: '72px',
                                         maxHeight: '140px',
-                                        backgroundColor: '#F9F9F9',
-                                        color: '#1C1C1E',
+                                        backgroundColor: 'var(--la-surface-raised)',
+                                        color: 'var(--la-text-strong)',
                                         outline: 'none',
                                         lineHeight: '1.5',
                                         boxSizing: 'border-box',
@@ -3926,14 +3110,14 @@ export default function WordManagerMarkdown({
                                 />
                             </div>
 
-                            {/* 详细内容卡片 */}
+                            {/* 璇︾粏鍐呭鍗＄墖 */}
                             <div
                                 style={{
                                     backgroundColor: 'white',
-                                    borderRadius: '14px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     padding: '16px',
                                     marginBottom: '16px',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                                    boxShadow: 'var(--la-shadow-xs)',
                                 }}>
                                 <div
                                     style={{
@@ -3944,20 +3128,20 @@ export default function WordManagerMarkdown({
                                     }}>
                                     <BookOpen
                                         size={16}
-                                        color="#007AFF"
+                                        color="var(--la-accent)"
                                     />
                                     <span
                                         style={{
                                             fontSize: '15px',
                                             fontWeight: '600',
-                                            color: '#1C1C1E',
+                                            color: 'var(--la-text-strong)',
                                         }}>
                                         详细内容
                                     </span>
                                     <span
                                         style={{
                                             fontSize: '12px',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                         }}>
                                         词性 / 定义 / 例句
                                     </span>
@@ -3968,26 +3152,26 @@ export default function WordManagerMarkdown({
                                         key={partIndex}
                                         style={{
                                             marginBottom: '12px',
-                                            border: '1px solid #E5E5EA',
-                                            borderRadius: '12px',
+                                            border: '1px solid var(--la-border)',
+                                            borderRadius: 'var(--la-radius-sm)',
                                             overflow: 'hidden',
                                         }}>
-                                        {/* 词性行 */}
+                                        {/* 璇嶆€ц */}
                                         <div
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: '8px',
                                                 padding: '10px 14px',
-                                                backgroundColor: '#F2F2F7',
+                                                backgroundColor: 'var(--la-surface-subtle)',
                                                 borderBottom:
                                                     part.definitions.length > 0
-                                                        ? '1px solid #E5E5EA'
+                                                        ? '1px solid var(--la-border)'
                                                         : 'none',
                                             }}>
                                             <Layers
                                                 size={14}
-                                                color="#5856D6"
+                                                color="var(--la-indigo)"
                                                 style={{ flexShrink: 0 }}
                                             />
                                             <select
@@ -4008,10 +3192,10 @@ export default function WordManagerMarkdown({
                                                     padding: '4px 8px',
                                                     fontSize: '14px',
                                                     fontWeight: '600',
-                                                    border: '1px solid #E5E5EA',
-                                                    borderRadius: '8px',
+                                                    border: '1px solid var(--la-border)',
+                                                    borderRadius: 'var(--la-radius-xs)',
                                                     backgroundColor: 'white',
-                                                    color: '#1C1C1E',
+                                                    color: 'var(--la-text-strong)',
                                                     outline: 'none',
                                                 }}>
                                                 <option value="">
@@ -4053,10 +3237,10 @@ export default function WordManagerMarkdown({
                                                         fontSize: '12px',
                                                         fontWeight: '500',
                                                         backgroundColor:
-                                                            '#FFE5E5',
-                                                        color: '#FF3B30',
-                                                        border: '1px solid #FFB3B3',
-                                                        borderRadius: '8px',
+                                                            'var(--la-danger-bg)',
+                                                        color: 'var(--la-danger)',
+                                                        border: '1px solid color-mix(in srgb, var(--la-danger) 32%, var(--la-border))',
+                                                        borderRadius: 'var(--la-radius-xs)',
                                                         cursor: 'pointer',
                                                         display: 'flex',
                                                         alignItems: 'center',
@@ -4069,7 +3253,7 @@ export default function WordManagerMarkdown({
                                             )}
                                         </div>
 
-                                        {/* 定义列表 */}
+                                        {/* 瀹氫箟鍒楄〃 */}
                                         {part.definitions.map(
                                             (def, defIndex) => (
                                                 <div
@@ -4077,11 +3261,11 @@ export default function WordManagerMarkdown({
                                                     style={{
                                                         padding: '10px 14px',
                                                         borderBottom:
-                                                            '1px solid #F2F2F7',
+                                                            '1px solid var(--la-surface-subtle)',
                                                         backgroundColor:
                                                             'white',
                                                     }}>
-                                                    {/* 定义行 */}
+                                                    {/* 瀹氫箟琛?*/}
                                                     <div
                                                         style={{
                                                             display: 'flex',
@@ -4092,7 +3276,7 @@ export default function WordManagerMarkdown({
                                                         }}>
                                                         <AlignLeft
                                                             size={13}
-                                                            color="#34C759"
+                                                            color="var(--la-success)"
                                                             style={{
                                                                 flexShrink: 0,
                                                             }}
@@ -4125,12 +3309,12 @@ export default function WordManagerMarkdown({
                                                                     '6px 10px',
                                                                 fontSize:
                                                                     '14px',
-                                                                border: '1px solid #E5E5EA',
+                                                                border: '1px solid var(--la-border)',
                                                                 borderRadius:
                                                                     '8px',
                                                                 backgroundColor:
-                                                                    '#FAFAFA',
-                                                                color: '#1C1C1E',
+                                                                    'var(--la-surface-raised)',
+                                                                color: 'var(--la-text-strong)',
                                                                 outline: 'none',
                                                             }}
                                                         />
@@ -4148,8 +3332,8 @@ export default function WordManagerMarkdown({
                                                                     height: 26,
                                                                     border: 'none',
                                                                     backgroundColor:
-                                                                        '#FFE5E5',
-                                                                    color: '#FF3B30',
+                                                                        'var(--la-danger-bg)',
+                                                                    color: 'var(--la-danger)',
                                                                     borderRadius:
                                                                         '6px',
                                                                     cursor: 'pointer',
@@ -4166,7 +3350,7 @@ export default function WordManagerMarkdown({
                                                         )}
                                                     </div>
 
-                                                    {/* 例句列表 */}
+                                                    {/* 渚嬪彞鍒楄〃 */}
                                                     {def.examples.map(
                                                         (example, exIndex) => (
                                                             <div
@@ -4184,7 +3368,7 @@ export default function WordManagerMarkdown({
                                                                 }}>
                                                                 <MessageSquare
                                                                     size={12}
-                                                                    color="#FF9500"
+                                                                    color="var(--la-warning)"
                                                                     style={{
                                                                         flexShrink: 0,
                                                                     }}
@@ -4223,12 +3407,12 @@ export default function WordManagerMarkdown({
                                                                             '5px 10px',
                                                                         fontSize:
                                                                             '13px',
-                                                                        border: '1px solid #E5E5EA',
+                                                                        border: '1px solid var(--la-border)',
                                                                         borderRadius:
                                                                             '8px',
                                                                         backgroundColor:
-                                                                            '#FAFAFA',
-                                                                        color: '#1C1C1E',
+                                                                            'var(--la-surface-raised)',
+                                                                        color: 'var(--la-text-strong)',
                                                                         outline:
                                                                             'none',
                                                                     }}
@@ -4246,8 +3430,8 @@ export default function WordManagerMarkdown({
                                                                         height: 24,
                                                                         border: 'none',
                                                                         backgroundColor:
-                                                                            '#FFE5E5',
-                                                                        color: '#FF3B30',
+                                                                            'var(--la-danger-bg)',
+                                                                        color: 'var(--la-danger)',
                                                                         borderRadius:
                                                                             '6px',
                                                                         cursor: 'pointer',
@@ -4283,9 +3467,9 @@ export default function WordManagerMarkdown({
                                                             fontSize: '12px',
                                                             backgroundColor:
                                                                 'transparent',
-                                                            color: '#FF9500',
-                                                            border: '1px solid #FF9500',
-                                                            borderRadius: '8px',
+                                                            color: 'var(--la-warning)',
+                                                            border: '1px solid var(--la-warning)',
+                                                            borderRadius: 'var(--la-radius-xs)',
                                                             cursor: 'pointer',
                                                             display:
                                                                 'inline-flex',
@@ -4300,7 +3484,7 @@ export default function WordManagerMarkdown({
                                             ),
                                         )}
 
-                                        {/* 添加定义按钮 */}
+                                        {/* 娣诲姞瀹氫箟鎸夐挳 */}
                                         <div
                                             style={{
                                                 padding: '8px 14px',
@@ -4317,9 +3501,9 @@ export default function WordManagerMarkdown({
                                                     fontSize: '13px',
                                                     backgroundColor:
                                                         'transparent',
-                                                    color: '#34C759',
-                                                    border: '1px solid #34C759',
-                                                    borderRadius: '8px',
+                                                    color: 'var(--la-success)',
+                                                    border: '1px solid var(--la-success)',
+                                                    borderRadius: 'var(--la-radius-xs)',
                                                     cursor: 'pointer',
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
@@ -4339,10 +3523,10 @@ export default function WordManagerMarkdown({
                                         padding: '10px',
                                         fontSize: '14px',
                                         fontWeight: '500',
-                                        backgroundColor: '#F2F2F7',
-                                        color: '#007AFF',
-                                        border: '1.5px dashed #007AFF',
-                                        borderRadius: '12px',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        color: 'var(--la-accent)',
+                                        border: '1.5px dashed var(--la-accent)',
+                                        borderRadius: 'var(--la-radius-sm)',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -4355,7 +3539,7 @@ export default function WordManagerMarkdown({
                                 </button>
                             </div>
 
-                            {/* 底部操作按钮 */}
+                            {/* 搴曢儴鎿嶄綔鎸夐挳 */}
                             <div style={{ display: 'flex', gap: '12px' }}>
                                 <button
                                     onClick={() => {
@@ -4370,10 +3554,10 @@ export default function WordManagerMarkdown({
                                         padding: '14px',
                                         fontSize: '16px',
                                         fontWeight: '600',
-                                        backgroundColor: '#F2F2F7',
-                                        color: '#8E8E93',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        color: 'var(--la-text-muted)',
                                         border: 'none',
-                                        borderRadius: '14px',
+                                        borderRadius: 'var(--la-radius-sm)',
                                         cursor: 'pointer',
                                     }}>
                                     取消
@@ -4386,19 +3570,19 @@ export default function WordManagerMarkdown({
                                         fontSize: '16px',
                                         fontWeight: '600',
                                         background: editTarget
-                                            ? 'linear-gradient(135deg, #FF9500 0%, #FF6B00 100%)'
-                                            : 'linear-gradient(135deg, #34C759 0%, #30A14E 100%)',
+                                            ? 'var(--la-gradient-warning)'
+                                            : 'var(--la-gradient-success)',
                                         color: 'white',
                                         border: 'none',
-                                        borderRadius: '14px',
+                                        borderRadius: 'var(--la-radius-sm)',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '8px',
                                         boxShadow: editTarget
-                                            ? '0 4px 16px rgba(255,149,0,0.35)'
-                                            : '0 4px 16px rgba(52,199,89,0.35)',
+                                            ? '0 4px 16px color-mix(in srgb, var(--la-warning) 28%, transparent)'
+                                            : '0 4px 16px color-mix(in srgb, var(--la-success) 28%, transparent)',
                                     }}>
                                     {editTarget ? (
                                         <Edit2 size={17} />

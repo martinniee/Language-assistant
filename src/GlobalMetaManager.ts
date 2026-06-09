@@ -2,6 +2,7 @@
 // 全局配置管理和项目元数据处理
 
 import { Word } from './MarkdownWordStorage';
+import { formatTimestamp } from './utils/date';
 
 // 全局元数据配置接口
 export interface GlobalMetaConfig {
@@ -33,7 +34,7 @@ export class GlobalMetaManager {
             levels: {},
             partsOfSpeech: {},
             version: '1.0.0',
-            lastUpdate: new Date().toISOString(),
+            lastUpdate: formatTimestamp(),
         };
     }
 
@@ -54,21 +55,21 @@ export class GlobalMetaManager {
         this.config = {
             ...this.config,
             ...config,
-            lastUpdate: new Date().toISOString(),
+            lastUpdate: formatTimestamp(),
         };
     }
 
     // 添加标签别名
     addTagAlias(alias: string, fullName: string): string {
         this.config.tags[alias] = fullName;
-        this.config.lastUpdate = new Date().toISOString();
+        this.config.lastUpdate = formatTimestamp();
         return alias;
     }
 
     // 添加分类别名
     addCategoryAlias(alias: string, fullName: string): string {
         this.config.categories[alias] = fullName;
-        this.config.lastUpdate = new Date().toISOString();
+        this.config.lastUpdate = formatTimestamp();
         return alias;
     }
 
@@ -256,7 +257,7 @@ export class GlobalMetaManager {
             }
         }
 
-        this.config.lastUpdate = new Date().toISOString();
+        this.config.lastUpdate = formatTimestamp();
     }
 
     // ===== 新增：标签和分类管理功能 =====
@@ -283,7 +284,7 @@ export class GlobalMetaManager {
     updateTagName(alias: string, newFullName: string): boolean {
         if (this.config.tags[alias]) {
             this.config.tags[alias] = newFullName;
-            this.config.lastUpdate = new Date().toISOString();
+            this.config.lastUpdate = formatTimestamp();
             return true;
         }
         return false;
@@ -293,7 +294,7 @@ export class GlobalMetaManager {
     updateCategoryName(alias: string, newFullName: string): boolean {
         if (this.config.categories[alias]) {
             this.config.categories[alias] = newFullName;
-            this.config.lastUpdate = new Date().toISOString();
+            this.config.lastUpdate = formatTimestamp();
             return true;
         }
         return false;
@@ -303,7 +304,7 @@ export class GlobalMetaManager {
     deleteTagMapping(alias: string): boolean {
         if (this.config.tags[alias]) {
             delete this.config.tags[alias];
-            this.config.lastUpdate = new Date().toISOString();
+            this.config.lastUpdate = formatTimestamp();
             return true;
         }
         return false;
@@ -313,7 +314,7 @@ export class GlobalMetaManager {
     deleteCategoryMapping(alias: string): boolean {
         if (this.config.categories[alias]) {
             delete this.config.categories[alias];
-            this.config.lastUpdate = new Date().toISOString();
+            this.config.lastUpdate = formatTimestamp();
             return true;
         }
         return false;
@@ -360,7 +361,7 @@ export class GlobalMetaManager {
                 }
 
                 // 更新时间戳
-                word.itemMeta.lastUpdate = new Date().toISOString();
+                word.itemMeta.lastUpdate = formatTimestamp();
             }
             return word;
         });
@@ -391,7 +392,7 @@ export class GlobalMetaManager {
                 }
 
                 // 更新时间戳
-                word.itemMeta.lastUpdate = new Date().toISOString();
+                word.itemMeta.lastUpdate = formatTimestamp();
             }
             return word;
         });
@@ -417,7 +418,7 @@ export class GlobalMetaManager {
                 }
 
                 // 更新时间戳
-                word.itemMeta.lastUpdate = new Date().toISOString();
+                word.itemMeta.lastUpdate = formatTimestamp();
             }
             return word;
         });
@@ -439,7 +440,7 @@ export class GlobalMetaManager {
                 }
 
                 // 更新时间戳
-                word.itemMeta.lastUpdate = new Date().toISOString();
+                word.itemMeta.lastUpdate = formatTimestamp();
             }
             return word;
         });

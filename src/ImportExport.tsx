@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Word } from './MarkdownWordStorage';
 import { Package, CheckCircle, AlertTriangle, Upload, FileJson, FileSpreadsheet, FileText, Lightbulb, Download } from 'lucide-react';
+import { formatTimestamp } from './utils/date';
 
 interface ImportExportProps {
     words: Word[];
@@ -35,9 +36,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
         switch (format) {
             case 'json':
                 content = JSON.stringify(words, null, 2);
-                filename = `words-export-${
-                    new Date().toISOString().split('T')[0]
-                }.json`;
+                filename = `words-export-${formatTimestamp().slice(0, 8)}.json`;
                 mimeType = 'application/json';
                 break;
 
@@ -86,9 +85,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             .join(','),
                     )
                     .join('\n');
-                filename = `words-export-${
-                    new Date().toISOString().split('T')[0]
-                }.csv`;
+                filename = `words-export-${formatTimestamp().slice(0, 8)}.csv`;
                 mimeType = 'text/csv';
                 break;
 
@@ -117,9 +114,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         return text + '\n' + '='.repeat(50) + '\n';
                     })
                     .join('\n');
-                filename = `words-export-${
-                    new Date().toISOString().split('T')[0]
-                }.txt`;
+                filename = `words-export-${formatTimestamp().slice(0, 8)}.txt`;
                 mimeType = 'text/plain';
                 break;
         }
@@ -161,7 +156,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                                     .toString(36)
                                     .substr(2, 9)}`,
                             createBy: item.metadata?.createBy || 'import',
-                            lastUpdate: new Date().toISOString(),
+                            lastUpdate: formatTimestamp(),
                             queryCount: item.metadata?.queryCount || 0,
                             ...item.metadata,
                         },
@@ -179,7 +174,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             frontEndId: `id-${Date.now()}`,
                         },
                         srsMeta: item.srsMeta || {
-                            nextReview: new Date().toISOString(),
+                            nextReview: formatTimestamp(),
                             interval: 0,
                             easeFactor: 2.5,
                             reviewCount: 0,
@@ -208,10 +203,11 @@ const ImportExport: React.FC<ImportExportProps> = ({
     };
     return (
         <div
+            className="la-page la-import-export-page"
             style={{
                 padding: '20px 30px 60px 30px',
                 fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                    'var(--la-font)',
             }}>
             {/* iOS 风格标题栏 */}
             <div style={{ marginBottom: '24px' }}>
@@ -220,15 +216,15 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         margin: '0 0 8px 0',
                         fontSize: '34px',
                         fontWeight: '700',
-                        color: '#1C1C1E',
-                        letterSpacing: '-1px',
+                        color: 'var(--la-text-strong)',
+                        letterSpacing: '0',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px'
                     }}>
-                    <Package size={34} color="#007AFF" /> 导入/导出
+                    <Package size={34} color="var(--la-accent)" /> 导入/导出
                 </h2>
-                <p style={{ margin: 0, color: '#8E8E93', fontSize: '17px' }}>
+                <p style={{ margin: 0, color: 'var(--la-text-muted)', fontSize: '17px' }}>
                     备份您的单词库或导入新数据
                 </p>
             </div>
@@ -240,17 +236,17 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         marginBottom: '24px',
                         background:
                             importStatus.type === 'success'
-                                ? 'linear-gradient(135deg, #34C759 0%, #30A14E 100%)'
-                                : 'linear-gradient(135deg, #FF3B30 0%, #D70015 100%)',
+                                ? 'var(--la-gradient-success)'
+                                : 'var(--la-gradient-danger)',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '14px',
+                        borderRadius: 'var(--la-radius-sm)',
                         fontSize: '15px',
                         fontWeight: '500',
                         boxShadow:
                             importStatus.type === 'success'
-                                ? '0 4px 16px rgba(52, 199, 89, 0.3)'
-                                : '0 4px 16px rgba(255, 59, 48, 0.3)',
+                                ? '0 4px 16px color-mix(in srgb, var(--la-success) 24%, transparent)'
+                                : '0 4px 16px color-mix(in srgb, var(--la-danger) 24%, transparent)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
@@ -264,9 +260,9 @@ const ImportExport: React.FC<ImportExportProps> = ({
             {/* iOS 风格导出功能 */}
             <div
                 style={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    backgroundColor: 'var(--la-surface)',
+                    borderRadius: 'var(--la-radius-md)',
+                    boxShadow: 'var(--la-shadow-sm)',
                     padding: '24px',
                     marginBottom: '24px',
                 }}>
@@ -275,12 +271,12 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         margin: '0 0 20px 0',
                         fontSize: '22px',
                         fontWeight: '600',
-                        color: '#1C1C1E',
+                        color: 'var(--la-text-strong)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px'
                     }}>
-                    <Upload size={24} color="#007AFF" /> 导出数据
+                    <Upload size={24} color="var(--la-accent)" /> 导出数据
                 </h3>
 
                 <div
@@ -296,10 +292,10 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         style={{
                             padding: '24px',
                             background:
-                                'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
-                            borderRadius: '16px',
+                                'var(--la-gradient-accent)',
+                            borderRadius: 'var(--la-radius-md)',
                             textAlign: 'center',
-                            boxShadow: '0 4px 16px rgba(0, 122, 255, 0.2)',
+                            boxShadow: 'var(--la-shadow-sm)',
                             color: 'white',
                         }}>
                         <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
@@ -316,7 +312,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         <p
                             style={{
                                 fontSize: '13px',
-                                color: 'rgba(255,255,255,0.85)',
+                                color: 'var(--la-on-accent-muted)',
                                 margin: '0 0 16px 0',
                                 lineHeight: '1.4',
                             }}>
@@ -328,10 +324,10 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             onClick={() => handleExport('json')}
                             style={{
                                 padding: '10px 20px',
-                                backgroundColor: 'rgba(255,255,255,0.25)',
+                                backgroundColor: 'color-mix(in srgb, white 25%, transparent)',
                                 color: 'white',
-                                border: '1px solid rgba(255,255,255,0.3)',
-                                borderRadius: '12px',
+                                border: '1px solid color-mix(in srgb, white 30%, transparent)',
+                                borderRadius: 'var(--la-radius-sm)',
                                 cursor: 'pointer',
                                 fontSize: '15px',
                                 fontWeight: '600',
@@ -341,11 +337,11 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    'rgba(255,255,255,0.35)';
+                                    'color-mix(in srgb, white 35%, transparent)';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    'rgba(255,255,255,0.25)';
+                                    'color-mix(in srgb, white 25%, transparent)';
                             }}>
                             导出 JSON
                         </button>
@@ -356,10 +352,10 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         style={{
                             padding: '24px',
                             background:
-                                'linear-gradient(135deg, #34C759 0%, #30A14E 100%)',
-                            borderRadius: '16px',
+                                'var(--la-gradient-success)',
+                            borderRadius: 'var(--la-radius-md)',
                             textAlign: 'center',
-                            boxShadow: '0 4px 16px rgba(52, 199, 89, 0.2)',
+                            boxShadow: '0 4px 16px color-mix(in srgb, var(--la-success) 18%, transparent)',
                             color: 'white',
                         }}>
                         <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
@@ -376,7 +372,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         <p
                             style={{
                                 fontSize: '13px',
-                                color: 'rgba(255,255,255,0.85)',
+                                color: 'var(--la-on-accent-muted)',
                                 margin: '0 0 16px 0',
                                 lineHeight: '1.4',
                             }}>
@@ -388,10 +384,10 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             onClick={() => handleExport('csv')}
                             style={{
                                 padding: '10px 20px',
-                                backgroundColor: 'rgba(255,255,255,0.25)',
+                                backgroundColor: 'color-mix(in srgb, white 25%, transparent)',
                                 color: 'white',
-                                border: '1px solid rgba(255,255,255,0.3)',
-                                borderRadius: '12px',
+                                border: '1px solid color-mix(in srgb, white 30%, transparent)',
+                                borderRadius: 'var(--la-radius-sm)',
                                 cursor: 'pointer',
                                 fontSize: '15px',
                                 fontWeight: '600',
@@ -401,11 +397,11 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    'rgba(255,255,255,0.35)';
+                                    'color-mix(in srgb, white 35%, transparent)';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    'rgba(255,255,255,0.25)';
+                                    'color-mix(in srgb, white 25%, transparent)';
                             }}>
                             导出 CSV
                         </button>
@@ -416,10 +412,10 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         style={{
                             padding: '24px',
                             background:
-                                'linear-gradient(135deg, #8E8E93 0%, #636366 100%)',
-                            borderRadius: '16px',
+                                'linear-gradient(135deg, var(--la-text-muted) 0%, var(--la-text-faint) 100%)',
+                            borderRadius: 'var(--la-radius-md)',
                             textAlign: 'center',
-                            boxShadow: '0 4px 16px rgba(142, 142, 147, 0.2)',
+                            boxShadow: '0 4px 16px color-mix(in srgb, var(--la-text-muted) 20%, transparent)',
                             color: 'white',
                         }}>
                         <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
@@ -436,7 +432,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         <p
                             style={{
                                 fontSize: '13px',
-                                color: 'rgba(255,255,255,0.85)',
+                                color: 'var(--la-on-accent-muted)',
                                 margin: '0 0 16px 0',
                                 lineHeight: '1.4',
                             }}>
@@ -448,10 +444,10 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             onClick={() => handleExport('txt')}
                             style={{
                                 padding: '10px 20px',
-                                backgroundColor: 'rgba(255,255,255,0.25)',
+                                backgroundColor: 'color-mix(in srgb, white 25%, transparent)',
                                 color: 'white',
-                                border: '1px solid rgba(255,255,255,0.3)',
-                                borderRadius: '12px',
+                                border: '1px solid color-mix(in srgb, white 30%, transparent)',
+                                borderRadius: 'var(--la-radius-sm)',
                                 cursor: 'pointer',
                                 fontSize: '15px',
                                 fontWeight: '600',
@@ -461,11 +457,11 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    'rgba(255,255,255,0.35)';
+                                    'color-mix(in srgb, white 35%, transparent)';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor =
-                                    'rgba(255,255,255,0.25)';
+                                    'color-mix(in srgb, white 25%, transparent)';
                             }}>
                             导出 TXT
                         </button>
@@ -475,18 +471,18 @@ const ImportExport: React.FC<ImportExportProps> = ({
                 <div
                     style={{
                         padding: '16px 20px',
-                        backgroundColor: '#F2F2F7',
-                        borderRadius: '12px',
+                        backgroundColor: 'var(--la-surface-subtle)',
+                        borderRadius: 'var(--la-radius-sm)',
                         fontSize: '15px',
-                        color: '#48484A',
+                        color: 'var(--text-muted)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                     }}>
-                    <Lightbulb size={20} color="#FF9500" />
+                    <Lightbulb size={20} color="var(--la-warning)" />
                     <span>
                         当前共有{' '}
-                        <strong style={{ color: '#007AFF', fontWeight: '600' }}>
+                        <strong style={{ color: 'var(--la-accent)', fontWeight: '600' }}>
                             {words.length}
                         </strong>{' '}
                         个单词可供导出
@@ -496,9 +492,9 @@ const ImportExport: React.FC<ImportExportProps> = ({
             {/* iOS 风格导入功能 */}
             <div
                 style={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    backgroundColor: 'var(--la-surface)',
+                    borderRadius: 'var(--la-radius-md)',
+                    boxShadow: 'var(--la-shadow-sm)',
                     padding: '24px',
                 }}>
                 <h3
@@ -506,12 +502,12 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         margin: '0 0 20px 0',
                         fontSize: '22px',
                         fontWeight: '600',
-                        color: '#1C1C1E',
+                        color: 'var(--la-text-strong)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px'
                     }}>
-                    <Download size={24} color="#FF3B30" /> 导入数据
+                    <Download size={24} color="var(--la-danger)" /> 导入数据
                 </h3>
 
                 <div style={{ marginBottom: '20px' }}>
@@ -521,7 +517,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             marginBottom: '12px',
                             fontSize: '15px',
                             fontWeight: '600',
-                            color: '#48484A',
+                            color: 'var(--text-muted)',
                         }}>
                         JSON数据:
                     </label>
@@ -534,14 +530,14 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             height: '200px',
                             padding: '16px',
                             border: 'none',
-                            borderRadius: '12px',
+                            borderRadius: 'var(--la-radius-sm)',
                             fontSize: '14px',
                             fontFamily:
                                 'Monaco, "SF Mono", Consolas, monospace',
                             resize: 'vertical',
                             boxSizing: 'border-box',
-                            backgroundColor: '#F2F2F7',
-                            color: '#1C1C1E',
+                            backgroundColor: 'var(--la-surface-subtle)',
+                            color: 'var(--la-text-strong)',
                             outline: 'none',
                             lineHeight: '1.5',
                         }}
@@ -561,11 +557,11 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         style={{
                             padding: '12px 24px',
                             backgroundColor: importData.trim()
-                                ? '#FF3B30'
-                                : '#C7C7CC',
+                                ? 'var(--la-danger)'
+                                : 'var(--la-border)',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '12px',
+                            borderRadius: 'var(--la-radius-sm)',
                             cursor: importData.trim()
                                 ? 'pointer'
                                 : 'not-allowed',
@@ -574,7 +570,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             transition:
                                 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                             boxShadow: importData.trim()
-                                ? '0 2px 8px rgba(255, 59, 48, 0.25)'
+                                ? '0 2px 8px color-mix(in srgb, var(--la-danger) 22%, transparent)'
                                 : 'none',
                         }}>
                         执行导入
@@ -584,9 +580,9 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         style={{
                             padding: '12px 24px',
                             backgroundColor: 'transparent',
-                            color: '#8E8E93',
-                            border: '2px solid #8E8E93',
-                            borderRadius: '12px',
+                            color: 'var(--la-text-muted)',
+                            border: '2px solid var(--la-text-muted)',
+                            borderRadius: 'var(--la-radius-sm)',
                             cursor: 'pointer',
                             fontSize: '15px',
                             fontWeight: '600',
@@ -594,7 +590,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                                 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#F2F2F7';
+                            e.currentTarget.style.backgroundColor = 'var(--la-surface-subtle)';
                         }}
                         onMouseLeave={(e) => {
                             e.currentTarget.style.backgroundColor =
@@ -608,12 +604,12 @@ const ImportExport: React.FC<ImportExportProps> = ({
                     style={{
                         padding: '16px 20px',
                         background:
-                            'linear-gradient(135deg, #FF9500 0%, #FF6B00 100%)',
-                        borderRadius: '12px',
+                            'var(--la-gradient-warning)',
+                        borderRadius: 'var(--la-radius-sm)',
                         fontSize: '14px',
                         color: 'white',
                         lineHeight: '1.6',
-                        boxShadow: '0 2px 8px rgba(255, 149, 0, 0.2)',
+                        boxShadow: '0 2px 8px color-mix(in srgb, var(--la-warning) 18%, transparent)',
                     }}>
                     <div
                         style={{
@@ -632,7 +628,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                             margin: '0',
                             paddingLeft: '24px',
                             fontSize: '13px',
-                            color: 'rgba(255,255,255,0.95)',
+                            color: 'color-mix(in srgb, white 95%, transparent)',
                         }}>
                         <li>只支持JSON格式数据导入</li>
                         <li>导入的数据会添加到现有单词库中</li>

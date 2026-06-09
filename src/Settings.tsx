@@ -54,12 +54,12 @@ const Settings: React.FC = () => {
             top: 20px;
             right: 20px;
             padding: 12px 20px;
-            background: linear-gradient(135deg, #34C759 0%, #30A14E 100%);
+            background: var(--la-gradient-success);
             color: white;
             border-radius: 12px;
             font-weight: 600;
             font-size: 15px;
-            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.3);
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--la-success) 24%, transparent);
             z-index: 10000;
             animation: slideIn 0.3s ease-out;
         `;
@@ -101,25 +101,25 @@ const Settings: React.FC = () => {
     ) => (
         <div
             style={{
-                backgroundColor: '#ffffff',
-                borderRadius: '16px',
-                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+                backgroundColor: 'var(--la-surface)',
+                borderRadius: 'var(--la-radius-md)',
+                boxShadow: '0 2px 10px color-mix(in srgb, black 7%, transparent)',
                 padding: '24px',
                 marginBottom: '24px',
                 fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
+                    'var(--la-font)',
             }}>
             <h3
                 style={{
                     margin: '0 0 8px 0',
-                    color: '#1c1c1e',
+                    color: 'var(--la-text-strong)',
                     fontSize: '20px',
                     fontWeight: '600',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
                 }}>
-                <span style={{ color: '#007AFF', display: 'flex' }}>
+                <span style={{ color: 'var(--la-accent)', display: 'flex' }}>
                     {icon}
                 </span>
                 {title}
@@ -127,7 +127,7 @@ const Settings: React.FC = () => {
             <p
                 style={{
                     margin: '0 0 24px 0',
-                    color: '#8e8e93',
+                    color: 'var(--la-text-muted)',
                     fontSize: '15px',
                     lineHeight: '1.4',
                 }}>
@@ -152,7 +152,7 @@ const Settings: React.FC = () => {
                     marginBottom: '8px',
                     fontSize: '15px',
                     fontWeight: '600',
-                    color: '#1d1d1f',
+                    color: 'var(--la-text-strong)',
                 }}>
                 {label}
             </label>
@@ -165,8 +165,8 @@ const Settings: React.FC = () => {
                         alignItems: 'center',
                         cursor: 'pointer',
                         padding: '12px 16px',
-                        backgroundColor: '#f5f5f7',
-                        borderRadius: '12px',
+                        backgroundColor: 'var(--la-surface-subtle)',
+                        borderRadius: 'var(--la-radius-sm)',
                         transition: 'background-color 0.2s',
                     }}>
                     <input
@@ -178,11 +178,11 @@ const Settings: React.FC = () => {
                             marginRight: '12px',
                             width: '20px',
                             height: '20px',
-                            accentColor: '#007AFF',
+                            accentColor: 'var(--la-accent)',
                             cursor: 'pointer',
                         }}
                     />
-                    <span style={{ fontSize: '15px', color: '#1d1d1f' }}>
+                    <span style={{ fontSize: '15px', color: 'var(--la-text-strong)' }}>
                         启用此功能
                     </span>
                 </label>
@@ -194,11 +194,11 @@ const Settings: React.FC = () => {
                     style={{
                         width: '100%',
                         padding: '12px 16px',
-                        border: '1.5px solid #d2d2d7',
-                        borderRadius: '12px',
+                        border: '1.5px solid var(--la-border)',
+                        borderRadius: 'var(--la-radius-sm)',
                         fontSize: '15px',
-                        backgroundColor: '#ffffff',
-                        color: '#1d1d1f',
+                        backgroundColor: 'var(--la-surface)',
+                        color: 'var(--la-text-strong)',
                         outline: 'none',
                         transition: 'all 0.2s ease',
                         appearance: 'none',
@@ -231,11 +231,11 @@ const Settings: React.FC = () => {
                     style={{
                         width: '100%',
                         padding: '12px 16px',
-                        border: '1.5px solid #d2d2d7',
-                        borderRadius: '12px',
+                        border: '1.5px solid var(--la-border)',
+                        borderRadius: 'var(--la-radius-sm)',
                         fontSize: '15px',
-                        backgroundColor: '#ffffff',
-                        color: '#1d1d1f',
+                        backgroundColor: 'var(--la-surface)',
+                        color: 'var(--la-text-strong)',
                         outline: 'none',
                         transition: 'all 0.2s ease',
                         boxSizing: 'border-box',
@@ -247,7 +247,7 @@ const Settings: React.FC = () => {
                 <div
                     style={{
                         fontSize: '13px',
-                        color: '#86868b',
+                        color: 'var(--la-text-muted)',
                         marginTop: '8px',
                         lineHeight: '1.4',
                     }}>
@@ -258,6 +258,7 @@ const Settings: React.FC = () => {
     );
     return (
         <div
+            className="la-page la-settings-page"
             style={{
                 padding: '30px 30px 100px 30px',
                 maxWidth: '800px',
@@ -268,11 +269,11 @@ const Settings: React.FC = () => {
             <style>
                 {`
                 .ios-input:focus {
-                    border-color: #007AFF !important;
-                    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1) !important;
+                    border-color: var(--la-accent);
+                    box-shadow: 0 0 0 4px color-mix(in srgb, var(--la-accent) 12%, transparent);
                 }
                 .ios-checkbox-label:active {
-                    background-color: #e5e5ea !important;
+                    background-color: var(--la-border);
                 }
                 .ios-btn {
                     transition: transform 0.1s ease, opacity 0.1s ease;
@@ -298,14 +299,14 @@ const Settings: React.FC = () => {
                     style={{
                         padding: '16px 20px',
                         marginBottom: '24px',
-                        backgroundColor: '#fff9e6',
-                        color: '#b27b00',
-                        borderRadius: '12px',
+                        backgroundColor: 'var(--la-warning-bg)',
+                        color: 'var(--la-warning)',
+                        borderRadius: 'var(--la-radius-sm)',
                         fontSize: '15px',
                         fontWeight: '500',
                         display: 'flex',
                         alignItems: 'center',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                        boxShadow: '0 2px 8px color-mix(in srgb, black 7%, transparent)',
                     }}>
                     <AlertTriangle
                         size={20}
@@ -493,23 +494,23 @@ const Settings: React.FC = () => {
                         }}
                         style={{
                             padding: '16px',
-                            backgroundColor: '#f2f2f7',
+                            backgroundColor: 'var(--la-surface-subtle)',
                             border: '1px solid transparent',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             cursor: 'pointer',
                             textAlign: 'center',
                             transition: 'all 0.2s',
                         }}
                         onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e5e5ea';
+                            e.currentTarget.style.backgroundColor = 'var(--la-border)';
                         }}
                         onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f2f2f7';
+                            e.currentTarget.style.backgroundColor = 'var(--la-surface-subtle)';
                         }}>
                         <div
                             style={{
                                 fontWeight: '600',
-                                color: '#007AFF',
+                                color: 'var(--la-accent)',
                                 fontSize: '16px',
                             }}>
                             标准模式
@@ -517,7 +518,7 @@ const Settings: React.FC = () => {
                         <div
                             style={{
                                 fontSize: '13px',
-                                color: '#8e8e93',
+                                color: 'var(--la-text-muted)',
                                 marginTop: '6px',
                                 lineHeight: '1.4',
                             }}>
@@ -541,23 +542,23 @@ const Settings: React.FC = () => {
                         }}
                         style={{
                             padding: '16px',
-                            backgroundColor: '#f2f2f7',
+                            backgroundColor: 'var(--la-surface-subtle)',
                             border: '1px solid transparent',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             cursor: 'pointer',
                             textAlign: 'center',
                             transition: 'all 0.2s',
                         }}
                         onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e5e5ea';
+                            e.currentTarget.style.backgroundColor = 'var(--la-border)';
                         }}
                         onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f2f2f7';
+                            e.currentTarget.style.backgroundColor = 'var(--la-surface-subtle)';
                         }}>
                         <div
                             style={{
                                 fontWeight: '600',
-                                color: '#FF9500',
+                                color: 'var(--la-warning)',
                                 fontSize: '16px',
                             }}>
                             密集模式
@@ -565,7 +566,7 @@ const Settings: React.FC = () => {
                         <div
                             style={{
                                 fontSize: '13px',
-                                color: '#8e8e93',
+                                color: 'var(--la-text-muted)',
                                 marginTop: '6px',
                                 lineHeight: '1.4',
                             }}>
@@ -589,23 +590,23 @@ const Settings: React.FC = () => {
                         }}
                         style={{
                             padding: '16px',
-                            backgroundColor: '#f2f2f7',
+                            backgroundColor: 'var(--la-surface-subtle)',
                             border: '1px solid transparent',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             cursor: 'pointer',
                             textAlign: 'center',
                             transition: 'all 0.2s',
                         }}
                         onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#e5e5ea';
+                            e.currentTarget.style.backgroundColor = 'var(--la-border)';
                         }}
                         onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f2f2f7';
+                            e.currentTarget.style.backgroundColor = 'var(--la-surface-subtle)';
                         }}>
                         <div
                             style={{
                                 fontWeight: '600',
-                                color: '#34C759',
+                                color: 'var(--la-success)',
                                 fontSize: '16px',
                             }}>
                             轻松模式
@@ -613,7 +614,7 @@ const Settings: React.FC = () => {
                         <div
                             style={{
                                 fontSize: '13px',
-                                color: '#8e8e93',
+                                color: 'var(--la-text-muted)',
                                 marginTop: '6px',
                                 lineHeight: '1.4',
                             }}>
@@ -631,21 +632,21 @@ const Settings: React.FC = () => {
                     justifyContent: 'center',
                     marginTop: '40px',
                     paddingTop: '30px',
-                    borderTop: '1px solid #e5e5ea',
+                    borderTop: '1px solid var(--la-border)',
                 }}>
                 <button
                     onClick={handleSave}
                     className="ios-btn"
                     style={{
                         padding: '14px 32px',
-                        backgroundColor: '#007AFF',
+                        backgroundColor: 'var(--la-accent)',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '12px',
+                        borderRadius: 'var(--la-radius-sm)',
                         cursor: 'pointer',
                         fontSize: '16px',
                         fontWeight: '600',
-                        boxShadow: '0 4px 14px rgba(0, 122, 255, 0.3)',
+                        boxShadow: '0 4px 14px color-mix(in srgb, var(--la-accent) 26%, transparent)',
                         display: 'flex',
                         alignItems: 'center',
                     }}>
@@ -661,10 +662,10 @@ const Settings: React.FC = () => {
                     className="ios-btn"
                     style={{
                         padding: '14px 32px',
-                        backgroundColor: '#ffffff',
-                        color: '#FF3B30',
-                        border: '1.5px solid #FF3B30',
-                        borderRadius: '12px',
+                        backgroundColor: 'var(--la-surface)',
+                        color: 'var(--la-danger)',
+                        border: '1.5px solid var(--la-danger)',
+                        borderRadius: 'var(--la-radius-sm)',
                         cursor: 'pointer',
                         fontSize: '16px',
                         fontWeight: '600',
@@ -684,16 +685,16 @@ const Settings: React.FC = () => {
                 style={{
                     marginTop: '40px',
                     padding: '24px',
-                    backgroundColor: '#f2f2f7',
-                    borderRadius: '16px',
+                    backgroundColor: 'var(--la-surface-subtle)',
+                    borderRadius: 'var(--la-radius-md)',
                     fontSize: '14px',
-                    color: '#8e8e93',
+                    color: 'var(--la-text-muted)',
                     lineHeight: '1.6',
                 }}>
                 <h4
                     style={{
                         margin: '0 0 12px 0',
-                        color: '#1c1c1e',
+                        color: 'var(--la-text-strong)',
                         fontSize: '16px',
                         fontWeight: '600',
                         display: 'flex',
@@ -702,7 +703,7 @@ const Settings: React.FC = () => {
                     }}>
                     <Info
                         size={20}
-                        color="#007AFF"
+                        color="var(--la-accent)"
                     />
                     配置说明
                 </h4>

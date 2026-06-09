@@ -2,6 +2,19 @@
 import React, { useMemo } from 'react';
 import { Word, WordHelper } from './MarkdownWordStorage';
 import { defaultSRS } from './SpacedRepetitionSystem';
+import {
+    AlarmClock,
+    AlertTriangle,
+    BadgeCheck,
+    BarChart3,
+    BookPlus,
+    FileText,
+    Folder,
+    LibraryBig,
+    Lightbulb,
+    Sparkles,
+    TrendingDown,
+} from 'lucide-react';
 
 interface DataStatisticsProps {
     words: Word[];
@@ -61,33 +74,22 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
         value: number,
         subtitle: string,
         color: string,
-        icon: string,
+        icon: React.ReactNode,
     ) => (
         <div
+            className="la-stat-card"
             style={{
+                ['--la-stat-color' as string]: color,
                 padding: '24px',
-                backgroundColor: '#ffffff',
-                borderRadius: '16px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                backgroundColor: 'var(--la-surface)',
+                borderRadius: 'var(--la-radius-xl)',
                 textAlign: 'center',
                 border: 'none',
                 fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+                    'var(--la-font-display)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
             }}>
-            <div
-                style={{
-                    fontSize: '40px',
-                    marginBottom: '8px',
-                }}>
+            <div className="la-stat-icon" aria-hidden="true">
                 {icon}
             </div>
             <div
@@ -96,7 +98,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                     fontWeight: '700',
                     color: color,
                     marginBottom: '8px',
-                    letterSpacing: '-1.5px',
+                    letterSpacing: '0',
                 }}>
                 {value}
             </div>
@@ -104,7 +106,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                 style={{
                     fontSize: '17px',
                     fontWeight: '600',
-                    color: '#1C1C1E',
+                    color: 'var(--la-text-strong)',
                     marginBottom: '4px',
                 }}>
                 {title}
@@ -112,7 +114,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
             <div
                 style={{
                     fontSize: '13px',
-                    color: '#8E8E93',
+                    color: 'var(--la-text-muted)',
                     fontWeight: '400',
                 }}>
                 {subtitle}
@@ -121,7 +123,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
     ); // iOS 风格柱状图
     const renderBarChart = (
         data: Record<string, number>,
-        title: string,
+        title: React.ReactNode,
         color: string,
     ) => {
         const maxValue = Math.max(...Object.values(data));
@@ -129,21 +131,24 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
         return (
             <div
                 style={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    backgroundColor: 'var(--la-surface)',
+                    borderRadius: 'var(--la-radius-md)',
+                    boxShadow: 'var(--la-shadow-sm)',
                     padding: '24px',
                     marginBottom: '20px',
                     fontFamily:
-                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                        'var(--la-font)',
                 }}>
                 <h3
                     style={{
                         margin: '0 0 20px 0',
-                        color: '#1C1C1E',
+                        color: 'var(--la-text-strong)',
                         fontSize: '20px',
                         fontWeight: '600',
-                        letterSpacing: '-0.3px',
+                        letterSpacing: '0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
                     }}>
                     {title}
                 </h3>
@@ -167,7 +172,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                                     style={{
                                         width: '120px',
                                         fontSize: '15px',
-                                        color: '#48484A',
+                                        color: 'var(--text-muted)',
                                         fontWeight: '500',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -179,8 +184,8 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                                     <div
                                         style={{
                                             height: '24px',
-                                            backgroundColor: '#F2F2F7',
-                                            borderRadius: '12px',
+                                            backgroundColor: 'var(--la-surface-subtle)',
+                                            borderRadius: 'var(--la-radius-sm)',
                                             overflow: 'hidden',
                                         }}>
                                         <div
@@ -192,7 +197,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                                                 backgroundColor: color,
                                                 transition:
                                                     'width 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                                borderRadius: '12px',
+                                                borderRadius: 'var(--la-radius-sm)',
                                             }}
                                         />
                                     </div>
@@ -214,7 +219,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                     <div
                         style={{
                             textAlign: 'center',
-                            color: '#8E8E93',
+                            color: 'var(--la-text-muted)',
                             fontSize: '15px',
                             padding: '40px',
                         }}>
@@ -226,20 +231,21 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
     };
     return (
         <div
+            className="la-page la-statistics-page"
             style={{
                 padding: '30px 30px 60px 30px',
                 fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
+                    'var(--la-font-display)',
             }}>
             {/* iOS 风格页面标题 */}
             <div
                 style={{
                     background:
-                        'linear-gradient(135deg, #34C759 0%, #30D158 100%)',
+                        'var(--la-gradient-success)',
                     padding: '32px 28px',
-                    borderRadius: '20px',
+                    borderRadius: 'var(--la-radius-lg)',
                     marginBottom: '24px',
-                    boxShadow: '0 4px 16px rgba(52, 199, 89, 0.2)',
+                    boxShadow: '0 4px 16px color-mix(in srgb, var(--la-success) 18%, transparent)',
                 }}>
                 <h1
                     style={{
@@ -247,17 +253,18 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                         color: 'white',
                         fontSize: '34px',
                         fontWeight: '700',
-                        letterSpacing: '-1px',
+                        letterSpacing: '0',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
                     }}>
-                    📊 数据统计
+                    <BarChart3 size={34} />
+                    数据统计
                 </h1>
                 <p
                     style={{
                         margin: '8px 0 0 0',
-                        color: 'rgba(255,255,255,0.85)',
+                        color: 'var(--la-on-accent-muted)',
                         fontSize: '17px',
                         fontWeight: '400',
                     }}>
@@ -277,48 +284,48 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                     '总单词',
                     stats.srsStats.total,
                     '词汇库大小',
-                    '#007AFF',
-                    '📚',
+                    'var(--la-accent)',
+                    <LibraryBig size={28} strokeWidth={2.15} />,
                 )}
                 {renderStatCard(
                     '待学习',
                     stats.srsStats.dueToday,
                     '今日任务',
-                    '#FF3B30',
-                    '⏰',
+                    'var(--la-danger)',
+                    <AlarmClock size={28} strokeWidth={2.15} />,
                 )}
                 {renderStatCard(
                     '正确率',
                     Math.round(stats.srsStats.accuracy),
                     '%',
-                    '#34C759',
-                    '✅',
+                    'var(--la-success)',
+                    <BadgeCheck size={28} strokeWidth={2.15} />,
                 )}
                 {renderStatCard(
                     '新单词',
                     stats.srsStats.new,
                     '尚未开始学习',
-                    '#AF52DE',
-                    '🆕',
+                    'var(--la-purple)',
+                    <BookPlus size={28} strokeWidth={2.15} />,
                 )}
             </div>
 
             {/* iOS 风格学习进度卡片 */}
             <div
                 style={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    backgroundColor: 'var(--la-surface)',
+                    borderRadius: 'var(--la-radius-md)',
+                    boxShadow: 'var(--la-shadow-sm)',
                     padding: '24px',
                     marginBottom: '20px',
                 }}>
                 <h3
                     style={{
                         margin: '0 0 20px 0',
-                        color: '#1C1C1E',
+                        color: 'var(--la-text-strong)',
                         fontSize: '20px',
                         fontWeight: '600',
-                        letterSpacing: '-0.3px',
+                        letterSpacing: '0',
                     }}>
                     学习进度分布
                 </h3>
@@ -335,14 +342,14 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                             alignItems: 'center',
                             gap: '10px',
                             padding: '12px 16px',
-                            backgroundColor: '#FFEBEE',
-                            borderRadius: '12px',
+                            backgroundColor: 'var(--la-danger-bg)',
+                            borderRadius: 'var(--la-radius-sm)',
                         }}>
                         <div
                             style={{
                                 width: '12px',
                                 height: '12px',
-                                backgroundColor: '#FF3B30',
+                                backgroundColor: 'var(--la-danger)',
                                 borderRadius: '50%',
                             }}
                         />
@@ -350,7 +357,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                             style={{
                                 fontSize: '15px',
                                 fontWeight: '500',
-                                color: '#1C1C1E',
+                                color: 'var(--la-text-strong)',
                             }}>
                             未开始:{' '}
                             <strong>{stats.progressStats.notStarted}</strong>
@@ -362,14 +369,14 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                             alignItems: 'center',
                             gap: '10px',
                             padding: '12px 16px',
-                            backgroundColor: '#FFF3E0',
-                            borderRadius: '12px',
+                            backgroundColor: 'var(--la-warning-bg)',
+                            borderRadius: 'var(--la-radius-sm)',
                         }}>
                         <div
                             style={{
                                 width: '12px',
                                 height: '12px',
-                                backgroundColor: '#FF9500',
+                                backgroundColor: 'var(--la-warning)',
                                 borderRadius: '50%',
                             }}
                         />
@@ -377,7 +384,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                             style={{
                                 fontSize: '15px',
                                 fontWeight: '500',
-                                color: '#1C1C1E',
+                                color: 'var(--la-text-strong)',
                             }}>
                             学习中:{' '}
                             <strong>{stats.progressStats.learning}</strong>
@@ -389,14 +396,14 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                             alignItems: 'center',
                             gap: '10px',
                             padding: '12px 16px',
-                            backgroundColor: '#E8F5E9',
-                            borderRadius: '12px',
+                            backgroundColor: 'var(--la-success-bg)',
+                            borderRadius: 'var(--la-radius-sm)',
                         }}>
                         <div
                             style={{
                                 width: '12px',
                                 height: '12px',
-                                backgroundColor: '#34C759',
+                                backgroundColor: 'var(--la-success)',
                                 borderRadius: '50%',
                             }}
                         />
@@ -404,7 +411,7 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                             style={{
                                 fontSize: '15px',
                                 fontWeight: '500',
-                                color: '#1C1C1E',
+                                color: 'var(--la-text-strong)',
                             }}>
                             已毕业:{' '}
                             <strong>{stats.progressStats.graduated}</strong>
@@ -420,16 +427,43 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                     gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
                     gap: '20px',
                 }}>
-                {renderBarChart(stats.categoryStats, '📂 分类统计', '#007AFF')}
-                {renderBarChart(stats.levelStats, '📊 等级统计', '#FF9500')}
-                {renderBarChart(stats.posStats, '📝 词性统计', '#AF52DE')}
+                {renderBarChart(
+                    stats.categoryStats,
+                    (
+                        <>
+                            <Folder size={22} />
+                            分类统计
+                        </>
+                    ),
+                    'var(--la-accent)',
+                )}
+                {renderBarChart(
+                    stats.levelStats,
+                    (
+                        <>
+                            <BarChart3 size={22} />
+                            等级统计
+                        </>
+                    ),
+                    'var(--la-warning)',
+                )}
+                {renderBarChart(
+                    stats.posStats,
+                    (
+                        <>
+                            <FileText size={22} />
+                            词性统计
+                        </>
+                    ),
+                    'var(--la-purple)',
+                )}
             </div>
 
             {/* iOS 风格学习建议卡片 */}
             <div
                 style={{
-                    backgroundColor: '#F2F2F7',
-                    borderRadius: '16px',
+                    backgroundColor: 'var(--la-surface-subtle)',
+                    borderRadius: 'var(--la-radius-md)',
                     padding: '24px',
                     marginTop: '20px',
                     border: 'none',
@@ -437,16 +471,17 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                 <h3
                     style={{
                         margin: '0 0 16px 0',
-                        color: '#1C1C1E',
+                        color: 'var(--la-text-strong)',
                         fontSize: '20px',
                         fontWeight: '600',
-                        letterSpacing: '-0.3px',
+                        letterSpacing: '0',
                     }}>
-                    💡 学习建议
+                    <Lightbulb size={22} />
+                    学习建议
                 </h3>
                 <div
                     style={{
-                        color: '#48484A',
+                        color: 'var(--text-muted)',
                         lineHeight: '1.8',
                         fontSize: '15px',
                     }}>
@@ -454,12 +489,15 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                         <p
                             style={{
                                 margin: '0 0 12px 0',
-                                padding: '12px 16px',
-                                backgroundColor: '#ffffff',
-                                borderRadius: '10px',
-                                borderLeft: '3px solid #FF9500',
-                            }}>
-                            ⚠️ 今日待学习单词较多(
+                        padding: '12px 16px',
+                        backgroundColor: 'var(--la-surface)',
+                        borderRadius: 'var(--la-radius-xs)',
+                        borderLeft: '3px solid var(--la-warning)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}>
+                            <AlertTriangle size={16} /> 今日待学习单词较多(
                             <strong>{stats.srsStats.dueToday}</strong>
                             个)，建议分批完成，避免疲劳
                         </p>
@@ -468,12 +506,15 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                         <p
                             style={{
                                 margin: '0 0 12px 0',
-                                padding: '12px 16px',
-                                backgroundColor: '#ffffff',
-                                borderRadius: '10px',
-                                borderLeft: '3px solid #FF3B30',
-                            }}>
-                            📉 当前正确率较低(
+                        padding: '12px 16px',
+                        backgroundColor: 'var(--la-surface)',
+                        borderRadius: 'var(--la-radius-xs)',
+                        borderLeft: '3px solid var(--la-danger)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}>
+                            <TrendingDown size={16} /> 当前正确率较低(
                             <strong>
                                 {Math.round(stats.srsStats.accuracy)}%
                             </strong>
@@ -484,12 +525,15 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                         <p
                             style={{
                                 margin: '0 0 12px 0',
-                                padding: '12px 16px',
-                                backgroundColor: '#ffffff',
-                                borderRadius: '10px',
-                                borderLeft: '3px solid #AF52DE',
-                            }}>
-                            📚 新单词较多(<strong>{stats.srsStats.new}</strong>
+                        padding: '12px 16px',
+                        backgroundColor: 'var(--la-surface)',
+                        borderRadius: 'var(--la-radius-xs)',
+                        borderLeft: '3px solid var(--la-purple)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}>
+                            <BookPlus size={16} /> 新单词较多(<strong>{stats.srsStats.new}</strong>
                             个)，建议每日稳定添加新单词，避免积压
                         </p>
                     )}
@@ -497,12 +541,15 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                         <p
                             style={{
                                 margin: '0 0 12px 0',
-                                padding: '12px 16px',
-                                backgroundColor: '#ffffff',
-                                borderRadius: '10px',
-                                borderLeft: '3px solid #34C759',
-                            }}>
-                            🎉 学习状态良好！正确率达到
+                        padding: '12px 16px',
+                        backgroundColor: 'var(--la-surface)',
+                        borderRadius: 'var(--la-radius-xs)',
+                        borderLeft: '3px solid var(--la-success)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}>
+                            <BadgeCheck size={16} /> 学习状态良好！正确率达到
                             <strong>
                                 {Math.round(stats.srsStats.accuracy)}%
                             </strong>
@@ -513,12 +560,15 @@ const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
                         <p
                             style={{
                                 margin: '0',
-                                padding: '12px 16px',
-                                backgroundColor: '#ffffff',
-                                borderRadius: '10px',
-                                borderLeft: '3px solid #34C759',
-                            }}>
-                            ✨ 今日学习任务完成！保持这个节奏，词汇量会稳步提升
+                        padding: '12px 16px',
+                        backgroundColor: 'var(--la-surface)',
+                        borderRadius: 'var(--la-radius-xs)',
+                        borderLeft: '3px solid var(--la-success)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}>
+                            <Sparkles size={16} /> 今日学习任务完成！保持这个节奏，词汇量会稳步提升
                         </p>
                     )}
                 </div>

@@ -1,6 +1,11 @@
 // Markdown 单词存储和解析器 - 新三层元数据架构
 import { TFile, Vault, Notice } from 'obsidian';
 import { GlobalMetaManager } from './GlobalMetaManager';
+import {
+    formatTimestamp,
+    normalizeTimestampForStorage,
+    parseTimestamp,
+} from './utils/date';
 
 export interface Example {
     text: string;
@@ -24,7 +29,7 @@ export interface GlobalMetadata {
     [key: string]: any; // 支持扩展字段
 }
 
-// 项目元数据接口
+// 1 项目元数据接口
 export interface ItemMetadata {
     id: string; // 唯一标识符 (UUID)
     createAt: string; // 创建时间
@@ -42,7 +47,7 @@ export interface ItemMetadata {
 // SRS 元数据接口
 export interface SRSMetadata {
     srsLevel: number; // SRS等级 (0-8，0为新卡片)
-    nextReviewDate?: string; // 下次复习日期 (ISO 8601格式)
+    nextReviewDate?: string; // 下次复习日期 (YYYYMMDDHHmm格式)
     lastReviewDate?: string; // 上次复习日期
     reviewCount: number; // 总复习次数
     correctCount: number; // 正确次数
@@ -61,7 +66,7 @@ export interface WordMetadata {
 
     // 间隔学习相关字段
     srsLevel?: number; // SRS等级 (0-8，0为新卡片)
-    nextReviewDate?: string; // 下次复习日期 (ISO 8601格式)
+    nextReviewDate?: string; // 下次复习日期 (YYYYMMDDHHmm格式)
     lastReviewDate?: string; // 上次复习日期
     reviewCount?: number; // 总复习次数
     correctCount?: number; // 正确次数
@@ -145,12 +150,12 @@ export class WordHelper {
 
     static getNextReviewDate(word: Word): Date | null {
         const dateString = word.srsMeta.nextReviewDate;
-        return dateString ? new Date(dateString) : null;
+        return parseTimestamp(dateString);
     }
 
     static getLastReviewDate(word: Word): Date | null {
         const dateString = word.srsMeta.lastReviewDate;
-        return dateString ? new Date(dateString) : null;
+        return parseTimestamp(dateString);
     }
 
     static getReviewCount(word: Word): number {
@@ -194,7 +199,7 @@ export class WordHelper {
 
     // 创建新的Word对象
     static createEmpty(): Word {
-        const now = new Date().toISOString();
+        const now = formatTimestamp();
         return {
             itemMeta: {
                 id: '',
@@ -224,12 +229,18 @@ export class WordHelper {
 
     // 从旧格式转换为新格式
     static fromLegacy(legacyWord: any): Word {
-        const now = new Date().toISOString();
+        const now = formatTimestamp();
         return {
             itemMeta: {
                 id: legacyWord.metadata?.id || '',
-                createAt: legacyWord.metadata?.createAt || now,
-                lastUpdate: legacyWord.metadata?.lastUpdate || now,
+                createAt:
+                    normalizeTimestampForStorage(
+                        legacyWord.metadata?.createAt,
+                    ) || now,
+                lastUpdate:
+                    normalizeTimestampForStorage(
+                        legacyWord.metadata?.lastUpdate,
+                    ) || now,
                 viewCount: legacyWord.metadata?.queryCount || 0,
                 category: legacyWord.category || '',
                 level: legacyWord.level || '',
@@ -242,8 +253,12 @@ export class WordHelper {
                 correctCount: legacyWord.metadata?.correctCount || 0,
                 ease: legacyWord.metadata?.ease || 2.5,
                 interval: legacyWord.metadata?.interval || 1,
-                nextReviewDate: legacyWord.metadata?.nextReviewDate,
-                lastReviewDate: legacyWord.metadata?.lastReviewDate,
+                nextReviewDate: normalizeTimestampForStorage(
+                    legacyWord.metadata?.nextReviewDate,
+                ),
+                lastReviewDate: normalizeTimestampForStorage(
+                    legacyWord.metadata?.lastReviewDate,
+                ),
             },
             name: legacyWord.name || '',
             pronunciation: legacyWord.pronunciation || '',
@@ -285,8 +300,9 @@ export class MarkdownWordStorage {
             },
         );
     } // 解析 markdown 内容为单词数组 - 兼容新旧格式
+    // NOTE: 具体解析逻辑
     parseMarkdownToWords(content: string): ParseResult {
-        console.log('📖 开始解析 Markdown 内容...');
+        console.log(' 开始解析 Markdown 内容...');
 
         const globalMetaManager = GlobalMetaManager.getInstance();
         let dataContent = '';
@@ -296,7 +312,7 @@ export class MarkdownWordStorage {
             /%%data-start%%\s*([\s\S]*?)\s*%%data-end%%/,
         );
         if (dataStartMatch) {
-            console.log('✅ 检测到新格式数据标记');
+            console.log(' 检测到新格式数据标记');
             dataContent = dataStartMatch[1];
 
             // 解析并加载全局配置
@@ -305,9 +321,9 @@ export class MarkdownWordStorage {
                 try {
                     const globalConfig = JSON.parse(globalMetaMatch[1]);
                     globalMetaManager.setConfig(globalConfig);
-                    console.log('🔄 已加载全局元数据配置:', globalConfig);
+                    console.log(' 已加载全局元数据配置:', globalConfig);
                 } catch (error) {
-                    console.error('❌ 解析全局配置失败:', error);
+                    console.error(' 解析全局配置失败:', error);
                 }
             }
 
@@ -368,13 +384,13 @@ export class MarkdownWordStorage {
                         if (resolvedFields.partsOfSpeech)
                             word.partsOfSpeech = resolvedFields.partsOfSpeech;
 
-                        console.log(`✅ 解析项目元数据成功: ${word.name}`, {
+                        console.log(` 解析项目元数据成功: ${word.name}`, {
                             itemMeta,
                             resolved: resolvedFields,
                         });
                     } catch (error) {
                         console.warn(
-                            `⚠️ 解析项目元数据失败: ${word.name}`,
+                            ` 解析项目元数据失败: ${word.name}`,
                             error,
                         );
                     }
@@ -385,10 +401,10 @@ export class MarkdownWordStorage {
                             .replace(/\}%%$/, '');
                         const srsMeta = JSON.parse(metaStr);
                         word.srsMeta = { ...word.srsMeta, ...srsMeta };
-                        console.log(`✅ 解析SRS元数据成功: ${word.name}`);
+                        console.log(` 解析SRS元数据成功: ${word.name}`);
                     } catch (error) {
                         console.warn(
-                            `⚠️ 解析SRS元数据失败: ${word.name}`,
+                            ` 解析SRS元数据失败: ${word.name}`,
                             error,
                         );
                     }
@@ -466,7 +482,7 @@ export class MarkdownWordStorage {
                 word.itemMeta.createBy = 'user';
             }
             if (!word.itemMeta.lastUpdate) {
-                word.itemMeta.lastUpdate = new Date().toISOString();
+                word.itemMeta.lastUpdate = formatTimestamp();
             }
 
             words.push(word);
@@ -476,7 +492,7 @@ export class MarkdownWordStorage {
         const { words: uniqueWords, duplicates } = this.removeDuplicates(words);
 
         console.log(
-            `📊 解析完成: 共 ${words.length} 个单词，去重后 ${uniqueWords.length} 个`,
+            ` 解析完成: 共 ${words.length} 个单词，去重后 ${uniqueWords.length} 个`,
         );
 
         return { words: uniqueWords, duplicates };
@@ -568,7 +584,7 @@ export class MarkdownWordStorage {
 
         // 输出重复信息
         if (duplicates.length > 0) {
-            console.warn(`⚠️ 检测到重复单词:`);
+            console.warn(` 检测到重复单词:`);
             duplicates.forEach((dup) => {
                 console.warn(`   "${dup.name}" 出现了 ${dup.count} 次`);
             });
@@ -576,7 +592,7 @@ export class MarkdownWordStorage {
                 console.warn(`   ${detail}`);
             });
             console.log(
-                `🔄 共去除了 ${words.length - uniqueWords.length} 个重复单词`,
+                ` 共去除了 ${words.length - uniqueWords.length} 个重复单词`,
             );
         }
 
@@ -612,8 +628,12 @@ export class MarkdownWordStorage {
             // 保留原始的 itemMeta 中的必需字段
             const preservedFields = {
                 id: word.itemMeta.id || '',
-                createAt: word.itemMeta.createAt || '',
-                lastUpdate: word.itemMeta.lastUpdate || '',
+                createAt:
+                    normalizeTimestampForStorage(word.itemMeta.createAt) || '',
+                lastUpdate:
+                    normalizeTimestampForStorage(
+                        word.itemMeta.lastUpdate,
+                    ) || '',
                 viewCount: word.itemMeta.viewCount || 0,
             };
 
@@ -639,6 +659,9 @@ export class MarkdownWordStorage {
 
         // 现在获取包含所有生成别名的全局配置
         const globalConfig = globalMetaManager.getConfig();
+        globalConfig.lastUpdate =
+            normalizeTimestampForStorage(globalConfig.lastUpdate) ||
+            formatTimestamp();
         markdown += `%%global-meta${JSON.stringify(globalConfig)}%%\n\n`;
 
         // 生成每个单词的 markdown
@@ -700,8 +723,12 @@ export class MarkdownWordStorage {
     // 清理项目元数据
     private cleanItemMeta(itemMeta: ItemMetadata): any {
         const cleaned: any = { ...itemMeta };
+        cleaned.createAt = normalizeTimestampForStorage(cleaned.createAt);
+        cleaned.lastUpdate = normalizeTimestampForStorage(cleaned.lastUpdate);
         // 移除空值和默认值
         if (!cleaned.createBy) delete cleaned.createBy;
+        if (!cleaned.createAt) delete cleaned.createAt;
+        if (!cleaned.lastUpdate) delete cleaned.lastUpdate;
         if (cleaned.weight === undefined) delete cleaned.weight;
         if (cleaned.viewCount === 0) delete cleaned.viewCount;
         return cleaned;
@@ -710,6 +737,12 @@ export class MarkdownWordStorage {
     // 清理SRS元数据
     private cleanSrsMeta(srsMeta: SRSMetadata): any {
         const cleaned: any = { ...srsMeta };
+        cleaned.nextReviewDate = normalizeTimestampForStorage(
+            cleaned.nextReviewDate,
+        );
+        cleaned.lastReviewDate = normalizeTimestampForStorage(
+            cleaned.lastReviewDate,
+        );
         // 移除默认值
         if (cleaned.srsLevel === 0) delete cleaned.srsLevel;
         if (cleaned.reviewCount === 0) delete cleaned.reviewCount;
@@ -722,18 +755,20 @@ export class MarkdownWordStorage {
     }
 
     // 读取 words.md 文件
-    async loadWords(): Promise<Word[]> {
-        const result = await this.loadWordsWithDuplicateInfo();
-        return result.words;
-    }
+    // NOTE: loadWords 没有被使用
+    // async loadWords(): Promise<Word[]> {
+    //     const result = await this.loadWordsWithDuplicateInfo();
+    //     return result.words;
+    // }
 
     // 读取 words.md 文件并返回重复信息
+    // NOTE: 这个是加载逻辑
     async loadWordsWithDuplicateInfo(): Promise<ParseResult> {
         try {
             const file = this.vault.getAbstractFileByPath(this.wordsFilePath);
             if (!file || !(file instanceof TFile)) {
                 console.warn(
-                    `📁 文件 ${this.wordsFilePath} 不存在，返回空数组`,
+                    ` 文件 ${this.wordsFilePath} 不存在，返回空数组`,
                 );
 
                 // 确保父文件夹存在
@@ -752,13 +787,14 @@ export class MarkdownWordStorage {
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            console.error(`❌ 读取单词文件失败: ${errorMessage}`);
-            new Notice(`❌ 读取单词文件失败: ${errorMessage}`);
+            console.error(` 读取单词文件失败: ${errorMessage}`);
+            new Notice(` 读取单词文件失败: ${errorMessage}`);
             return { words: [], duplicates: [] };
         }
     }
 
     // 保存单词数组到 words.md 文件
+    // NOTE: UI映射文件的逻辑
     async saveWords(words: Word[]): Promise<void> {
         try {
             const markdown = this.wordsToMarkdown(words);
@@ -781,11 +817,11 @@ export class MarkdownWordStorage {
                 await this.vault.modify(file, markdown);
             }
 
-            console.log(`✅ 单词文件保存成功: ${this.wordsFilePath}`);
+            console.log(` 单词文件保存成功: ${this.wordsFilePath}`);
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
-            console.error(`❌ 保存单词文件失败: ${errorMessage}`);
+            console.error(` 保存单词文件失败: ${errorMessage}`);
 
             // 如果是因为文件已存在错误，尝试使用修改方法
             if (errorMessage.includes('already exists')) {
@@ -797,16 +833,16 @@ export class MarkdownWordStorage {
                         const markdown = this.wordsToMarkdown(words);
                         await this.vault.modify(file, markdown);
                         console.log(
-                            `✅ 使用修改方法保存成功: ${this.wordsFilePath}`,
+                            ` 使用修改方法保存成功: ${this.wordsFilePath}`,
                         );
                         return;
                     }
                 } catch (retryError) {
-                    console.error(`❌ 重试保存也失败了:`, retryError);
+                    console.error(` 重试保存也失败了:`, retryError);
                 }
             }
 
-            new Notice(`❌ 文件保存失败: ${errorMessage}`);
+            new Notice(` 文件保存失败: ${errorMessage}`);
             throw error;
         }
     }
@@ -826,18 +862,18 @@ export class MarkdownWordStorage {
             const parentFolder =
                 this.vault.getAbstractFileByPath(parentFolderPath);
             if (!parentFolder) {
-                console.log(`📁 创建文件夹: ${parentFolderPath}`);
+                console.log(` 创建文件夹: ${parentFolderPath}`);
                 await this.vault.createFolder(parentFolderPath);
-                console.log(`✅ 文件夹创建成功: ${parentFolderPath}`);
+                console.log(` 文件夹创建成功: ${parentFolderPath}`);
             }
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : String(error);
             console.error(
-                `❌ 创建文件夹失败: ${parentFolderPath} - ${errorMessage}`,
+                ` 创建文件夹失败: ${parentFolderPath} - ${errorMessage}`,
             );
             new Notice(
-                `❌ 创建文件夹失败: ${parentFolderPath} - ${errorMessage}`,
+                ` 创建文件夹失败: ${parentFolderPath} - ${errorMessage}`,
             );
             throw error;
         }

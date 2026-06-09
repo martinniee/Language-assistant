@@ -1,157 +1,61 @@
-# Language Assistant - Obsidian 单词管理插件
+# Language Assistant
 
-这是一个用于 Obsidian 的单词词汇管理插件，支持通过 React UI 界面管理单词，并将数据存储在 Markdown 文件中。
+Language Assistant 是一个 Obsidian 单词管理插件，使用 React + TypeScript 构建界面，并将词库数据保存到 Markdown 文件中。
 
-## 功能特性
+## 项目结构
 
--   ✅ **单词管理**: 添加、编辑、删除单词
--   ✅ **结构化存储**: 使用 Markdown 格式存储，支持复杂嵌套结构
--   ✅ **词性管理**: 支持多个词性，每个词性包含多个定义和例句
--   ✅ **标签分类**: 支持标签、分类、等级等元数据
--   ✅ **React UI**: 现代化的用户界面
--   ✅ **实时同步**: UI 操作实时同步到 Markdown 文件
--   ✅ **自定义存储**: 支持自定义存储位置，保护隐私数据
--   ✨ **智能自动补全**: 路径输入支持文件和文件夹自动补全
--   ✅ **键盘导航**: 支持方向键选择和快捷键操作
-
-## 安装和使用
-
-### 1. 插件安装
-
-1. 将整个 `Language-assistant` 文件夹复制到你的 Obsidian vault 的 `.obsidian/plugins/` 目录下
-2. 在 Obsidian 设置中启用 "Language Assistant" 插件
-
-### 2. 打开单词管理界面
-
--   点击侧边栏的书籍图标（📖）
--   或使用命令面板（Ctrl/Cmd + P）搜索 "打开单词管理页面"
-
-### 3. 单词管理操作
-
-#### 添加新单词
-
-1. 点击 "添加新单词" 按钮
-2. 填写单词基本信息：
-    - 单词名称
-    - 发音（IPA 音标）
-    - 分类（如：日常用语、学术词汇等）
-    - 标签（用逗号分隔，如：基础,常用）
-    - 等级（初级/中级/高级）
-    - 词性概述
-3. 添加详细内容：
-    - 点击 "添加词性" 添加不同词性
-    - 为每个词性添加定义
-    - 为每个定义添加例句
-4. 点击 "添加" 保存
-
-#### 编辑单词
-
-1. 在单词列表中点击 "编辑" 按钮
-2. 修改相应字段
-3. 点击 "更新" 保存
-
-#### 删除单词
-
-1. 在单词列表中点击 "删除" 按钮
-2. 单词将从列表和 Markdown 文件中删除
-
-### 4. 自定义存储位置 🆕
-
-插件现在支持自定义单词文件的存储位置，并提供智能自动补全功能：
-
-#### 配置存储路径
-
-1. 打开 Obsidian 设置 → Community plugins → Language Assistant
-2. 在 "📁 存储文件路径" 输入框中输入路径
-3. 享受智能自动补全功能：
-    - **实时建议**：输入时自动显示匹配的文件和文件夹
-    - **键盘导航**：使用 ↑/↓ 键选择建议，Enter 确认
-    - **状态指示**：显示文件是否存在（✓ 存在 / + 新建）
-    - **智能过滤**：自动筛选 .md 文件并高亮匹配文字
-
-#### 路径示例
-
-```
-words.md                    # 根目录（默认）
-private/words.md           # 私有文件夹
-.hidden/vocabulary.md      # 隐藏文件夹
-docs/language/words.md     # 多级目录
+```text
+.
+├── src/                  # 插件源码
+├── docs/                 # agent 说明文档、功能报告、使用指南和历史记录
+├── manifest.json         # Obsidian 插件清单
+├── main.js               # 打包后的插件入口
+├── styles.css            # 插件样式
+├── words.md              # 默认词库数据文件
+├── data.json             # Obsidian 插件保存的本地设置
+├── package.json          # 构建脚本和依赖
+└── tsconfig*.json        # TypeScript 配置
 ```
 
-#### 功能特点
+根目录只保留运行、构建和入口说明所需文件。功能说明、修复报告、测试记录、使用指南等 agent 生成或辅助性文档统一放在 [docs](./docs/) 下。
 
--   🔍 **实时搜索**：输入时搜索所有匹配的文件和文件夹
--   ⌨️ **键盘友好**：支持方向键导航和快捷键操作
--   🎯 **智能建议**：自动为文件夹添加 `/words.md` 建议
--   🔒 **隐私保护**：支持隐藏文件夹和自定义路径
--   ✅ **即时验证**：实时验证路径格式和可用性
+## 核心功能
 
-## 数据格式
-
-插件使用 `words.md` 文件存储数据，格式如下：
-
-```markdown
-# 单词词汇表
-
-## hello
-
--   发音: /həˈloʊ/
--   词汇: hello
--   分类: 日常用语
--   标签: 基础,问候
--   等级: 初级
--   查询次数: 0
--   词性: 感叹词、名词
--   内容:
-    -   感叹词
-        -   用于问候或引起注意的感叹词
-            -   Hello, how are you? (你好，你好吗？)
-            -   Hello there! (你好！)
-    -   名词
-        -   问候语
-            -   She gave me a warm hello. (她热情地跟我打招呼)
-```
-
-## 技术架构
-
--   **Frontend**: React + TypeScript
--   **Storage**: Markdown 文件 (words.md)
--   **Parser**: 自定义 Markdown 解析器
--   **Build**: esbuild + Vite
--   **Platform**: Obsidian Plugin API
+- 单词增删改查和详情管理
+- Markdown 词库读写
+- 自定义词库文件路径
+- 词性、标签、分类、等级等元数据管理
+- 间隔重复学习
+- 数据统计
+- 导入导出
 
 ## 开发
 
-### 构建插件
+安装依赖：
+
+```bash
+npm install
+```
+
+类型检查：
+
+```bash
+npx tsc --noEmit -p tsconfig.app.json
+```
+
+构建 Obsidian 插件：
 
 ```bash
 npm run build-app
 ```
 
-### 开发模式
+## 入口文件
 
-```bash
-npm run dev
-```
+- 插件入口：[src/obsidian-plugin.ts](./src/obsidian-plugin.ts)
+- React 主应用：[src/MainApp.tsx](./src/MainApp.tsx)
+- Markdown 存储：[src/MarkdownWordStorage.ts](./src/MarkdownWordStorage.ts)
+- 单词管理视图：[src/WordManagerMarkdownNew.tsx](./src/WordManagerMarkdownNew.tsx)
 
-## 待办功能
+## 文档
 
--   [ ] 单词搜索和过滤
--   [ ] 导入/导出功能
--   [ ] 单词统计和分析
--   [ ] 复习计划和间隔重复
--   [ ] 音频发音支持
--   [ ] 主题和样式自定义
-
-## 问题反馈
-
-如有问题或建议，请通过以下方式联系：
-
--   GitHub Issues
--   Obsidian 社区论坛
-
----
-
-**版本**: v0.0.1  
-**更新时间**: 2024-03-13  
-**兼容性**: Obsidian 0.15.0+
+查看 [docs/README.md](./docs/README.md) 获取完整文档索引。

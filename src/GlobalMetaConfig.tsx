@@ -1,7 +1,23 @@
 // 全局元数据配置组件
 import React, { useState, useEffect } from 'react';
 import { GlobalMetaManager, GlobalMetaConfig } from './GlobalMetaManager';
-import { Tag, Folder, Settings, BarChart2, Layers } from 'lucide-react';
+import { formatTimestampForDisplay } from './utils/date';
+import {
+    AlertTriangle,
+    BarChart2,
+    CheckCircle,
+    FileText,
+    Folder,
+    HardDrive,
+    Layers,
+    Lightbulb,
+    Loader2,
+    Plus,
+    Search,
+    Settings,
+    Tag,
+    Wrench,
+} from 'lucide-react';
 
 interface GlobalMetaConfigProps {
     words?: any[]; // 可选的单词数组用于统计和管理
@@ -208,8 +224,12 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
 
     if (isLoading) {
         return (
-            <div style={{ padding: '20px', textAlign: 'center' }}>
-                <div>⏳ 加载配置中...</div>
+            <div
+                className="la-page la-global-meta-page la-empty-state"
+                style={{ padding: '20px', textAlign: 'center' }}>
+                <div>
+                    <Loader2 size={16} /> 加载配置中...
+                </div>
             </div>
         );
     }
@@ -217,8 +237,11 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
     if (!config) {
         return (
             <div
-                style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                <div>❌ 无法加载全局配置</div>
+                className="la-page la-global-meta-page la-empty-state"
+                style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <div>
+                    <AlertTriangle size={16} /> 无法加载全局配置
+                </div>
             </div>
         );
     }
@@ -226,11 +249,12 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
     const stats = globalMetaManager.getStats();
     return (
         <div
+            className="la-page la-global-meta-page"
             style={{
                 padding: '20px',
                 maxWidth: '900px',
                 fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                    'var(--la-font)',
             }}>
             {' '}
             {/* iOS 风格标题栏 */}
@@ -240,19 +264,19 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                         margin: '0 0 8px 0',
                         fontSize: '34px',
                         fontWeight: '700',
-                        color: '#1C1C1E',
-                        letterSpacing: '-1px',
+                        color: 'var(--la-text-strong)',
+                        letterSpacing: '0',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
                     }}>
                     <Layers
                         size={32}
-                        color="#007AFF"
+                        color="var(--la-accent)"
                     />
                     全局元数据配置
                 </h2>
-                <p style={{ margin: 0, color: '#8E8E93', fontSize: '17px' }}>
+                <p style={{ margin: 0, color: 'var(--la-text-muted)', fontSize: '17px' }}>
                     管理标签和分类的别名映射，节省存储空间
                 </p>
             </div>{' '}
@@ -260,10 +284,10 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
             <div
                 style={{
                     marginBottom: '24px',
-                    backgroundColor: '#ffffff',
-                    borderRadius: '16px',
+                    backgroundColor: 'var(--la-surface)',
+                    borderRadius: 'var(--la-radius-md)',
                     padding: '6px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    boxShadow: 'var(--la-shadow-sm)',
                 }}>
                 {' '}
                 <div style={{ display: 'flex', gap: '6px' }}>
@@ -300,19 +324,19 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 flex: 1,
                                 padding: '10px 12px',
                                 border: 'none',
-                                borderRadius: '12px',
+                                borderRadius: 'var(--la-radius-sm)',
                                 backgroundColor:
                                     activeTab === tab.id
-                                        ? '#007AFF'
+                                        ? 'var(--la-accent)'
                                         : 'transparent',
                                 color:
                                     activeTab === tab.id
-                                        ? '#ffffff'
-                                        : '#8E8E93',
+                                        ? 'var(--la-surface)'
+                                        : 'var(--la-text-muted)',
                                 WebkitTextFillColor:
                                     activeTab === tab.id
-                                        ? '#ffffff'
-                                        : '#8E8E93',
+                                        ? 'var(--la-surface)'
+                                        : 'var(--la-text-muted)',
                                 cursor: 'pointer',
                                 fontSize: '14px',
                                 fontWeight: '600',
@@ -324,7 +348,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 gap: '6px',
                                 boxShadow:
                                     activeTab === tab.id
-                                        ? '0 2px 8px rgba(0,122,255,0.25)'
+                                        ? '0 2px 8px color-mix(in srgb, var(--la-accent) 22%, transparent)'
                                         : 'none',
                             }}>
                             <span
@@ -341,18 +365,18 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     style={{
                                         backgroundColor:
                                             activeTab === tab.id
-                                                ? 'rgba(255,255,255,0.25)'
-                                                : '#F2F2F7',
+                                                ? 'color-mix(in srgb, white 25%, transparent)'
+                                                : 'var(--la-surface-subtle)',
                                         color:
                                             activeTab === tab.id
-                                                ? '#ffffff'
-                                                : '#8E8E93',
+                                                ? 'var(--la-surface)'
+                                                : 'var(--la-text-muted)',
                                         WebkitTextFillColor:
                                             activeTab === tab.id
-                                                ? '#ffffff'
-                                                : '#8E8E93',
+                                                ? 'var(--la-surface)'
+                                                : 'var(--la-text-muted)',
                                         padding: '1px 7px',
-                                        borderRadius: '10px',
+                                        borderRadius: 'var(--la-radius-xs)',
                                         fontSize: '12px',
                                         fontWeight: '700',
                                         minWidth: '22px',
@@ -374,28 +398,28 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                             margin: '0 0 16px 0',
                             fontSize: '22px',
                             fontWeight: '600',
-                            color: '#1C1C1E',
+                            color: 'var(--la-text-strong)',
                         }}>
                         标签别名管理
                     </h3>
                     {/* iOS 风格添加新标签 */}
                     <div
                         style={{
-                            backgroundColor: '#ffffff',
+                            backgroundColor: 'var(--la-surface)',
                             padding: '20px',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             marginBottom: '20px',
                             border: 'none',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            boxShadow: 'var(--la-shadow-sm)',
                         }}>
                         <h4
                             style={{
                                 margin: '0 0 16px 0',
                                 fontSize: '17px',
                                 fontWeight: '600',
-                                color: '#48484A',
+                                color: 'var(--text-muted)',
                             }}>
-                            ➕ 添加新标签别名
+                            <Plus size={18} /> 添加新标签别名
                         </h4>
                         <div
                             style={{
@@ -416,18 +440,18 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 style={{
                                     padding: '12px 16px',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     fontSize: '15px',
                                     width: '140px',
-                                    backgroundColor: '#F2F2F7',
-                                    color: '#1C1C1E',
+                                    backgroundColor: 'var(--la-surface-subtle)',
+                                    color: 'var(--la-text-strong)',
                                     outline: 'none',
                                     fontFamily:
-                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                        'var(--la-font)',
                                 }}
                             />
                             <span
-                                style={{ color: '#8E8E93', fontSize: '18px' }}>
+                                style={{ color: 'var(--la-text-muted)', fontSize: '18px' }}>
                                 →
                             </span>
                             <input
@@ -443,14 +467,14 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 style={{
                                     padding: '12px 16px',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     fontSize: '15px',
                                     flex: 1,
-                                    backgroundColor: '#F2F2F7',
-                                    color: '#1C1C1E',
+                                    backgroundColor: 'var(--la-surface-subtle)',
+                                    color: 'var(--la-text-strong)',
                                     outline: 'none',
                                     fontFamily:
-                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                        'var(--la-font)',
                                 }}
                             />
                             <button
@@ -460,11 +484,11 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     padding: '12px 24px',
                                     backgroundColor:
                                         newTag.alias && newTag.fullName
-                                            ? '#007AFF'
-                                            : '#C7C7CC',
+                                            ? 'var(--la-accent)'
+                                            : 'var(--la-border)',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     cursor:
                                         newTag.alias && newTag.fullName
                                             ? 'pointer'
@@ -475,7 +499,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                         'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                     boxShadow:
                                         newTag.alias && newTag.fullName
-                                            ? '0 2px 8px rgba(0, 122, 255, 0.25)'
+                                            ? '0 2px 8px color-mix(in srgb, var(--la-accent) 22%, transparent)'
                                             : 'none',
                                 }}>
                                 添加
@@ -486,18 +510,18 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                     <div
                         style={{
                             border: 'none',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             overflow: 'hidden',
-                            backgroundColor: '#ffffff',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            backgroundColor: 'var(--la-surface)',
+                            boxShadow: 'var(--la-shadow-sm)',
                         }}>
                         <div
                             style={{
-                                backgroundColor: '#F2F2F7',
+                                backgroundColor: 'var(--la-surface-subtle)',
                                 padding: '16px 20px',
                                 fontSize: '15px',
                                 fontWeight: '600',
-                                color: '#48484A',
+                                color: 'var(--text-muted)',
                             }}>
                             <div style={{ display: 'flex' }}>
                                 <div style={{ flex: '1' }}>别名</div>
@@ -523,7 +547,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 style={{
                                     padding: '40px',
                                     textAlign: 'center',
-                                    color: '#8E8E93',
+                                    color: 'var(--la-text-muted)',
                                     fontSize: '15px',
                                 }}>
                                 暂无标签别名
@@ -546,14 +570,14 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 display: 'flex',
                                                 padding: '16px 20px',
                                                 borderBottom:
-                                                    '1px solid rgba(0,0,0,0.06)',
+                                                    '1px solid color-mix(in srgb, black 8%, transparent)',
                                                 alignItems: 'center',
                                                 transition:
                                                     'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                             }}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor =
-                                                    '#F2F2F7';
+                                                    'var(--la-surface-subtle)';
                                             }}
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.backgroundColor =
@@ -566,7 +590,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                     fontFamily:
                                                         'Monaco, "SF Mono", monospace',
                                                     fontWeight: '600',
-                                                    color: '#007AFF',
+                                                    color: 'var(--la-accent)',
                                                 }}>
                                                 {alias}
                                             </div>
@@ -574,7 +598,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 style={{
                                                     flex: '2',
                                                     fontSize: '15px',
-                                                    color: '#1C1C1E',
+                                                    color: 'var(--la-text-strong)',
                                                 }}>
                                                 {isEditing ? (
                                                     <input
@@ -610,11 +634,11 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                             fontSize: '15px',
                                                             width: '100%',
                                                             backgroundColor:
-                                                                '#F2F2F7',
-                                                            color: '#1C1C1E',
+                                                                'var(--la-surface-subtle)',
+                                                            color: 'var(--la-text-strong)',
                                                             outline: 'none',
                                                             fontFamily:
-                                                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                                                'var(--la-font)',
                                                         }}
                                                         autoFocus
                                                     />
@@ -632,11 +656,11 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                     style={{
                                                         backgroundColor:
                                                             usageCount > 0
-                                                                ? '#34C759'
-                                                                : '#8E8E93',
+                                                                ? 'var(--la-success)'
+                                                                : 'var(--la-text-muted)',
                                                         color: 'white',
                                                         padding: '4px 10px',
-                                                        borderRadius: '12px',
+                                                        borderRadius: 'var(--la-radius-sm)',
                                                         fontSize: '13px',
                                                         fontWeight: '600',
                                                     }}>
@@ -666,7 +690,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                                 padding:
                                                                     '6px 14px',
                                                                 backgroundColor:
-                                                                    '#34C759',
+                                                                    'var(--la-success)',
                                                                 color: 'white',
                                                                 border: 'none',
                                                                 borderRadius:
@@ -691,7 +715,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                                 padding:
                                                                     '6px 14px',
                                                                 backgroundColor:
-                                                                    '#8E8E93',
+                                                                    'var(--la-text-muted)',
                                                                 color: 'white',
                                                                 border: 'none',
                                                                 borderRadius:
@@ -720,7 +744,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                                 padding:
                                                                     '6px 14px',
                                                                 backgroundColor:
-                                                                    '#007AFF',
+                                                                    'var(--la-accent)',
                                                                 color: 'white',
                                                                 border: 'none',
                                                                 borderRadius:
@@ -747,7 +771,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                                 padding:
                                                                     '6px 14px',
                                                                 backgroundColor:
-                                                                    '#FF3B30',
+                                                                    'var(--la-danger)',
                                                                 color: 'white',
                                                                 border: 'none',
                                                                 borderRadius:
@@ -781,28 +805,28 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                             margin: '0 0 16px 0',
                             fontSize: '22px',
                             fontWeight: '600',
-                            color: '#1C1C1E',
+                            color: 'var(--la-text-strong)',
                         }}>
                         分类别名管理
                     </h3>
                     {/* iOS 风格添加新分类 */}
                     <div
                         style={{
-                            backgroundColor: '#ffffff',
+                            backgroundColor: 'var(--la-surface)',
                             padding: '20px',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             marginBottom: '20px',
                             border: 'none',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            boxShadow: 'var(--la-shadow-sm)',
                         }}>
                         <h4
                             style={{
                                 margin: '0 0 16px 0',
                                 fontSize: '17px',
                                 fontWeight: '600',
-                                color: '#48484A',
+                                color: 'var(--text-muted)',
                             }}>
-                            ➕ 添加新分类别名
+                            <Plus size={18} /> 添加新分类别名
                         </h4>
                         <div
                             style={{
@@ -823,18 +847,18 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 style={{
                                     padding: '12px 16px',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     fontSize: '15px',
                                     width: '140px',
-                                    backgroundColor: '#F2F2F7',
-                                    color: '#1C1C1E',
+                                    backgroundColor: 'var(--la-surface-subtle)',
+                                    color: 'var(--la-text-strong)',
                                     outline: 'none',
                                     fontFamily:
-                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                        'var(--la-font)',
                                 }}
                             />
                             <span
-                                style={{ color: '#8E8E93', fontSize: '18px' }}>
+                                style={{ color: 'var(--la-text-muted)', fontSize: '18px' }}>
                                 →
                             </span>
                             <input
@@ -850,14 +874,14 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 style={{
                                     padding: '12px 16px',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     fontSize: '15px',
                                     flex: 1,
-                                    backgroundColor: '#F2F2F7',
-                                    color: '#1C1C1E',
+                                    backgroundColor: 'var(--la-surface-subtle)',
+                                    color: 'var(--la-text-strong)',
                                     outline: 'none',
                                     fontFamily:
-                                        '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                        'var(--la-font)',
                                 }}
                             />
                             <button
@@ -870,11 +894,11 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     backgroundColor:
                                         newCategory.alias &&
                                         newCategory.fullName
-                                            ? '#007AFF'
-                                            : '#C7C7CC',
+                                            ? 'var(--la-accent)'
+                                            : 'var(--la-border)',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     cursor:
                                         newCategory.alias &&
                                         newCategory.fullName
@@ -887,7 +911,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     boxShadow:
                                         newCategory.alias &&
                                         newCategory.fullName
-                                            ? '0 2px 8px rgba(0, 122, 255, 0.25)'
+                                            ? '0 2px 8px color-mix(in srgb, var(--la-accent) 22%, transparent)'
                                             : 'none',
                                 }}>
                                 添加
@@ -898,18 +922,18 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                     <div
                         style={{
                             border: 'none',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             overflow: 'hidden',
-                            backgroundColor: '#ffffff',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            backgroundColor: 'var(--la-surface)',
+                            boxShadow: 'var(--la-shadow-sm)',
                         }}>
                         <div
                             style={{
-                                backgroundColor: '#F2F2F7',
+                                backgroundColor: 'var(--la-surface-subtle)',
                                 padding: '16px 20px',
                                 fontSize: '15px',
                                 fontWeight: '600',
-                                color: '#48484A',
+                                color: 'var(--text-muted)',
                             }}>
                             <div style={{ display: 'flex' }}>
                                 <div style={{ flex: '1' }}>别名</div>
@@ -935,7 +959,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 style={{
                                     padding: '40px',
                                     textAlign: 'center',
-                                    color: '#8E8E93',
+                                    color: 'var(--la-text-muted)',
                                     fontSize: '15px',
                                 }}>
                                 暂无分类别名
@@ -958,14 +982,14 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 display: 'flex',
                                                 padding: '16px 20px',
                                                 borderBottom:
-                                                    '1px solid rgba(0,0,0,0.06)',
+                                                    '1px solid color-mix(in srgb, black 8%, transparent)',
                                                 alignItems: 'center',
                                                 transition:
                                                     'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                             }}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor =
-                                                    '#F2F2F7';
+                                                    'var(--la-surface-subtle)';
                                             }}
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.backgroundColor =
@@ -978,7 +1002,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                     fontFamily:
                                                         'Monaco, "SF Mono", monospace',
                                                     fontWeight: '600',
-                                                    color: '#007AFF',
+                                                    color: 'var(--la-accent)',
                                                 }}>
                                                 {alias}
                                             </div>
@@ -986,7 +1010,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 style={{
                                                     flex: '2',
                                                     fontSize: '15px',
-                                                    color: '#1C1C1E',
+                                                    color: 'var(--la-text-strong)',
                                                 }}>
                                                 {isEditing ? (
                                                     <input
@@ -1022,11 +1046,11 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                             fontSize: '15px',
                                                             width: '100%',
                                                             backgroundColor:
-                                                                '#F2F2F7',
-                                                            color: '#1C1C1E',
+                                                                'var(--la-surface-subtle)',
+                                                            color: 'var(--la-text-strong)',
                                                             outline: 'none',
                                                             fontFamily:
-                                                                '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                                                                'var(--la-font)',
                                                         }}
                                                         autoFocus
                                                     />
@@ -1044,11 +1068,11 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                     style={{
                                                         backgroundColor:
                                                             usageCount > 0
-                                                                ? '#34C759'
-                                                                : '#8E8E93',
+                                                                ? 'var(--la-success)'
+                                                                : 'var(--la-text-muted)',
                                                         color: 'white',
                                                         padding: '4px 10px',
-                                                        borderRadius: '12px',
+                                                        borderRadius: 'var(--la-radius-sm)',
                                                         fontSize: '13px',
                                                         fontWeight: '600',
                                                     }}>
@@ -1078,7 +1102,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                                 padding:
                                                                     '6px 14px',
                                                                 backgroundColor:
-                                                                    '#34C759',
+                                                                    'var(--la-success)',
                                                                 color: 'white',
                                                                 border: 'none',
                                                                 borderRadius:
@@ -1103,7 +1127,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                                 padding:
                                                                     '6px 14px',
                                                                 backgroundColor:
-                                                                    '#8E8E93',
+                                                                    'var(--la-text-muted)',
                                                                 color: 'white',
                                                                 border: 'none',
                                                                 borderRadius:
@@ -1134,7 +1158,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                                 padding:
                                                                     '6px 14px',
                                                                 backgroundColor:
-                                                                    '#007AFF',
+                                                                    'var(--la-accent)',
                                                                 color: 'white',
                                                                 border: 'none',
                                                                 borderRadius:
@@ -1161,7 +1185,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                                 padding:
                                                                     '6px 14px',
                                                                 backgroundColor:
-                                                                    '#FF3B30',
+                                                                    'var(--la-danger)',
                                                                 color: 'white',
                                                                 border: 'none',
                                                                 borderRadius:
@@ -1195,28 +1219,28 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                             margin: '0 0 16px 0',
                             fontSize: '22px',
                             fontWeight: '600',
-                            color: '#1C1C1E',
+                            color: 'var(--la-text-strong)',
                         }}>
                         高级管理功能
                     </h3>
                     {/* iOS 风格使用情况分析 */}
                     <div
                         style={{
-                            backgroundColor: '#ffffff',
+                            backgroundColor: 'var(--la-surface)',
                             padding: '20px',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             marginBottom: '20px',
                             border: 'none',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            boxShadow: 'var(--la-shadow-sm)',
                         }}>
                         <h4
                             style={{
                                 margin: '0 0 16px 0',
                                 fontSize: '17px',
                                 fontWeight: '600',
-                                color: '#48484A',
+                                color: 'var(--text-muted)',
                             }}>
-                            📊 使用情况分析
+                            <BarChart2 size={18} /> 使用情况分析
                         </h4>
                         {usageStats && (
                             <div
@@ -1229,15 +1253,15 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 <div
                                     style={{
                                         padding: '16px',
-                                        backgroundColor: '#F2F2F7',
-                                        borderRadius: '14px',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        borderRadius: 'var(--la-radius-sm)',
                                         border: 'none',
                                     }}>
                                     <div
                                         style={{
                                             fontSize: '28px',
                                             fontWeight: '700',
-                                            color: '#007AFF',
+                                            color: 'var(--la-accent)',
                                             marginBottom: '4px',
                                         }}>
                                         {usageStats.totalTags}
@@ -1245,7 +1269,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     <div
                                         style={{
                                             fontSize: '15px',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                             fontWeight: '500',
                                         }}>
                                         总标签数
@@ -1254,15 +1278,15 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 <div
                                     style={{
                                         padding: '16px',
-                                        backgroundColor: '#F2F2F7',
-                                        borderRadius: '14px',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        borderRadius: 'var(--la-radius-sm)',
                                         border: 'none',
                                     }}>
                                     <div
                                         style={{
                                             fontSize: '28px',
                                             fontWeight: '700',
-                                            color: '#34C759',
+                                            color: 'var(--la-success)',
                                             marginBottom: '4px',
                                         }}>
                                         {usageStats.usedTags}
@@ -1270,7 +1294,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     <div
                                         style={{
                                             fontSize: '15px',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                             fontWeight: '500',
                                         }}>
                                         使用中标签
@@ -1279,15 +1303,15 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 <div
                                     style={{
                                         padding: '16px',
-                                        backgroundColor: '#F2F2F7',
-                                        borderRadius: '14px',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        borderRadius: 'var(--la-radius-sm)',
                                         border: 'none',
                                     }}>
                                     <div
                                         style={{
                                             fontSize: '28px',
                                             fontWeight: '700',
-                                            color: '#FF9500',
+                                            color: 'var(--la-warning)',
                                             marginBottom: '4px',
                                         }}>
                                         {usageStats.totalCategories}
@@ -1295,7 +1319,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     <div
                                         style={{
                                             fontSize: '15px',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                             fontWeight: '500',
                                         }}>
                                         总分类数
@@ -1304,15 +1328,15 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 <div
                                     style={{
                                         padding: '16px',
-                                        backgroundColor: '#F2F2F7',
-                                        borderRadius: '14px',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        borderRadius: 'var(--la-radius-sm)',
                                         border: 'none',
                                     }}>
                                     <div
                                         style={{
                                             fontSize: '28px',
                                             fontWeight: '700',
-                                            color: '#AF52DE',
+                                            color: 'var(--la-purple)',
                                             marginBottom: '4px',
                                         }}>
                                         {usageStats.usedCategories}
@@ -1320,7 +1344,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     <div
                                         style={{
                                             fontSize: '15px',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                             fontWeight: '500',
                                         }}>
                                         使用中分类
@@ -1341,22 +1365,22 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                         {/* 未使用的标签 */}
                         <div
                             style={{
-                                backgroundColor: '#ffffff',
-                                borderRadius: '16px',
+                                backgroundColor: 'var(--la-surface)',
+                                borderRadius: 'var(--la-radius-md)',
                                 overflow: 'hidden',
                                 border: 'none',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                boxShadow: 'var(--la-shadow-sm)',
                             }}>
                             <div
                                 style={{
                                     background:
-                                        'linear-gradient(135deg, #FF9500 0%, #FF6B00 100%)',
+                                        'var(--la-gradient-warning)',
                                     padding: '14px 20px',
                                     fontSize: '15px',
                                     fontWeight: '600',
                                     color: 'white',
                                 }}>
-                                🏷️ 未使用的标签
+                                <Tag size={18} /> 未使用的标签
                             </div>
                             <div
                                 style={{
@@ -1378,7 +1402,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 display: 'flex',
                                                 padding: '12px 20px',
                                                 borderBottom:
-                                                    '1px solid rgba(0,0,0,0.06)',
+                                                    '1px solid color-mix(in srgb, black 8%, transparent)',
                                                 alignItems: 'center',
                                                 justifyContent: 'space-between',
                                                 transition:
@@ -1386,7 +1410,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                             }}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor =
-                                                    '#F2F2F7';
+                                                    'var(--la-surface-subtle)';
                                             }}
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.backgroundColor =
@@ -1397,7 +1421,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                     style={{
                                                         fontFamily:
                                                             'Monaco, "SF Mono", monospace',
-                                                        color: '#8E8E93',
+                                                        color: 'var(--la-text-muted)',
                                                         fontSize: '14px',
                                                         fontWeight: '600',
                                                     }}>
@@ -1406,14 +1430,14 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span
                                                     style={{
                                                         margin: '0 8px',
-                                                        color: '#C7C7CC',
+                                                        color: 'var(--la-border)',
                                                     }}>
                                                     →
                                                 </span>
                                                 <span
                                                     style={{
                                                         fontSize: '15px',
-                                                        color: '#48484A',
+                                                        color: 'var(--text-muted)',
                                                     }}>
                                                     {fullName}
                                                 </span>
@@ -1427,10 +1451,10 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 }
                                                 style={{
                                                     padding: '6px 14px',
-                                                    backgroundColor: '#FF3B30',
+                                                    backgroundColor: 'var(--la-danger)',
                                                     color: 'white',
                                                     border: 'none',
-                                                    borderRadius: '10px',
+                                                    borderRadius: 'var(--la-radius-xs)',
                                                     cursor: 'pointer',
                                                     fontSize: '13px',
                                                     fontWeight: '600',
@@ -1452,10 +1476,10 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                         style={{
                                             padding: '40px 20px',
                                             textAlign: 'center',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                             fontSize: '15px',
                                         }}>
-                                        ✅ 所有标签都在使用中
+                                        <CheckCircle size={18} /> 所有标签都在使用中
                                     </div>
                                 )}
                             </div>
@@ -1464,22 +1488,22 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                         {/* 未使用的分类 */}
                         <div
                             style={{
-                                backgroundColor: '#ffffff',
-                                borderRadius: '16px',
+                                backgroundColor: 'var(--la-surface)',
+                                borderRadius: 'var(--la-radius-md)',
                                 overflow: 'hidden',
                                 border: 'none',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                boxShadow: 'var(--la-shadow-sm)',
                             }}>
                             <div
                                 style={{
                                     background:
-                                        'linear-gradient(135deg, #AF52DE 0%, #9C27B0 100%)',
+                                        'linear-gradient(135deg, var(--la-purple) 0%, var(--la-purple) 100%)',
                                     padding: '14px 20px',
                                     fontSize: '15px',
                                     fontWeight: '600',
                                     color: 'white',
                                 }}>
-                                📂 未使用的分类
+                                <Folder size={18} /> 未使用的分类
                             </div>
                             <div
                                 style={{
@@ -1501,7 +1525,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 display: 'flex',
                                                 padding: '12px 20px',
                                                 borderBottom:
-                                                    '1px solid rgba(0,0,0,0.06)',
+                                                    '1px solid color-mix(in srgb, black 8%, transparent)',
                                                 alignItems: 'center',
                                                 justifyContent: 'space-between',
                                                 transition:
@@ -1509,7 +1533,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                             }}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor =
-                                                    '#F2F2F7';
+                                                    'var(--la-surface-subtle)';
                                             }}
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.backgroundColor =
@@ -1520,7 +1544,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                     style={{
                                                         fontFamily:
                                                             'Monaco, "SF Mono", monospace',
-                                                        color: '#8E8E93',
+                                                        color: 'var(--la-text-muted)',
                                                         fontSize: '14px',
                                                         fontWeight: '600',
                                                     }}>
@@ -1529,14 +1553,14 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span
                                                     style={{
                                                         margin: '0 8px',
-                                                        color: '#C7C7CC',
+                                                        color: 'var(--la-border)',
                                                     }}>
                                                     →
                                                 </span>
                                                 <span
                                                     style={{
                                                         fontSize: '15px',
-                                                        color: '#48484A',
+                                                        color: 'var(--text-muted)',
                                                     }}>
                                                     {fullName}
                                                 </span>
@@ -1550,10 +1574,10 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 }
                                                 style={{
                                                     padding: '6px 14px',
-                                                    backgroundColor: '#FF3B30',
+                                                    backgroundColor: 'var(--la-danger)',
                                                     color: 'white',
                                                     border: 'none',
-                                                    borderRadius: '10px',
+                                                    borderRadius: 'var(--la-radius-xs)',
                                                     cursor: 'pointer',
                                                     fontSize: '13px',
                                                     fontWeight: '600',
@@ -1575,10 +1599,10 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                         style={{
                                             padding: '40px 20px',
                                             textAlign: 'center',
-                                            color: '#8E8E93',
+                                            color: 'var(--la-text-muted)',
                                             fontSize: '15px',
                                         }}>
-                                        ✅ 所有分类都在使用中
+                                        <CheckCircle size={18} /> 所有分类都在使用中
                                     </div>
                                 )}
                             </div>
@@ -1587,20 +1611,20 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                     {/* iOS 风格批量操作 */}
                     <div
                         style={{
-                            backgroundColor: '#ffffff',
+                            backgroundColor: 'var(--la-surface)',
                             padding: '20px',
-                            borderRadius: '16px',
+                            borderRadius: 'var(--la-radius-md)',
                             border: 'none',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            boxShadow: 'var(--la-shadow-sm)',
                         }}>
                         <h4
                             style={{
                                 margin: '0 0 16px 0',
                                 fontSize: '17px',
                                 fontWeight: '600',
-                                color: '#48484A',
+                                color: 'var(--text-muted)',
                             }}>
-                            🔧 批量操作
+                            <Wrench size={18} /> 批量操作
                         </h4>
                         <div
                             style={{
@@ -1632,7 +1656,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 .join('\n')}`,
                                         )
                                     ) {
-                                        console.log('🧹 批量清理未使用标签...');
+                                        console.log('批量清理未使用标签...');
                                         unusedTags.forEach(([alias]) => {
                                             globalMetaManager.deleteTagMapping(
                                                 alias,
@@ -1642,23 +1666,23 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                         // 立即保存配置更改 (标签删除不需要更新单词数据，因为它们本来就未使用)
                                         loadConfig();
                                         console.log(
-                                            `✅ 已删除 ${unusedTags.length} 个未使用的标签`,
+                                            `已删除 ${unusedTags.length} 个未使用的标签`,
                                         );
                                     }
                                 }}
                                 style={{
                                     padding: '12px 20px',
-                                    backgroundColor: '#FF9500',
+                                    backgroundColor: 'var(--la-warning)',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     cursor: 'pointer',
                                     fontSize: '15px',
                                     fontWeight: '600',
                                     transition:
                                         'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                     boxShadow:
-                                        '0 2px 8px rgba(255, 149, 0, 0.25)',
+                                        '0 2px 8px color-mix(in srgb, var(--la-warning) 22%, transparent)',
                                 }}>
                                 清理未使用标签
                             </button>
@@ -1686,7 +1710,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 .join('\n')}`,
                                         )
                                     ) {
-                                        console.log('🧹 批量清理未使用分类...');
+                                        console.log('批量清理未使用分类...');
                                         unusedCategories.forEach(([alias]) => {
                                             globalMetaManager.deleteCategoryMapping(
                                                 alias,
@@ -1696,23 +1720,23 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                         // 立即保存配置更改 (分类删除不需要更新单词数据，因为它们本来就未使用)
                                         loadConfig();
                                         console.log(
-                                            `✅ 已删除 ${unusedCategories.length} 个未使用的分类`,
+                                            `已删除 ${unusedCategories.length} 个未使用的分类`,
                                         );
                                     }
                                 }}
                                 style={{
                                     padding: '12px 20px',
-                                    backgroundColor: '#AF52DE',
+                                    backgroundColor: 'var(--la-purple)',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     cursor: 'pointer',
                                     fontSize: '15px',
                                     fontWeight: '600',
                                     transition:
                                         'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
                                     boxShadow:
-                                        '0 2px 8px rgba(175, 82, 222, 0.25)',
+                                        '0 2px 8px color-mix(in srgb, var(--la-purple) 22%, transparent)',
                                 }}>
                                 清理未使用分类
                             </button>
@@ -1728,10 +1752,10 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 }}
                                 style={{
                                     padding: '12px 20px',
-                                    backgroundColor: '#8E8E93',
+                                    backgroundColor: 'var(--la-text-muted)',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '12px',
+                                    borderRadius: 'var(--la-radius-sm)',
                                     cursor: 'pointer',
                                     fontSize: '15px',
                                     fontWeight: '600',
@@ -1752,7 +1776,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                             margin: '0 0 16px 0',
                             fontSize: '22px',
                             fontWeight: '600',
-                            color: '#1C1C1E',
+                            color: 'var(--la-text-strong)',
                         }}>
                         系统统计信息
                     </h3>
@@ -1769,11 +1793,11 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                         <div
                             style={{
                                 background:
-                                    'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)',
+                                    'var(--la-gradient-accent)',
                                 padding: '20px',
-                                borderRadius: '16px',
+                                borderRadius: 'var(--la-radius-md)',
                                 border: 'none',
-                                boxShadow: '0 4px 16px rgba(0, 122, 255, 0.2)',
+                                boxShadow: 'var(--la-shadow-sm)',
                             }}>
                             <div
                                 style={{
@@ -1786,22 +1810,22 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                             </div>
                             <div
                                 style={{
-                                    color: 'rgba(255,255,255,0.85)',
+                                    color: 'var(--la-on-accent-muted)',
                                     fontSize: '15px',
                                     fontWeight: '500',
                                 }}>
-                                🏷️ 标签别名数量
+                                <Tag size={18} /> 标签别名数量
                             </div>
                         </div>
 
                         <div
                             style={{
                                 background:
-                                    'linear-gradient(135deg, #AF52DE 0%, #9C27B0 100%)',
+                                    'linear-gradient(135deg, var(--la-purple) 0%, var(--la-purple) 100%)',
                                 padding: '20px',
-                                borderRadius: '16px',
+                                borderRadius: 'var(--la-radius-md)',
                                 border: 'none',
-                                boxShadow: '0 4px 16px rgba(175, 82, 222, 0.2)',
+                                boxShadow: '0 4px 16px color-mix(in srgb, var(--la-purple) 18%, transparent)',
                             }}>
                             <div
                                 style={{
@@ -1814,22 +1838,22 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                             </div>
                             <div
                                 style={{
-                                    color: 'rgba(255,255,255,0.85)',
+                                    color: 'var(--la-on-accent-muted)',
                                     fontSize: '15px',
                                     fontWeight: '500',
                                 }}>
-                                📂 分类别名数量
+                                <Folder size={18} /> 分类别名数量
                             </div>
                         </div>
 
                         <div
                             style={{
                                 background:
-                                    'linear-gradient(135deg, #34C759 0%, #30A14E 100%)',
+                                    'var(--la-gradient-success)',
                                 padding: '20px',
-                                borderRadius: '16px',
+                                borderRadius: 'var(--la-radius-md)',
                                 border: 'none',
-                                boxShadow: '0 4px 16px rgba(52, 199, 89, 0.2)',
+                                boxShadow: '0 4px 16px color-mix(in srgb, var(--la-success) 18%, transparent)',
                             }}>
                             <div
                                 style={{
@@ -1842,22 +1866,22 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                             </div>
                             <div
                                 style={{
-                                    color: 'rgba(255,255,255,0.85)',
+                                    color: 'var(--la-on-accent-muted)',
                                     fontSize: '15px',
                                     fontWeight: '500',
                                 }}>
-                                💾 节省字符数
+                                <HardDrive size={18} /> 节省字符数
                             </div>
                         </div>
 
                         <div
                             style={{
                                 background:
-                                    'linear-gradient(135deg, #FF9500 0%, #FF6B00 100%)',
+                                    'var(--la-gradient-warning)',
                                 padding: '20px',
-                                borderRadius: '16px',
+                                borderRadius: 'var(--la-radius-md)',
                                 border: 'none',
-                                boxShadow: '0 4px 16px rgba(255, 149, 0, 0.2)',
+                                boxShadow: '0 4px 16px color-mix(in srgb, var(--la-warning) 18%, transparent)',
                             }}>
                             <div
                                 style={{
@@ -1870,11 +1894,11 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                             </div>
                             <div
                                 style={{
-                                    color: 'rgba(255,255,255,0.85)',
+                                    color: 'var(--la-on-accent-muted)',
                                     fontSize: '15px',
                                     fontWeight: '500',
                                 }}>
-                                📝 单词总数
+                                <FileText size={18} /> 单词总数
                             </div>
                         </div>
                     </div>
@@ -1884,21 +1908,21 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                         <div
                             style={{
                                 marginBottom: '20px',
-                                backgroundColor: '#ffffff',
-                                borderRadius: '16px',
+                                backgroundColor: 'var(--la-surface)',
+                                borderRadius: 'var(--la-radius-md)',
                                 overflow: 'hidden',
                                 border: 'none',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                boxShadow: 'var(--la-shadow-sm)',
                             }}>
                             <div
                                 style={{
-                                    backgroundColor: '#F2F2F7',
+                                    backgroundColor: 'var(--la-surface-subtle)',
                                     padding: '16px 20px',
                                     fontSize: '17px',
                                     fontWeight: '600',
-                                    color: '#48484A',
+                                    color: 'var(--text-muted)',
                                 }}>
-                                📊 详细使用统计
+                                <BarChart2 size={18} /> 详细使用统计
                             </div>
                             <div style={{ padding: '20px' }}>
                                 <div
@@ -1912,7 +1936,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                         <h5
                                             style={{
                                                 margin: '0 0 12px 0',
-                                                color: '#007AFF',
+                                                color: 'var(--la-accent)',
                                                 fontSize: '17px',
                                                 fontWeight: '600',
                                             }}>
@@ -1921,7 +1945,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                         <div
                                             style={{
                                                 fontSize: '15px',
-                                                color: '#48484A',
+                                                color: 'var(--text-muted)',
                                                 lineHeight: '1.8',
                                             }}>
                                             <div
@@ -1933,7 +1957,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span>总标签数：</span>
                                                 <strong
                                                     style={{
-                                                        color: '#1C1C1E',
+                                                        color: 'var(--la-text-strong)',
                                                     }}>
                                                     {usageStats.totalTags}
                                                 </strong>
@@ -1947,7 +1971,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span>使用中：</span>
                                                 <strong
                                                     style={{
-                                                        color: '#34C759',
+                                                        color: 'var(--la-success)',
                                                     }}>
                                                     {usageStats.usedTags}
                                                 </strong>
@@ -1961,7 +1985,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span>未使用：</span>
                                                 <strong
                                                     style={{
-                                                        color: '#FF3B30',
+                                                        color: 'var(--la-danger)',
                                                     }}>
                                                     {usageStats.totalTags -
                                                         usageStats.usedTags}
@@ -1976,7 +2000,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span>使用率：</span>
                                                 <strong
                                                     style={{
-                                                        color: '#1C1C1E',
+                                                        color: 'var(--la-text-strong)',
                                                     }}>
                                                     {usageStats.totalTags > 0
                                                         ? Math.round(
@@ -1994,7 +2018,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                         <h5
                                             style={{
                                                 margin: '0 0 12px 0',
-                                                color: '#AF52DE',
+                                                color: 'var(--la-purple)',
                                                 fontSize: '17px',
                                                 fontWeight: '600',
                                             }}>
@@ -2003,7 +2027,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                         <div
                                             style={{
                                                 fontSize: '15px',
-                                                color: '#48484A',
+                                                color: 'var(--text-muted)',
                                                 lineHeight: '1.8',
                                             }}>
                                             <div
@@ -2015,7 +2039,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span>总分类数：</span>
                                                 <strong
                                                     style={{
-                                                        color: '#1C1C1E',
+                                                        color: 'var(--la-text-strong)',
                                                     }}>
                                                     {usageStats.totalCategories}
                                                 </strong>
@@ -2029,7 +2053,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span>使用中：</span>
                                                 <strong
                                                     style={{
-                                                        color: '#34C759',
+                                                        color: 'var(--la-success)',
                                                     }}>
                                                     {usageStats.usedCategories}
                                                 </strong>
@@ -2043,7 +2067,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span>未使用：</span>
                                                 <strong
                                                     style={{
-                                                        color: '#FF3B30',
+                                                        color: 'var(--la-danger)',
                                                     }}>
                                                     {usageStats.totalCategories -
                                                         usageStats.usedCategories}
@@ -2058,7 +2082,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                                 <span>使用率：</span>
                                                 <strong
                                                     style={{
-                                                        color: '#1C1C1E',
+                                                        color: 'var(--la-text-strong)',
                                                     }}>
                                                     {usageStats.totalCategories >
                                                     0
@@ -2078,13 +2102,13 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     style={{
                                         marginTop: '20px',
                                         padding: '16px',
-                                        backgroundColor: '#F2F2F7',
-                                        borderRadius: '14px',
+                                        backgroundColor: 'var(--la-surface-subtle)',
+                                        borderRadius: 'var(--la-radius-sm)',
                                     }}>
                                     <h5
                                         style={{
                                             margin: '0 0 12px 0',
-                                            color: '#48484A',
+                                            color: 'var(--text-muted)',
                                             fontSize: '17px',
                                             fontWeight: '600',
                                         }}>
@@ -2093,7 +2117,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     <div
                                         style={{
                                             fontSize: '15px',
-                                            color: '#48484A',
+                                            color: 'var(--text-muted)',
                                             lineHeight: '1.8',
                                         }}>
                                         <div
@@ -2103,7 +2127,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                             }}>
                                             <span>总节省字符：</span>
                                             <strong
-                                                style={{ color: '#34C759' }}>
+                                                style={{ color: 'var(--la-success)' }}>
                                                 {stats.spaceSaved}
                                             </strong>
                                         </div>
@@ -2114,7 +2138,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                             }}>
                                             <span>平均每个单词节省：</span>
                                             <strong
-                                                style={{ color: '#1C1C1E' }}>
+                                                style={{ color: 'var(--la-text-strong)' }}>
                                                 {words.length > 0
                                                     ? Math.round(
                                                           stats.spaceSaved /
@@ -2131,7 +2155,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                             }}>
                                             <span>预估空间节省率：</span>
                                             <strong
-                                                style={{ color: '#FF9500' }}>
+                                                style={{ color: 'var(--la-warning)' }}>
                                                 约 35%
                                             </strong>
                                         </div>
@@ -2146,24 +2170,24 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                         style={{
                             marginTop: '20px',
                             padding: '20px',
-                            backgroundColor: '#ffffff',
-                            borderRadius: '16px',
+                            backgroundColor: 'var(--la-surface)',
+                            borderRadius: 'var(--la-radius-md)',
                             border: 'none',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                            boxShadow: 'var(--la-shadow-sm)',
                         }}>
                         <h4
                             style={{
                                 margin: '0 0 16px 0',
                                 fontSize: '17px',
                                 fontWeight: '600',
-                                color: '#48484A',
+                                color: 'var(--text-muted)',
                             }}>
-                            🔍 配置详情
+                            <Search size={18} /> 配置详情
                         </h4>
                         <div
                             style={{
                                 fontSize: '15px',
-                                color: '#48484A',
+                                color: 'var(--text-muted)',
                                 lineHeight: '1.8',
                             }}>
                             <div
@@ -2173,7 +2197,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     marginBottom: '8px',
                                 }}>
                                 <strong>版本:</strong>{' '}
-                                <span style={{ color: '#8E8E93' }}>
+                                <span style={{ color: 'var(--la-text-muted)' }}>
                                     {config.version}
                                 </span>
                             </div>
@@ -2184,10 +2208,10 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                     marginBottom: '8px',
                                 }}>
                                 <strong>最后更新:</strong>{' '}
-                                <span style={{ color: '#8E8E93' }}>
-                                    {new Date(
-                                        config.lastUpdate || '',
-                                    ).toLocaleString()}
+                                <span style={{ color: 'var(--la-text-muted)' }}>
+                                    {formatTimestampForDisplay(
+                                        config.lastUpdate,
+                                    ) || '暂无记录'}
                                 </span>
                             </div>
                             <div
@@ -2199,7 +2223,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 <strong>总别名数量:</strong>{' '}
                                 <span
                                     style={{
-                                        color: '#007AFF',
+                                        color: 'var(--la-accent)',
                                         fontWeight: '600',
                                     }}>
                                     {Object.keys(config.tags).length +
@@ -2210,17 +2234,17 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 style={{
                                     marginTop: '16px',
                                     padding: '12px 16px',
-                                    backgroundColor: '#F2F2F7',
-                                    borderRadius: '12px',
-                                    borderLeft: '4px solid #007AFF',
+                                    backgroundColor: 'var(--la-surface-subtle)',
+                                    borderRadius: 'var(--la-radius-sm)',
+                                    borderLeft: '4px solid var(--la-accent)',
                                 }}>
-                                <strong style={{ color: '#1C1C1E' }}>
-                                    💡 优势:
+                                <strong style={{ color: 'var(--la-text-strong)' }}>
+                                    <Lightbulb size={16} /> 优势:
                                 </strong>
                                 <div
                                     style={{
                                         marginTop: '4px',
-                                        color: '#48484A',
+                                        color: 'var(--text-muted)',
                                     }}>
                                     双层元数据系统通过别名映射显著减少存储空间，提高文档可读性和维护效率
                                 </div>

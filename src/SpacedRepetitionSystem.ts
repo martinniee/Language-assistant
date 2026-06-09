@@ -2,6 +2,7 @@
 // 基于Anki的SM2算法实现
 
 import { Word, WordHelper } from './MarkdownWordStorage';
+import { formatTimestamp } from './utils/date';
 
 export enum ReviewResult {
     AGAIN = 0, // 陌生 - 完全不记得
@@ -237,7 +238,7 @@ export class SRSAlgorithm {
      */
     updateWordSRSData(word: Word, response: ReviewResponse): Word {
         const calculation = this.calculateNextReview(word, response);
-        const now = new Date().toISOString();
+        const now = formatTimestamp();
         const updatedWord: Word = {
             ...word,
             itemMeta: {
@@ -247,7 +248,7 @@ export class SRSAlgorithm {
             srsMeta: {
                 ...word.srsMeta,
                 srsLevel: calculation.newSrsLevel,
-                nextReviewDate: calculation.nextReviewDate.toISOString(),
+                nextReviewDate: formatTimestamp(calculation.nextReviewDate),
                 lastReviewDate: now,
                 reviewCount: WordHelper.getReviewCount(word) + 1,
                 correctCount:
