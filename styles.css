@@ -954,6 +954,10 @@
     color: color-mix(in srgb, var(--la-text-strong) 82%, var(--la-text-muted));
 }
 
+.la-word-detail .la-rich-text-markdown p {
+    margin: 0;
+}
+
 .la-word-detail-content {
     display: grid;
     gap: 18px;

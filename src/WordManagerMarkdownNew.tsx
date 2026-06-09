@@ -50,6 +50,8 @@ const getSortableTimestamp = (
 };
 
 export default function WordManagerMarkdown({
+    app,
+    markdownSourcePath,
     words,
     onAdd,
     onEdit,
@@ -1903,17 +1905,27 @@ export default function WordManagerMarkdown({
                             {/* 鏄剧ず澶囨敞淇℃伅 */}
                             {currentWord.notes &&
                                 currentWord.notes.trim() && (
-                                    <p className="la-word-detail-note">
+                                    <div className="la-word-detail-note">
                                         <strong>备注:</strong>{' '}
-                                        <RichText text={currentWord.notes} />
-                                    </p>
+                                        <RichText
+                                            app={app}
+                                            as="div"
+                                            renderMarkdown
+                                            sourcePath={markdownSourcePath}
+                                            text={currentWord.notes}
+                                        />
+                                    </div>
                                 )}
                         </div>{' '}
                         <div className="la-word-detail-content">
                             <h3 className="la-word-detail-section-title">
                                 详细内容
                             </h3>
-                            <WordDetailOutline word={currentWord} />
+                            <WordDetailOutline
+                                app={app}
+                                markdownSourcePath={markdownSourcePath}
+                                word={currentWord}
+                            />
                         </div>
                     </div>
                 </>

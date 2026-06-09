@@ -1,6 +1,9 @@
 import { Word } from '../MarkdownWordStorage';
+import type { App } from 'obsidian';
 
 export interface WordManagerProps {
+    app: App;
+    markdownSourcePath: string;
     words: Word[];
     onAdd: (word: Word) => void;
     onEdit: (word: Word, originalWord?: Word, silent?: boolean) => void;
@@ -15,6 +18,8 @@ export type ViewMode =
     | 'settings'
     | 'global-meta';
 export interface MainAppProps {
+    app: App;
+    markdownSourcePath: string;
     words: Word[];
     onAdd: (word: Word) => void;
     onEdit: (word: Word, originalWord?: Word, silent?: boolean) => void;

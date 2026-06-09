@@ -1,4 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import {
+    Component as ObsidianComponent,
+    MarkdownRenderer,
+    type App,
+} from 'obsidian';
 
 type RichTextColor = 'red' | 'blue' | 'green';
 
@@ -6,6 +11,9 @@ interface RichTextProps {
     text?: string | null;
     className?: string;
     as?: 'span' | 'div';
+    app?: App;
+    sourcePath?: string;
+    renderMarkdown?: boolean;
 }
 
 interface TokenMatch {
@@ -235,10 +243,63 @@ export default function RichText({
     text,
     className,
     as = 'span',
+    app,
+    sourcePath = '',
+    renderMarkdown = false,
 }: RichTextProps): React.ReactElement {
-    const Component = as;
+    const containerRef = useRef<HTMLElement | null>(null);
+    const Element = as;
     const value = text || '';
-    const classNames = ['la-rich-text', className].filter(Boolean).join(' ');
+    const classNames = [
+        'la-rich-text',
+        renderMarkdown ? 'la-rich-text-markdown' : '',
+        className,
+    ]
+        .filter(Boolean)
+        .join(' ');
+    const setContainerRef = (element: HTMLElement | null): void => {
+        containerRef.current = element;
+    };
 
-    return <Component className={classNames}>{parseInlineRichText(value)}</Component>;
+    useEffect(() => {
+        if (!renderMarkdown || !app) return;
+
+        const container = containerRef.current;
+        if (!container) return;
+
+        const markdownComponent = new ObsidianComponent();
+        markdownComponent.load();
+        container.empty();
+
+        /**
+         * 使用 Obsidian 原生 Markdown 渲染器解析详情页文本，使 wiki 链接保持阅读视图一致的跳转行为。
+         */
+        const render = async (): Promise<void> => {
+            try {
+                await MarkdownRenderer.render(
+                    app,
+                    value,
+                    container,
+                    sourcePath,
+                    markdownComponent,
+                );
+            } catch (error) {
+                console.error('渲染 Obsidian Markdown 文本失败:', error);
+                container.setText(value);
+            }
+        };
+
+        void render();
+
+        return () => {
+            markdownComponent.unload();
+            container.empty();
+        };
+    }, [app, renderMarkdown, sourcePath, value]);
+
+    if (renderMarkdown && app) {
+        return <Element className={classNames} ref={setContainerRef} />;
+    }
+
+    return <Element className={classNames}>{parseInlineRichText(value)}</Element>;
 }

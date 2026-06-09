@@ -1,14 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, MoreHorizontal } from 'lucide-react';
+import type { App } from 'obsidian';
 import type { Word } from '../../MarkdownWordStorage';
 import { getWordId } from '../../utils/wordManager';
 import { RichText } from '../common';
 
 interface WordDetailOutlineProps {
+    app: App;
+    markdownSourcePath: string;
     word: Word;
 }
 
 export default function WordDetailOutline({
+    app,
+    markdownSourcePath,
     word,
 }: WordDetailOutlineProps): React.ReactElement {
     const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(
@@ -161,6 +166,12 @@ export default function WordDetailOutline({
                                                         <div className="la-word-detail-definition-text">
                                                             {hasDefinition ? (
                                                                 <RichText
+                                                                    app={app}
+                                                                    as="div"
+                                                                    renderMarkdown
+                                                                    sourcePath={
+                                                                        markdownSourcePath
+                                                                    }
                                                                     text={
                                                                         def.definition
                                                                     }
@@ -223,6 +234,14 @@ export default function WordDetailOutline({
                                                                                         -
                                                                                     </span>
                                                                                     <RichText
+                                                                                        app={
+                                                                                            app
+                                                                                        }
+                                                                                        as="div"
+                                                                                        renderMarkdown
+                                                                                        sourcePath={
+                                                                                            markdownSourcePath
+                                                                                        }
                                                                                         text={
                                                                                             example.text
                                                                                         }

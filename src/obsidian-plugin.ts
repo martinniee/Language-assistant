@@ -243,6 +243,8 @@ export class WordManagerView extends ItemView {
             this.root.render(
                 React.createElement(MainApp, {
                     key: this.renderKey, // 添加key强制重新渲染
+                    app: this.app,
+                    markdownSourcePath: this.plugin.settings.wordsFilePath,
                     words: [...this.words], // 创建新数组引用确保React检测到变化
                     onAdd: this.handleAddWord.bind(this),
                     onEdit: this.handleEditWord.bind(this),
@@ -261,6 +263,8 @@ export class WordManagerView extends ItemView {
             this.root.render(
                 React.createElement(MainApp, {
                     key: this.renderKey, // 保持相同的 key，不重置组件状态
+                    app: this.app,
+                    markdownSourcePath: this.plugin.settings.wordsFilePath,
                     words: [...this.words], // 创建新数组引用确保React检测到变化
                     onAdd: this.handleAddWord.bind(this),
                     onEdit: this.handleEditWord.bind(this),

@@ -17,6 +17,8 @@ import { MainAppProps, ViewMode } from './types/WordManagerType';
 import { getNavigationItems } from './data/data';
 
 const MainApp: React.FC<MainAppProps> = ({
+    app,
+    markdownSourcePath,
     words,
     onAdd,
     onEdit,
@@ -89,6 +91,8 @@ const MainApp: React.FC<MainAppProps> = ({
             case 'home':
                 return (
                     <WordManagerMarkdown
+                        app={app}
+                        markdownSourcePath={markdownSourcePath}
                         words={words}
                         onAdd={onAdd}
                         onEdit={onEdit}

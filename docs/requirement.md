@@ -63,6 +63,7 @@ Language Assistant 是一个 Obsidian 单词管理插件，用于在 Obsidian �
 - 支持删除单词，并有确认提示。
 - 支持查看单词详情。
 - 单词详情页支持受限富文本展示：备注、定义、例句可渲染基础 Markdown 字体样式和白名单颜色标签。
+- 单词详情页的备注、定义、例句必须支持 Obsidian wiki 链接解析渲染，例如 `[[gangs]]`、`[[English-vobs-db#battle|battle]]`，并保持与 Obsidian 默认内部链接一致的跳转行为；目标文件或标题不存在时保持 Obsidian 默认行为。
 - 支持从 UI 跳转到 Markdown 源文件中对应单词位置。
 - 支持搜索单词、分类、标签等内容。
 - 支持可选全文高亮。
@@ -117,11 +118,11 @@ Language Assistant 是一个 Obsidian 单词管理插件，用于在 Obsidian �
 - 父文件夹不存在时会自动创建。
 - 支持读取、解析、保存 Markdown 词库。
 - 支持新格式数据区块：
-  - `%%data-start%%`
-  - `%%global-meta...%%`
-  - `%%item-meta{...}%%`
-  - `%%srs-meta{...}%%`
-  - `%%data-end%%`
+    - `%%data-start%%`
+    - `%%global-meta...%%`
+    - `%%item-meta{...}%%`
+    - `%%srs-meta{...}%%`
+    - `%%data-end%%`
 - 仍需兼容旧格式字段。
 - 加载时会检测重复单词，并保留最后出现的版本。
 - 新写入的时间戳统一使用本地时间 `YYYYMMDDHHmm` 格式，例如 `202606081430`。
@@ -129,18 +130,19 @@ Language Assistant 是一个 Obsidian 单词管理插件，用于在 Obsidian �
 - 编辑单词内容并保存时必须刷新 `itemMeta.lastUpdate`；仅因搜索后查看详情触发的静默查询次数更新不得刷新 `lastUpdate`。
 - Markdown 文档中的备注、定义、例句允许写入基础 Markdown 字体样式，并在 app 页面做受限渲染；存储时仍按原始文本保存，不改变 Markdown 存储格式。
 - App 页面富文本渲染当前支持 `*斜体*`、`**粗体**`、`***粗斜体***`，以及 `<span style="color:red|blue|green">文本</span>`、`<font color="red|blue|green">文本</font>` 这类白名单颜色标签。
+- 单词详情页应使用 Obsidian 原生 Markdown 渲染能力解析备注、定义、例句中的 wiki 链接；示例：`*The police was killed in the crossfire with criminal [[gangs]].* [[English-vobs-db#battle|battle]]` 应渲染斜体文本，并将 `[[gangs]]` 与 `[[English-vobs-db#battle|battle]]` 渲染为可点击的 Obsidian 内部链接。
 - 富文本渲染不得直接执行任意 HTML；除红、蓝、绿及其基础 hex 等价写法外，其它标签、属性和颜色应保持为普通文本或不做富文本处理。
 
 ### 间隔重复学习
 
 - 支持 SRS 元数据：
-  - `srsLevel`
-  - `nextReviewDate`
-  - `lastReviewDate`
-  - `reviewCount`
-  - `correctCount`
-  - `ease`
-  - `interval`
+    - `srsLevel`
+    - `nextReviewDate`
+    - `lastReviewDate`
+    - `reviewCount`
+    - `correctCount`
+    - `ease`
+    - `interval`
 - 主导航显示今日待学数量。
 - 支持进入间隔学习页面。
 - SRS 的 `nextReviewDate` 与 `lastReviewDate` 新写入时使用 `YYYYMMDDHHmm`，比较与排序时通过统一时间解析工具还原为 `Date`。
@@ -176,12 +178,12 @@ Language Assistant 是一个 Obsidian 单词管理插件，用于在 Obsidian �
 - 新增或修改文案后，应检查搜索框、按钮、筛选器、弹窗、详情页、错误提示等主要入口是否存在乱码。
 - 样式应尽量集中在 `styles.css`。
 - 优先使用 Obsidian CSS 变量，例如：
-  - `--background-primary`
-  - `--background-secondary`
-  - `--text-normal`
-  - `--text-muted`
-  - `--interactive-accent`
-  - `--background-modifier-border`
+    - `--background-primary`
+    - `--background-secondary`
+    - `--text-normal`
+    - `--text-muted`
+    - `--interactive-accent`
+    - `--background-modifier-border`
 - 避免页面组件分散硬编码色彩、过度渐变、强制亮色主题和 `!important`；必要的视觉基线色值应集中在 `styles.css` 的设计 token 中。
 - 交互控件需要可键盘访问。
 - 图标按钮需要 `aria-label` 或等价可访问名称。
@@ -223,12 +225,12 @@ Language Assistant 是一个 Obsidian 单词管理插件，用于在 Obsidian �
 - 不得破坏已有 `words.md` 数据。
 - 修改 Markdown 序列化格式时必须提供旧格式读取兼容。
 - 修改 `Word` 类型时必须同步检查：
-  - `MarkdownWordStorage.ts`
-  - `WordManagerMarkdownNew.tsx`
-  - `SpacedRepetitionLearning.tsx`
-  - `DataStatistics.tsx`
-  - `ImportExport.tsx`
-  - `GlobalMetaConfig.tsx`
+    - `MarkdownWordStorage.ts`
+    - `WordManagerMarkdownNew.tsx`
+    - `SpacedRepetitionLearning.tsx`
+    - `DataStatistics.tsx`
+    - `ImportExport.tsx`
+    - `GlobalMetaConfig.tsx`
 - 修改存储路径设置时必须考虑已打开视图的刷新。
 - 删除功能必须保留确认提示，避免误删词库数据。
 - 批量更新功能必须保持数据保存的一致性。
@@ -291,4 +293,8 @@ npm run build-app
 - 重新设计单词详情页层级内容 UI：新增 `WordDetailOutline` 组件，将词性、定义、例句组织为轻量 outline 结构；各层级通过小型 chevron 图标独立折叠/展开，视觉上只保留缩进、淡色引导线和文本权重，不再使用突兀的额外边框或背景；该改动仅影响详情页展示和测验式折叠交互，不改变 Markdown 数据结构或存储格式。
 - 优化单词详情页层级折叠图标视觉：保留 chevron 点击区域和键盘焦点能力，但去除圆形背景、阴影感和 hover 圆底，避免图标控件干扰内容层级阅读。
 - 修复详情页折叠图标被全局 `.la-page button` 样式覆盖的问题：对 outline 内的 `button.la-detail-toggle` 增加局部样式重置，确保只显示折叠/展开图标本身，不显示白色按钮背景、边框或阴影。
-- 2026-06-09：调整单词详情页备注展示；备注从基础信息右侧列中移出，作为元信息区直接子项横跨整行展示；样式改为与当前浅灰蓝 Soft UI 配色一致的低对比备注卡片，不改变 `notes` 字段、Markdown 存储格式或编辑逻辑。
+
+### 2026-06-09
+
+- 调整单词详情页备注展示；备注从基础信息右侧列中移出，作为元信息区直接子项横跨整行展示；样式改为与当前浅灰蓝 Soft UI 配色一致的低对比备注卡片，不改变 `notes` 字段、Markdown 存储格式或编辑逻辑。
+- 增强单词详情页富文本渲染；备注、定义、例句中的 Obsidian wiki 链接改为通过原生 Markdown 渲染能力解析，例如 `[[gangs]]`、`[[English-vobs-db#battle|battle]]`，目标文件或标题不存在时保持 Obsidian 默认行为；该改动仅影响详情页展示，不改变 `Word` 数据结构、Markdown 存储格式或编辑逻辑。
