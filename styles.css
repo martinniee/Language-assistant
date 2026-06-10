@@ -1272,6 +1272,89 @@
     font-family: var(--la-font);
 }
 
+.la-definition-editor,
+.la-example-editor {
+    position: relative;
+}
+
+.la-definition-editor.is-drop-before::before,
+.la-definition-editor.is-drop-after::after,
+.la-example-editor.is-drop-before::before,
+.la-example-editor.is-drop-after::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--la-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--la-accent) 14%, transparent);
+}
+
+.la-definition-editor.is-drop-before::before {
+    top: -2px;
+    left: 14px;
+    right: 14px;
+}
+
+.la-definition-editor.is-drop-after::after {
+    bottom: -2px;
+    left: 14px;
+    right: 14px;
+}
+
+.la-example-editor.is-drop-before::before {
+    top: -5px;
+    left: 20px;
+    right: 0;
+}
+
+.la-example-editor.is-drop-after::after {
+    bottom: -5px;
+    left: 20px;
+    right: 0;
+}
+
+.la-example-drop-line {
+    height: 3px;
+    margin: 8px 0 10px 20px;
+    border-radius: 999px;
+    background: var(--la-warning);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--la-warning) 16%, transparent);
+}
+
+.la-page button.la-reorder-button {
+    width: 26px;
+    height: 26px;
+    min-height: 0;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--la-text-muted) 18%, transparent);
+    border-radius: 6px;
+    box-shadow: none;
+    color: var(--la-text-strong);
+    line-height: 1;
+    flex: 0 0 auto;
+    gap: 0;
+}
+
+.la-page button.la-reorder-button svg {
+    display: block;
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.4;
+}
+
+.la-page button.la-reorder-button:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
+.la-page button.la-reorder-button:hover:not(:disabled),
+.la-page button.la-reorder-button:focus-visible:not(:disabled) {
+    border-color: color-mix(in srgb, var(--la-accent) 36%, var(--la-border));
+    color: var(--la-accent);
+    box-shadow: var(--la-shadow-sm);
+}
+
 .la-random-practice {
     display: grid;
     gap: 16px;

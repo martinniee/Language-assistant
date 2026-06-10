@@ -42,6 +42,27 @@ import { parseTimestamp } from './utils/date';
 
 type WordSortKey = 'name' | 'date' | 'recentAdded' | 'queryCount' | 'category';
 
+type DefinitionDragPayload = {
+    partIndex: number;
+    defIndex: number;
+};
+
+type ExampleDragPayload = DefinitionDragPayload & {
+    exIndex: number;
+};
+
+type DropPosition = 'before' | 'after';
+
+type DefinitionDropTarget = DefinitionDragPayload & {
+    position: DropPosition;
+    insertIndex: number;
+};
+
+type ExampleDropTarget = ExampleDragPayload & {
+    position: DropPosition;
+    insertIndex: number;
+};
+
 const getSortableTimestamp = (
     value?: string | null,
     fallbackValue?: string | null,
@@ -74,6 +95,12 @@ export default function WordManagerMarkdown({
     const rootRef = useRef<HTMLDivElement>(null);
     const listScrollTopRef = useRef(0);
     const shouldRestoreListScrollRef = useRef(false);
+    const definitionDragRef = useRef<DefinitionDragPayload | null>(null);
+    const exampleDragRef = useRef<ExampleDragPayload | null>(null);
+    const [definitionDropTarget, setDefinitionDropTarget] =
+        useState<DefinitionDropTarget | null>(null);
+    const [exampleDropTarget, setExampleDropTarget] =
+        useState<ExampleDropTarget | null>(null);
 
     /**
      * 获取当前插件内容区的滚动容器，列表和详情共用该容器。
@@ -540,6 +567,165 @@ export default function WordManagerMarkdown({
         },
         [],
     ); // 鍒犻櫎鍔熻兘鐨勫洖璋冨嚱鏁?- 甯︾‘璁ゆ彁绀?
+    /**
+     * 复制内容树，避免排序定义或例句时直接修改 React 状态中的嵌套数组引用。
+     */
+    const cloneContentForReorder = useCallback(
+        (content: Word['content']): Word['content'] =>
+            content.map((part) => ({
+                ...part,
+                definitions: part.definitions.map((definition) => ({
+                    ...definition,
+                    examples: [...definition.examples],
+                })),
+            })),
+        [],
+    );
+
+    /**
+     * 根据拖拽指针所在元素的上下半区，计算插入线应该显示在目标前方还是后方。
+     */
+    const getDropPosition = useCallback(
+        (event: React.DragEvent<HTMLElement>): DropPosition => {
+            const bounds = event.currentTarget.getBoundingClientRect();
+            return event.clientY < bounds.top + bounds.height / 2
+                ? 'before'
+                : 'after';
+        },
+        [],
+    );
+
+    /**
+     * 在同一个词性内移动定义顺序，保存后会自然写回 Markdown 的数组顺序。
+     */
+    const handleMoveDefinition = useCallback(
+        (partIndex: number, fromIndex: number, targetInsertIndex: number) => {
+            setForm((current) => {
+                const content = cloneContentForReorder(current.content);
+                const definitions = content[partIndex]?.definitions;
+                if (!definitions) return current;
+                if (fromIndex < 0 || fromIndex >= definitions.length) {
+                    return current;
+                }
+
+                const [definition] = definitions.splice(fromIndex, 1);
+                let insertIndex = Math.max(
+                    0,
+                    Math.min(targetInsertIndex, definitions.length + 1),
+                );
+                if (fromIndex < insertIndex) {
+                    insertIndex -= 1;
+                }
+                if (fromIndex === insertIndex) return current;
+
+                definitions.splice(insertIndex, 0, definition);
+
+                return { ...current, content };
+            });
+        },
+        [cloneContentForReorder],
+    );
+
+    /**
+     * 在同一个词性内移动例句；目标定义可以不同，用于跨定义调整例句归属和顺序。
+     */
+    const handleMoveExample = useCallback(
+        (
+            sourcePartIndex: number,
+            sourceDefIndex: number,
+            sourceExIndex: number,
+            targetPartIndex: number,
+            targetDefIndex: number,
+            targetExIndex: number,
+        ) => {
+            if (sourcePartIndex !== targetPartIndex) return;
+
+            setForm((current) => {
+                const content = cloneContentForReorder(current.content);
+                const definitions = content[sourcePartIndex]?.definitions;
+                const sourceExamples = definitions?.[sourceDefIndex]?.examples;
+                const targetExamples = definitions?.[targetDefIndex]?.examples;
+                if (!sourceExamples || !targetExamples) return current;
+                if (sourceExIndex < 0 || sourceExIndex >= sourceExamples.length) {
+                    return current;
+                }
+
+                const [example] = sourceExamples.splice(sourceExIndex, 1);
+                let insertIndex = Math.max(
+                    0,
+                    Math.min(targetExIndex, targetExamples.length),
+                );
+
+                if (
+                    sourceDefIndex === targetDefIndex &&
+                    sourceExIndex < insertIndex
+                ) {
+                    insertIndex -= 1;
+                }
+
+                targetExamples.splice(insertIndex, 0, example);
+
+                return { ...current, content };
+            });
+        },
+        [cloneContentForReorder],
+    );
+
+    const handleMoveExampleStep = useCallback(
+        (
+            partIndex: number,
+            defIndex: number,
+            exIndex: number,
+            direction: -1 | 1,
+        ) => {
+            const definitions = form.content[partIndex]?.definitions || [];
+            const currentExamples = definitions[defIndex]?.examples || [];
+
+            if (direction === -1) {
+                if (exIndex > 0) {
+                    handleMoveExample(
+                        partIndex,
+                        defIndex,
+                        exIndex,
+                        partIndex,
+                        defIndex,
+                        exIndex - 1,
+                    );
+                } else if (defIndex > 0) {
+                    const previousExamples =
+                        definitions[defIndex - 1]?.examples || [];
+                    handleMoveExample(
+                        partIndex,
+                        defIndex,
+                        exIndex,
+                        partIndex,
+                        defIndex - 1,
+                        previousExamples.length,
+                    );
+                }
+            } else if (exIndex < currentExamples.length - 1) {
+                handleMoveExample(
+                    partIndex,
+                    defIndex,
+                    exIndex,
+                    partIndex,
+                    defIndex,
+                    exIndex + 2,
+                );
+            } else if (defIndex < definitions.length - 1) {
+                handleMoveExample(
+                    partIndex,
+                    defIndex,
+                    exIndex,
+                    partIndex,
+                    defIndex + 1,
+                    0,
+                );
+            }
+        },
+        [form.content, handleMoveExample],
+    );
+
     const handleRemovePart = useCallback(
         (partIndex: number) => {
             const partType = form.content[partIndex].type || '未命名词性';
@@ -3374,6 +3560,176 @@ export default function WordManagerMarkdown({
                                             (def, defIndex) => (
                                                 <div
                                                     key={defIndex}
+                                                    className={[
+                                                        'la-definition-editor',
+                                                        definitionDropTarget?.partIndex ===
+                                                            partIndex &&
+                                                        definitionDropTarget.defIndex ===
+                                                            defIndex
+                                                            ? `is-drop-${definitionDropTarget.position}`
+                                                            : '',
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(' ')}
+                                                    draggable
+                                                    onDragStart={(event) => {
+                                                        event.dataTransfer.effectAllowed =
+                                                            'move';
+                                                        definitionDragRef.current =
+                                                            {
+                                                                partIndex,
+                                                                defIndex,
+                                                            };
+                                                        exampleDragRef.current =
+                                                            null;
+                                                        setDefinitionDropTarget(
+                                                            null,
+                                                        );
+                                                        setExampleDropTarget(
+                                                            null,
+                                                        );
+                                                    }}
+                                                    onDragOver={(event) => {
+                                                        const draggedExample =
+                                                            exampleDragRef.current;
+                                                        if (
+                                                            draggedExample?.partIndex ===
+                                                            partIndex
+                                                        ) {
+                                                            event.preventDefault();
+                                                            const insertIndex =
+                                                                def.examples
+                                                                    .length;
+                                                            setExampleDropTarget(
+                                                                {
+                                                                    partIndex,
+                                                                    defIndex,
+                                                                    exIndex: insertIndex,
+                                                                    position:
+                                                                        'after',
+                                                                    insertIndex,
+                                                                },
+                                                            );
+                                                            setDefinitionDropTarget(
+                                                                null,
+                                                            );
+                                                            return;
+                                                        }
+
+                                                        const draggedDefinition =
+                                                            definitionDragRef.current;
+                                                        if (
+                                                            draggedDefinition?.partIndex ===
+                                                            partIndex
+                                                        ) {
+                                                            event.preventDefault();
+                                                            const position =
+                                                                getDropPosition(
+                                                                    event,
+                                                                );
+                                                            setDefinitionDropTarget(
+                                                                {
+                                                                    partIndex,
+                                                                    defIndex,
+                                                                    position,
+                                                                    insertIndex:
+                                                                        defIndex +
+                                                                        (position ===
+                                                                        'after'
+                                                                            ? 1
+                                                                            : 0),
+                                                                },
+                                                            );
+                                                            setExampleDropTarget(
+                                                                null,
+                                                            );
+                                                        }
+                                                    }}
+                                                    onDrop={(event) => {
+                                                        event.preventDefault();
+                                                        const draggedExample =
+                                                            exampleDragRef.current;
+                                                        const dropPosition =
+                                                            getDropPosition(
+                                                                event,
+                                                            );
+                                                        const targetExampleIndex =
+                                                            exampleDropTarget?.partIndex ===
+                                                                partIndex &&
+                                                            exampleDropTarget.defIndex ===
+                                                                defIndex
+                                                                ? exampleDropTarget.insertIndex
+                                                                : part
+                                                                      .definitions[
+                                                                      defIndex
+                                                                  ].examples
+                                                                      .length;
+                                                        const targetDefinitionIndex =
+                                                            definitionDropTarget?.partIndex ===
+                                                                partIndex &&
+                                                            definitionDropTarget.defIndex ===
+                                                                defIndex
+                                                                ? definitionDropTarget.insertIndex
+                                                                : defIndex +
+                                                                  (dropPosition ===
+                                                                  'after'
+                                                                      ? 1
+                                                                      : 0);
+                                                        setDefinitionDropTarget(
+                                                            null,
+                                                        );
+                                                        setExampleDropTarget(
+                                                            null,
+                                                        );
+                                                        if (draggedExample) {
+                                                            exampleDragRef.current =
+                                                                null;
+                                                            if (
+                                                                draggedExample.partIndex !==
+                                                                partIndex
+                                                            ) {
+                                                                return;
+                                                            }
+                                                            handleMoveExample(
+                                                                draggedExample.partIndex,
+                                                                draggedExample.defIndex,
+                                                                draggedExample.exIndex,
+                                                                partIndex,
+                                                                defIndex,
+                                                                targetExampleIndex,
+                                                            );
+                                                            return;
+                                                        }
+
+                                                        const dragged =
+                                                            definitionDragRef.current;
+                                                        definitionDragRef.current =
+                                                            null;
+                                                        if (
+                                                            !dragged ||
+                                                            dragged.partIndex !==
+                                                                partIndex
+                                                        ) {
+                                                            return;
+                                                        }
+                                                        handleMoveDefinition(
+                                                            partIndex,
+                                                            dragged.defIndex,
+                                                            targetDefinitionIndex,
+                                                        );
+                                                    }}
+                                                    onDragEnd={() => {
+                                                        definitionDragRef.current =
+                                                            null;
+                                                        exampleDragRef.current =
+                                                            null;
+                                                        setDefinitionDropTarget(
+                                                            null,
+                                                        );
+                                                        setExampleDropTarget(
+                                                            null,
+                                                        );
+                                                    }}
                                                     style={{
                                                         padding: '10px 14px',
                                                         borderBottom:
@@ -3395,8 +3751,21 @@ export default function WordManagerMarkdown({
                                                             color="var(--la-success)"
                                                             style={{
                                                                 flexShrink: 0,
+                                                                cursor: 'grab',
                                                             }}
                                                         />
+                                                        <span
+                                                            title="拖拽定义排序"
+                                                            style={{
+                                                                color: 'var(--la-text-muted)',
+                                                                cursor: 'grab',
+                                                                fontSize: '16px',
+                                                                lineHeight: 1,
+                                                                userSelect:
+                                                                    'none',
+                                                            }}>
+                                                            ⋮⋮
+                                                        </span>
                                                         <input
                                                             type="text"
                                                             value={
@@ -3434,6 +3803,102 @@ export default function WordManagerMarkdown({
                                                                 outline: 'none',
                                                             }}
                                                         />
+                                                        <button
+                                                            type="button"
+                                                            className="la-reorder-button"
+                                                            disabled={
+                                                                defIndex === 0
+                                                            }
+                                                            onClick={() =>
+                                                                handleMoveDefinition(
+                                                                    partIndex,
+                                                                    defIndex,
+                                                                    defIndex - 1,
+                                                                )
+                                                            }
+                                                            title="上移定义"
+                                                            style={{
+                                                                width: 26,
+                                                                height: 26,
+                                                                border: 'none',
+                                                                backgroundColor:
+                                                                    'var(--la-surface-subtle)',
+                                                                color:
+                                                                    defIndex ===
+                                                                    0
+                                                                        ? 'var(--la-text-faint)'
+                                                                        : 'var(--la-text-muted)',
+                                                                borderRadius:
+                                                                    '6px',
+                                                                cursor:
+                                                                    defIndex ===
+                                                                    0
+                                                                        ? 'not-allowed'
+                                                                        : 'pointer',
+                                                                display: 'flex',
+                                                                alignItems:
+                                                                    'center',
+                                                                justifyContent:
+                                                                    'center',
+                                                                flexShrink: 0,
+                                                            }}>
+                                                            <ChevronUp
+                                                                size={12}
+                                                            />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="la-reorder-button"
+                                                            disabled={
+                                                                defIndex ===
+                                                                part
+                                                                    .definitions
+                                                                    .length -
+                                                                    1
+                                                            }
+                                                            onClick={() =>
+                                                                handleMoveDefinition(
+                                                                    partIndex,
+                                                                    defIndex,
+                                                                    defIndex + 2,
+                                                                )
+                                                            }
+                                                            title="下移定义"
+                                                            style={{
+                                                                width: 26,
+                                                                height: 26,
+                                                                border: 'none',
+                                                                backgroundColor:
+                                                                    'var(--la-surface-subtle)',
+                                                                color:
+                                                                    defIndex ===
+                                                                    part
+                                                                        .definitions
+                                                                        .length -
+                                                                        1
+                                                                        ? 'var(--la-text-faint)'
+                                                                        : 'var(--la-text-muted)',
+                                                                borderRadius:
+                                                                    '6px',
+                                                                cursor:
+                                                                    defIndex ===
+                                                                    part
+                                                                        .definitions
+                                                                        .length -
+                                                                        1
+                                                                        ? 'not-allowed'
+                                                                        : 'pointer',
+                                                                display: 'flex',
+                                                                alignItems:
+                                                                    'center',
+                                                                justifyContent:
+                                                                    'center',
+                                                                flexShrink: 0,
+                                                            }}>
+                                                            <ChevronDown
+                                                                size={12}
+                                                            />
+                                                        </button>
                                                         {part.definitions
                                                             .length > 1 && (
                                                             <button
@@ -3471,6 +3936,131 @@ export default function WordManagerMarkdown({
                                                         (example, exIndex) => (
                                                             <div
                                                                 key={exIndex}
+                                                                className={
+                                                                    exampleDropTarget?.partIndex ===
+                                                                        partIndex &&
+                                                                    exampleDropTarget.defIndex ===
+                                                                        defIndex &&
+                                                                    exampleDropTarget.exIndex ===
+                                                                        exIndex
+                                                                        ? `la-example-editor is-drop-${exampleDropTarget.position}`
+                                                                        : 'la-example-editor'
+                                                                }
+                                                                draggable
+                                                                onDragStart={(
+                                                                    event,
+                                                                ) => {
+                                                                    event.stopPropagation();
+                                                                    event.dataTransfer.effectAllowed =
+                                                                        'move';
+                                                                    exampleDragRef.current =
+                                                                        {
+                                                                            partIndex,
+                                                                            defIndex,
+                                                                            exIndex,
+                                                                        };
+                                                                    definitionDragRef.current =
+                                                                        null;
+                                                                    setDefinitionDropTarget(
+                                                                        null,
+                                                                    );
+                                                                    setExampleDropTarget(
+                                                                        null,
+                                                                    );
+                                                                }}
+                                                                onDragOver={(
+                                                                    event,
+                                                                ) => {
+                                                                    if (
+                                                                        exampleDragRef
+                                                                            .current
+                                                                            ?.partIndex !==
+                                                                        partIndex
+                                                                    ) {
+                                                                        return;
+                                                                    }
+                                                                    event.preventDefault();
+                                                                    event.stopPropagation();
+                                                                    const position =
+                                                                        getDropPosition(
+                                                                            event,
+                                                                        );
+                                                                    setExampleDropTarget(
+                                                                        {
+                                                                            partIndex,
+                                                                            defIndex,
+                                                                            exIndex,
+                                                                            position,
+                                                                            insertIndex:
+                                                                                exIndex +
+                                                                                (position ===
+                                                                                'after'
+                                                                                    ? 1
+                                                                                    : 0),
+                                                                        },
+                                                                    );
+                                                                    setDefinitionDropTarget(
+                                                                        null,
+                                                                    );
+                                                                }}
+                                                                onDrop={(
+                                                                    event,
+                                                                ) => {
+                                                                    event.preventDefault();
+                                                                    event.stopPropagation();
+                                                                    const dragged =
+                                                                        exampleDragRef.current;
+                                                                    const dropPosition =
+                                                                        getDropPosition(
+                                                                            event,
+                                                                        );
+                                                                    const targetExampleIndex =
+                                                                        exampleDropTarget?.partIndex ===
+                                                                            partIndex &&
+                                                                        exampleDropTarget.defIndex ===
+                                                                            defIndex &&
+                                                                        exampleDropTarget.exIndex ===
+                                                                            exIndex
+                                                                            ? exampleDropTarget.insertIndex
+                                                                            : exIndex +
+                                                                              (dropPosition ===
+                                                                              'after'
+                                                                                  ? 1
+                                                                                  : 0);
+                                                                    exampleDragRef.current =
+                                                                        null;
+                                                                    setDefinitionDropTarget(
+                                                                        null,
+                                                                    );
+                                                                    setExampleDropTarget(
+                                                                        null,
+                                                                    );
+                                                                    if (
+                                                                        !dragged
+                                                                    ) {
+                                                                        return;
+                                                                    }
+                                                                    handleMoveExample(
+                                                                        dragged.partIndex,
+                                                                        dragged.defIndex,
+                                                                        dragged.exIndex,
+                                                                        partIndex,
+                                                                        defIndex,
+                                                                        targetExampleIndex,
+                                                                    );
+                                                                }}
+                                                                onDragEnd={() => {
+                                                                    definitionDragRef.current =
+                                                                        null;
+                                                                    exampleDragRef.current =
+                                                                        null;
+                                                                    setDefinitionDropTarget(
+                                                                        null,
+                                                                    );
+                                                                    setExampleDropTarget(
+                                                                        null,
+                                                                    );
+                                                                }}
                                                                 style={{
                                                                     display:
                                                                         'flex',
@@ -3487,8 +4077,23 @@ export default function WordManagerMarkdown({
                                                                     color="var(--la-warning)"
                                                                     style={{
                                                                         flexShrink: 0,
+                                                                        cursor: 'grab',
                                                                     }}
                                                                 />
+                                                                <span
+                                                                    title="拖拽例句排序"
+                                                                    style={{
+                                                                        color: 'var(--la-text-muted)',
+                                                                        cursor: 'grab',
+                                                                        fontSize:
+                                                                            '14px',
+                                                                        lineHeight: 1,
+                                                                        userSelect:
+                                                                            'none',
+                                                                        flexShrink: 0,
+                                                                    }}>
+                                                                    ⋮
+                                                                </span>
                                                                 <input
                                                                     type="text"
                                                                     value={
@@ -3534,6 +4139,78 @@ export default function WordManagerMarkdown({
                                                                     }}
                                                                 />
                                                                 <button
+                                                                    type="button"
+                                                                    className="la-reorder-button"
+                                                                    onClick={() =>
+                                                                        handleMoveExampleStep(
+                                                                            partIndex,
+                                                                            defIndex,
+                                                                            exIndex,
+                                                                            -1,
+                                                                        )
+                                                                    }
+                                                                    title="上移例句"
+                                                                    style={{
+                                                                        width: 24,
+                                                                        height: 24,
+                                                                        border: 'none',
+                                                                        backgroundColor:
+                                                                            'var(--la-surface-subtle)',
+                                                                        color: 'var(--la-text-muted)',
+                                                                        borderRadius:
+                                                                            '6px',
+                                                                        cursor: 'pointer',
+                                                                        display:
+                                                                            'flex',
+                                                                        alignItems:
+                                                                            'center',
+                                                                        justifyContent:
+                                                                            'center',
+                                                                        flexShrink: 0,
+                                                                    }}>
+                                                                    <ChevronUp
+                                                                        size={
+                                                                            11
+                                                                        }
+                                                                    />
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="la-reorder-button"
+                                                                    onClick={() =>
+                                                                        handleMoveExampleStep(
+                                                                            partIndex,
+                                                                            defIndex,
+                                                                            exIndex,
+                                                                            1,
+                                                                        )
+                                                                    }
+                                                                    title="下移例句"
+                                                                    style={{
+                                                                        width: 24,
+                                                                        height: 24,
+                                                                        border: 'none',
+                                                                        backgroundColor:
+                                                                            'var(--la-surface-subtle)',
+                                                                        color: 'var(--la-text-muted)',
+                                                                        borderRadius:
+                                                                            '6px',
+                                                                        cursor: 'pointer',
+                                                                        display:
+                                                                            'flex',
+                                                                        alignItems:
+                                                                            'center',
+                                                                        justifyContent:
+                                                                            'center',
+                                                                        flexShrink: 0,
+                                                                    }}>
+                                                                    <ChevronDown
+                                                                        size={
+                                                                            11
+                                                                        }
+                                                                    />
+                                                                </button>
+                                                                <button
                                                                     onClick={() =>
                                                                         handleRemoveExample(
                                                                             partIndex,
@@ -3568,6 +4245,19 @@ export default function WordManagerMarkdown({
                                                             </div>
                                                         ),
                                                     )}
+
+                                                    {exampleDropTarget?.partIndex ===
+                                                        partIndex &&
+                                                        exampleDropTarget.defIndex ===
+                                                            defIndex &&
+                                                        exampleDropTarget.exIndex ===
+                                                            def.examples
+                                                                .length && (
+                                                            <div
+                                                                className="la-example-drop-line"
+                                                                aria-hidden="true"
+                                                            />
+                                                        )}
 
                                                     <button
                                                         onClick={() =>
