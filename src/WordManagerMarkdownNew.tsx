@@ -33,6 +33,7 @@ import {
     getWordQueryCount,
 } from './utils/wordManager';
 import {
+    RandomWordPractice,
     WordCard,
     WordDetailOutline,
 } from './components/word-manager';
@@ -59,6 +60,7 @@ export default function WordManagerMarkdown({
     onJumpToSource,
 }: WordManagerProps) {
     const [showAdd, setShowAdd] = useState(false);
+    const [showRandomPractice, setShowRandomPractice] = useState(false);
     const [editTarget, setEditTarget] = useState<Word | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [enableFullHighlight, setEnableFullHighlight] = useState(false);
@@ -684,6 +686,18 @@ export default function WordManagerMarkdown({
         // 鍥犱负 viewCount 宸茬粡閫氳繃 onEdit 闈欓粯妯″紡鏇存柊鍒板唴瀛樹腑
         // 璋冪敤 onRefresh() 浼氬鑷存暣涓粍浠堕噸鏂版覆鏌擄紝涓㈠け绛涢€夋潯浠?
     }, []); // 甯︾‘璁ゆ彁绀虹殑鍗曡瘝鍒犻櫎鍑芥暟
+    /**
+     * 从随机曝光面板进入详情页时只切换视图，不更新查询次数或任何学习数据。
+     */
+    const handleOpenRandomWordDetail = useCallback(
+        (word: Word) => {
+            saveListScrollPosition();
+            setCurrentWord(word);
+            setViewMode('detail');
+        },
+        [saveListScrollPosition],
+    );
+
     const handleDeleteWord = useCallback(
         (word: Word) => {
             const wordName = word.name;
@@ -957,6 +971,34 @@ export default function WordManagerMarkdown({
                                 <Plus size={16} /> 添加单词
                             </button>
 
+                            <button
+                                onClick={() =>
+                                    setShowRandomPractice((value) => !value)
+                                }
+                                style={{
+                                    padding: '12px 16px',
+                                    backgroundColor: showRandomPractice
+                                        ? 'var(--la-accent-bg)'
+                                        : 'var(--la-surface-subtle)',
+                                    color: showRandomPractice
+                                        ? 'var(--la-accent)'
+                                        : 'var(--la-text-muted)',
+                                    border: 'none',
+                                    borderRadius: 'var(--la-radius-sm)',
+                                    cursor: 'pointer',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    transition:
+                                        'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    fontFamily:
+                                        'var(--la-font)',
+                                }}>
+                                <Sparkles size={16} /> 随机单词
+                            </button>
+
                             {/* iOS 椋庢牸绛涢€夋寜閽?*/}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
@@ -1018,6 +1060,14 @@ export default function WordManagerMarkdown({
                         </div>
                     </div>
                     {/* iOS 椋庢牸灞曠ず鎺у埗鏍?*/}
+                    {showRandomPractice && (
+                        <RandomWordPractice
+                            app={app}
+                            markdownSourcePath={markdownSourcePath}
+                            onOpenDetail={handleOpenRandomWordDetail}
+                            words={words}
+                        />
+                    )}
                     <div
                         style={{
                             display: 'flex',
