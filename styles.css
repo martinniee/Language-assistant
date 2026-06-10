@@ -1651,6 +1651,12 @@
     gap: var(--size-4-3);
 }
 
+.la-word-title-group {
+    display: grid;
+    min-width: 0;
+    gap: 6px;
+}
+
 .la-word-title {
     min-width: 0;
     margin: 0;
@@ -1659,6 +1665,16 @@
     font-size: var(--font-ui-large);
     font-weight: var(--font-bold);
     line-height: var(--line-height-tight);
+}
+
+.la-word-phonics {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: color-mix(in srgb, var(--la-text-muted) 76%, var(--la-accent));
+    font-size: var(--font-ui-small);
+    font-weight: 650;
+    line-height: 1.25;
+    letter-spacing: 0;
 }
 
 .la-word-card-badges {

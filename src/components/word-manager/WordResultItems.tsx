@@ -38,12 +38,19 @@ export const WordCard: React.FC<WordResultItemProps> = React.memo(
                     onClick={onViewDetail}
                     aria-label={`查看 ${word.name} 详情`}>
                     <div className="la-word-card-header">
-                        <h3 className="la-word-title">
-                            <HighlightText
-                                text={word.name}
-                                searchTerm={searchTerm}
-                            />
-                        </h3>
+                        <div className="la-word-title-group">
+                            <h3 className="la-word-title">
+                                <HighlightText
+                                    text={word.name}
+                                    searchTerm={searchTerm}
+                                />
+                            </h3>
+                            {word.phonics && (
+                                <div className="la-word-phonics">
+                                    {word.phonics}
+                                </div>
+                            )}
+                        </div>
                         <div className="la-word-card-badges">
                             <span
                                 className="la-word-query-badge"

@@ -82,6 +82,7 @@ Language Assistant 是一个 Obsidian 单词管理插件，用于在 Obsidian �
 
 - `name`：单词名称
 - `pronunciation`：发音
+- `phonics`：自然拼读结构，用户自定义填写，例如 `chro·no·logical`
 - `vocabulary`：词汇字段
 - `partsOfSpeech`：词性概览
 - `notes`：备注
@@ -131,6 +132,7 @@ Language Assistant 是一个 Obsidian 单词管理插件，用于在 Obsidian �
 - 读取时必须兼容旧 ISO 8601 时间戳，例如 `2026-03-14T04:35:19.472Z`，并兼容 `YYYYMMDDHHmm` 与 `YYYY-MM-DD HH:mm`。
 - 编辑单词内容并保存时必须刷新 `itemMeta.lastUpdate`；仅因搜索后查看详情触发的静默查询次数更新不得刷新 `lastUpdate`。
 - Markdown 文档中的备注、定义、例句允许写入基础 Markdown 字体样式，并在 app 页面做受限渲染；存储时仍按原始文本保存，不改变 Markdown 存储格式。
+- Markdown 文档中的自然拼读结构使用 `- 自然拼读: ...` 保存；读取时必须兼容缺失该字段的旧数据，缺失时按空字符串处理。
 - App 页面富文本渲染当前支持 `*斜体*`、`**粗体**`、`***粗斜体***`，以及 `<span style="color:red|blue|green">文本</span>`、`<font color="red|blue|green">文本</font>` 这类白名单颜色标签。
 - 单词详情页应使用 Obsidian 原生 Markdown 渲染能力解析备注、定义、例句中的 wiki 链接；示例：`*The police was killed in the crossfire with criminal [[gangs]].* [[English-vobs-db#battle|battle]]` 应渲染斜体文本，并将 `[[gangs]]` 与 `[[English-vobs-db#battle|battle]]` 渲染为可点击的 Obsidian 内部链接。
 - 富文本渲染不得直接执行任意 HTML；除红、蓝、绿及其基础 hex 等价写法外，其它标签、属性和颜色应保持为普通文本或不做富文本处理。
@@ -159,6 +161,7 @@ Language Assistant 是一个 Obsidian 单词管理插件，用于在 Obsidian �
 
 - 支持进入导入导出页面。
 - 当前导入导出逻辑应保持与 `Word` 数据结构兼容。
+- 导入导出必须支持 `phonics` 字段：JSON 保留字段，CSV/TXT 导出显示自然拼读结构，JSON 导入时读取 `phonics`。
 
 ### 设置
 
@@ -305,3 +308,4 @@ npm run build-app
 
 - 新增单词管理页随机单词轻量练习工具；支持配置抽取数量、从当前词库无放回随机抽样、显示/隐藏释义、本轮内存态“认识/模糊”判断和查看详情；该功能仅增加曝光率，不写回查询次数、SRS 元数据、`itemMeta`、`lastUpdate` 或 Markdown 存储文件。
 - 单词展示卡片标题行新增查询次数徽章，使用图标加数字的胶囊样式突出展示当前 `viewCount`/查询次数；徽章仅展示，不提供交互，不改变查询次数统计、排序或存储逻辑。
+- 新增 `phonics` 自然拼读结构字段；新增/编辑面板允许用户自定义填写，单词展示卡片在单词名称下方展示该字段，详情页基础信息区同步展示；该字段不纳入搜索范围，并同步支持 Markdown 存储、JSON 导入导出、CSV/TXT 导出，旧数据缺失该字段时保持兼容。

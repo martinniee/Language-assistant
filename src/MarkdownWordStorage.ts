@@ -84,6 +84,7 @@ export interface Word {
     // 内容数据（用户可见字段）
     name: string; // 单词名称
     pronunciation: string; // 发音
+    phonics: string; // 自然拼读结构
     vocabulary: string; // 词汇
     partsOfSpeech: string; // 词性概述
     notes: string; // 备注：记忆技巧、简单标注等
@@ -220,6 +221,7 @@ export class WordHelper {
             },
             name: '',
             pronunciation: '',
+            phonics: '',
             vocabulary: '',
             partsOfSpeech: '',
             notes: '',
@@ -262,6 +264,7 @@ export class WordHelper {
             },
             name: legacyWord.name || '',
             pronunciation: legacyWord.pronunciation || '',
+            phonics: legacyWord.phonics || legacyWord.metadata?.phonics || '',
             vocabulary: legacyWord.vocabulary || '',
             partsOfSpeech: legacyWord.partsOfSpeech || '',
             notes: legacyWord.notes || '',
@@ -412,6 +415,10 @@ export class MarkdownWordStorage {
                 // 向后兼容：解析旧格式字段
                 else if (line.startsWith('- 发音:')) {
                     word.pronunciation = line.replace(/^-\s*发音:/, '').trim();
+                } else if (line.startsWith('- 自然拼读:')) {
+                    word.phonics = line.replace(/^-\s*自然拼读:/, '').trim();
+                } else if (line.startsWith('- phonics:')) {
+                    word.phonics = line.replace(/^-\s*phonics:/i, '').trim();
                 } else if (line.startsWith('- 词汇:')) {
                     word.vocabulary = line.replace(/^-\s*词汇:/, '').trim();
                 } else if (
@@ -682,6 +689,9 @@ export class MarkdownWordStorage {
             // 内容字段
             if (word.pronunciation) {
                 markdown += `- 发音: ${word.pronunciation}\n`;
+            }
+            if (word.phonics) {
+                markdown += `- 自然拼读: ${word.phonics}\n`;
             }
             if (word.vocabulary) {
                 markdown += `- 词汇: ${word.vocabulary}\n`;

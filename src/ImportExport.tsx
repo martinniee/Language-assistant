@@ -44,6 +44,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                 const csvHeaders = [
                     '名称',
                     '发音',
+                    '自然拼读',
                     '分类',
                     '等级',
                     '词性',
@@ -53,6 +54,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                 const csvData = words.map((word) => [
                     word.name,
                     word.pronunciation,
+                    word.phonics,
                     word.category,
                     word.level,
                     word.partsOfSpeech,
@@ -95,6 +97,8 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         let text = `${word.name}\n`;
                         if (word.pronunciation)
                             text += `发音: ${word.pronunciation}\n`;
+                        if (word.phonics)
+                            text += `自然拼读: ${word.phonics}\n`;
                         if (word.category) text += `分类: ${word.category}\n`;
                         if (word.level) text += `等级: ${word.level}\n`;
                         if (word.partsOfSpeech)
@@ -162,6 +166,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
                         },
                         name: item.name,
                         pronunciation: item.pronunciation || '',
+                        phonics: item.phonics || item.metadata?.phonics || '',
                         vocabulary: item.vocabulary || '',
                         category: item.category || '',
                         tags: Array.isArray(item.tags) ? item.tags : [],

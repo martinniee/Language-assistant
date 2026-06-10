@@ -1930,6 +1930,12 @@ export default function WordManagerMarkdown({
                                     <strong>发音:</strong>{' '}
                                     {currentWord.pronunciation}
                                 </p>
+                                {currentWord.phonics && (
+                                    <p>
+                                        <strong>自然拼读:</strong>{' '}
+                                        {currentWord.phonics}
+                                    </p>
+                                )}
                                 <p>
                                     <strong>分类:</strong>{' '}
                                     {currentWord.category}
@@ -2176,6 +2182,54 @@ export default function WordManagerMarkdown({
                                         </div>
                                     )}
                                 </div>{' '}
+                                <div
+                                    style={{
+                                        padding: '14px 16px',
+                                        borderBottom: '1px solid var(--la-surface-subtle)',
+                                    }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                        }}>
+                                        <BookMarked
+                                            size={16}
+                                            color="var(--la-accent)"
+                                            style={{ flexShrink: 0 }}
+                                        />
+                                        <label
+                                            style={{
+                                                fontSize: '15px',
+                                                fontWeight: '500',
+                                                color: 'var(--la-text-strong)',
+                                                minWidth: 70,
+                                            }}>
+                                            自然拼读
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={form.phonics}
+                                            onChange={(e) =>
+                                                setForm({
+                                                    ...form,
+                                                    phonics: e.target.value,
+                                                })
+                                            }
+                                            placeholder="例如 chro·no·logical"
+                                            style={{
+                                                flex: 1,
+                                                border: 'none',
+                                                outline: 'none',
+                                                fontSize: '15px',
+                                                color: 'var(--la-text-strong)',
+                                                backgroundColor: 'transparent',
+                                                textAlign: 'right',
+                                                minHeight: '24px',
+                                            }}
+                                        />
+                                    </div>
+                                </div>
                                 {/* 鍙戦煶 */}
                                 <div
                                     style={{
