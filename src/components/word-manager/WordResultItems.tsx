@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, Play, Trash2 } from 'lucide-react';
+import { Edit2, History, Play, Trash2 } from 'lucide-react';
 import { Word, WordHelper } from '../../MarkdownWordStorage';
 import { getWordQueryCount } from '../../utils/wordManager';
 import HighlightText from './HighlightText';
@@ -28,6 +28,7 @@ export const WordCard: React.FC<WordResultItemProps> = React.memo(
         const tags = WordHelper.getTags(word);
         const category = WordHelper.getCategory(word);
         const level = WordHelper.getLevel(word);
+        const queryCount = getWordQueryCount(word);
 
         return (
             <article className="la-word-card">
@@ -43,7 +44,17 @@ export const WordCard: React.FC<WordResultItemProps> = React.memo(
                                 searchTerm={searchTerm}
                             />
                         </h3>
-                        {level && <span className="la-word-level">{level}</span>}
+                        <div className="la-word-card-badges">
+                            <span
+                                className="la-word-query-badge"
+                                aria-label={`查询次数 ${queryCount}`}>
+                                <History size={16} aria-hidden="true" />
+                                <span>{queryCount}</span>
+                            </span>
+                            {level && (
+                                <span className="la-word-level">{level}</span>
+                            )}
+                        </div>
                     </div>
 
                     <dl className="la-word-meta">
