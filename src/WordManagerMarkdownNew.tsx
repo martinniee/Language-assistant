@@ -37,7 +37,7 @@ import {
     WordCard,
     WordDetailOutline,
 } from './components/word-manager';
-import { RichText } from './components/common';
+import { MarkdownFormatField, RichText } from './components/common';
 import { parseTimestamp } from './utils/date';
 
 type WordSortKey = 'name' | 'date' | 'recentAdded' | 'queryCount' | 'category';
@@ -591,6 +591,49 @@ export default function WordManagerMarkdown({
             return event.clientY < bounds.top + bounds.height / 2
                 ? 'before'
                 : 'after';
+        },
+        [],
+    );
+
+    /**
+     * 判断拖拽是否从文本编辑控件或格式工具栏发起，避免排序拖拽抢占文本选择。
+     */
+    const isInteractiveDragSource = useCallback(
+        (event: React.DragEvent<HTMLElement>): boolean => {
+            try {
+                const root = event.currentTarget;
+                const activeElement = root.ownerDocument.activeElement;
+                const isInteractiveElement = (
+                    value: Element | EventTarget | null,
+                ): boolean => {
+                    if (!value || !('closest' in value)) return false;
+                    const element = value as Element;
+                    return Boolean(
+                        element.closest(
+                            [
+                                'input',
+                                'textarea',
+                                'select',
+                                'button',
+                                '.la-markdown-format-field',
+                                '.la-markdown-format-toolbar',
+                                '.la-markdown-link-popover',
+                            ].join(', '),
+                        ),
+                    );
+                };
+
+                return (
+                    isInteractiveElement(event.target) ||
+                    (activeElement
+                        ? root.contains(activeElement) &&
+                          isInteractiveElement(activeElement)
+                        : false)
+                );
+            } catch (error) {
+                console.error('判断文本编辑拖拽来源失败:', error);
+                return false;
+            }
         },
         [],
     );
@@ -3385,16 +3428,20 @@ export default function WordManagerMarkdown({
                                         记忆技巧、学习笔记等
                                     </span>
                                 </div>
-                                <textarea
+                                <MarkdownFormatField
+                                    variant="textarea"
                                     value={form.notes}
-                                    onChange={(e) =>
+                                    onChange={(nextValue) =>
                                         setForm({
                                             ...form,
-                                            notes: e.target.value,
+                                            notes: nextValue,
                                         })
                                     }
                                     placeholder="在此输入记忆技巧、学习笔记或其他备注信息..."
-                                    style={{
+                                    wrapperStyle={{
+                                        width: '100%',
+                                    }}
+                                    inputStyle={{
                                         width: '100%',
                                         padding: '10px 12px',
                                         fontSize: '14px',
@@ -3573,6 +3620,15 @@ export default function WordManagerMarkdown({
                                                         .join(' ')}
                                                     draggable
                                                     onDragStart={(event) => {
+                                                        if (
+                                                            isInteractiveDragSource(
+                                                                event,
+                                                            )
+                                                        ) {
+                                                            event.preventDefault();
+                                                            event.stopPropagation();
+                                                            return;
+                                                        }
                                                         event.dataTransfer.effectAllowed =
                                                             'move';
                                                         definitionDragRef.current =
@@ -3766,13 +3822,12 @@ export default function WordManagerMarkdown({
                                                             }}>
                                                             ⋮⋮
                                                         </span>
-                                                        <input
-                                                            type="text"
+                                                        <MarkdownFormatField
                                                             value={
                                                                 def.definition
                                                             }
                                                             placeholder="输入定义..."
-                                                            onChange={(e) => {
+                                                            onChange={(nextValue) => {
                                                                 const content =
                                                                     [
                                                                         ...form.content,
@@ -3782,14 +3837,18 @@ export default function WordManagerMarkdown({
                                                                 ].definitions[
                                                                     defIndex
                                                                 ].definition =
-                                                                    e.target.value;
+                                                                    nextValue;
                                                                 setForm({
                                                                     ...form,
                                                                     content,
                                                                 });
                                                             }}
-                                                            style={{
+                                                            wrapperStyle={{
                                                                 flex: 1,
+                                                                minWidth: 0,
+                                                            }}
+                                                            inputStyle={{
+                                                                width: '100%',
                                                                 padding:
                                                                     '6px 10px',
                                                                 fontSize:
@@ -3950,6 +4009,15 @@ export default function WordManagerMarkdown({
                                                                 onDragStart={(
                                                                     event,
                                                                 ) => {
+                                                                    if (
+                                                                        isInteractiveDragSource(
+                                                                            event,
+                                                                        )
+                                                                    ) {
+                                                                        event.preventDefault();
+                                                                        event.stopPropagation();
+                                                                        return;
+                                                                    }
                                                                     event.stopPropagation();
                                                                     event.dataTransfer.effectAllowed =
                                                                         'move';
@@ -4094,14 +4162,13 @@ export default function WordManagerMarkdown({
                                                                     }}>
                                                                     ⋮
                                                                 </span>
-                                                                <input
-                                                                    type="text"
+                                                                <MarkdownFormatField
                                                                     value={
                                                                         example.text
                                                                     }
                                                                     placeholder="输入例句..."
                                                                     onChange={(
-                                                                        e,
+                                                                        nextValue,
                                                                     ) => {
                                                                         const content =
                                                                             [
@@ -4114,7 +4181,7 @@ export default function WordManagerMarkdown({
                                                                         ].examples[
                                                                             exIndex
                                                                         ].text =
-                                                                            e.target.value;
+                                                                            nextValue;
                                                                         setForm(
                                                                             {
                                                                                 ...form,
@@ -4122,8 +4189,12 @@ export default function WordManagerMarkdown({
                                                                             },
                                                                         );
                                                                     }}
-                                                                    style={{
+                                                                    wrapperStyle={{
                                                                         flex: 1,
+                                                                        minWidth: 0,
+                                                                    }}
+                                                                    inputStyle={{
+                                                                        width: '100%',
                                                                         padding:
                                                                             '5px 10px',
                                                                         fontSize:

@@ -577,6 +577,132 @@
         0 0 0 3px color-mix(in srgb, var(--la-accent) 18%, transparent);
 }
 
+.la-markdown-format-field {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.la-markdown-format-toolbar {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 3px;
+    flex-wrap: wrap;
+    max-width: 100%;
+    padding: 3px 5px;
+    border: 1px solid color-mix(in srgb, var(--la-soft-shadow) 16%, transparent);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--la-surface-subtle) 92%, white);
+    box-shadow: 2px 2px 5px rgba(163, 177, 198, 0.28),
+        -2px -2px 5px rgba(255, 255, 255, 0.34);
+}
+
+.la-page .la-markdown-format-toolbar button,
+.la-page .la-markdown-link-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--la-soft-shadow) 14%, transparent);
+    border-radius: 8px;
+    background: var(--la-surface);
+    color: var(--la-text-muted);
+    box-shadow: 1px 1px 3px rgba(163, 177, 198, 0.3),
+        -1px -1px 3px rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+}
+
+.la-page .la-markdown-format-toolbar button svg,
+.la-page .la-markdown-link-actions button svg {
+    width: 14px;
+    height: 14px;
+}
+
+.la-page .la-markdown-format-toolbar button:hover,
+.la-page .la-markdown-link-actions button:hover {
+    transform: none;
+    color: var(--la-accent);
+    border-color: var(--la-border-hover);
+    box-shadow: 1px 1px 4px rgba(163, 177, 198, 0.36),
+        -1px -1px 4px rgba(255, 255, 255, 0.4);
+}
+
+.la-markdown-color-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 30px;
+    padding: 0 2px;
+    color: var(--la-text-muted);
+}
+
+.la-page .la-markdown-format-toolbar .la-markdown-color-button {
+    width: 24px;
+    min-width: 24px;
+    background:
+        linear-gradient(var(--la-format-color), var(--la-format-color)),
+        var(--la-surface);
+}
+
+.la-markdown-color-button::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: var(--la-format-color);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, white 60%, transparent);
+}
+
+.la-markdown-link-popover {
+    display: grid;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid color-mix(in srgb, var(--la-soft-shadow) 18%, transparent);
+    border-radius: 10px;
+    background: var(--la-surface);
+    box-shadow: var(--la-shadow-xs);
+}
+
+.la-markdown-link-popover label {
+    display: grid;
+    gap: 4px;
+    color: var(--la-text-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.la-markdown-link-popover input {
+    width: 100%;
+    min-height: 34px;
+    padding: 6px 8px;
+    font-size: 13px;
+}
+
+.la-markdown-link-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.la-page .la-markdown-link-actions button:last-child {
+    width: auto;
+    min-width: 48px;
+    padding: 0 10px;
+    font-size: 12px;
+}
+
+.la-markdown-link-actions .is-danger {
+    color: var(--la-danger);
+    background: var(--la-danger-bg);
+}
+
 .la-chip,
 .la-page [style*='borderRadius: 14'],
 .la-page [style*='borderRadius: \"14'],
