@@ -45,10 +45,15 @@ export interface ItemMetadata {
 }
 
 // SRS 元数据接口
+export type SrsReviewRating = '陌生' | '模糊' | '熟悉' | '简单';
+
 export interface SRSMetadata {
     srsLevel: number; // SRS等级 (0-8，0为新卡片)
     nextReviewDate?: string; // 下次复习日期 (YYYYMMDDHHmm格式)
     lastReviewDate?: string; // 上次复习日期
+    lastReviewAt?: string; // 最近一次点击间隔复习按钮的时间
+    lastReviewResult?: number; // 最近一次间隔复习按钮结果
+    lastReviewRating?: SrsReviewRating; // 最近一次间隔复习程度
     reviewCount: number; // 总复习次数
     correctCount: number; // 正确次数
     ease: number; // 难度因子 (1.3-2.5，默认2.5)
@@ -157,6 +162,35 @@ export class WordHelper {
     static getLastReviewDate(word: Word): Date | null {
         const dateString = word.srsMeta.lastReviewDate;
         return parseTimestamp(dateString);
+    }
+
+    /**
+     * 读取最近一次间隔复习按钮结果，优先使用文字字段，并兼容旧的数字结果字段。
+     */
+    static getLastReviewRating(word: Word): SrsReviewRating | '' {
+        const rating = word.srsMeta.lastReviewRating;
+
+        if (
+            rating === '陌生' ||
+            rating === '模糊' ||
+            rating === '熟悉' ||
+            rating === '简单'
+        ) {
+            return rating;
+        }
+
+        switch (word.srsMeta.lastReviewResult) {
+            case 0:
+                return '陌生';
+            case 1:
+                return '模糊';
+            case 2:
+                return '熟悉';
+            case 3:
+                return '简单';
+            default:
+                return '';
+        }
     }
 
     static getReviewCount(word: Word): number {
@@ -753,6 +787,9 @@ export class MarkdownWordStorage {
         cleaned.lastReviewDate = normalizeTimestampForStorage(
             cleaned.lastReviewDate,
         );
+        cleaned.lastReviewAt = normalizeTimestampForStorage(
+            cleaned.lastReviewAt,
+        );
         // 移除默认值
         if (cleaned.srsLevel === 0) delete cleaned.srsLevel;
         if (cleaned.reviewCount === 0) delete cleaned.reviewCount;
@@ -761,6 +798,10 @@ export class MarkdownWordStorage {
         if (cleaned.interval === 1) delete cleaned.interval;
         if (!cleaned.nextReviewDate) delete cleaned.nextReviewDate;
         if (!cleaned.lastReviewDate) delete cleaned.lastReviewDate;
+        if (!cleaned.lastReviewAt) delete cleaned.lastReviewAt;
+        if (cleaned.lastReviewResult === undefined)
+            delete cleaned.lastReviewResult;
+        if (!cleaned.lastReviewRating) delete cleaned.lastReviewRating;
         return cleaned;
     }
 

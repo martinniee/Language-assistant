@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
-import { Word, WordHelper } from './MarkdownWordStorage';
+import { Word, WordHelper, type SrsReviewRating } from './MarkdownWordStorage';
 import {
     Plus,
     Search,
@@ -42,6 +42,13 @@ import { MarkdownFormatField, RichText } from './components/common';
 import { parseTimestamp } from './utils/date';
 
 type WordSortKey = 'name' | 'date' | 'recentAdded' | 'queryCount' | 'category';
+
+const REVIEW_RATING_OPTIONS: SrsReviewRating[] = [
+    '陌生',
+    '模糊',
+    '熟悉',
+    '简单',
+];
 
 type DefinitionDragPayload = {
     partIndex: number;
@@ -224,6 +231,9 @@ export default function WordManagerMarkdown({
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+    const [selectedReviewRatings, setSelectedReviewRatings] = useState<
+        SrsReviewRating[]
+    >([]);
     const [selectedPartsOfSpeech, setSelectedPartsOfSpeech] = useState<
         string[]
     >([]);
@@ -348,6 +358,14 @@ export default function WordManagerMarkdown({
                     return false;
             }
 
+            // 按最近一次间隔复习按钮结果筛选，未复习单词不会命中任何程度。
+            if (selectedReviewRatings.length > 0) {
+                const lastReviewRating = WordHelper.getLastReviewRating(word);
+                if (!lastReviewRating) return false;
+                if (!selectedReviewRatings.includes(lastReviewRating))
+                    return false;
+            }
+
             // 璇嶆€ц繃婊?
             if (selectedPartsOfSpeech.length > 0) {
                 if (!selectedPartsOfSpeech.includes(word.partsOfSpeech.trim()))
@@ -362,6 +380,7 @@ export default function WordManagerMarkdown({
             selectedTags,
             selectedCategories,
             selectedLevels,
+            selectedReviewRatings,
             selectedPartsOfSpeech,
         ],
     ); // 浣跨敤 useMemo 缂撳瓨杩囨护缁撴灉
@@ -522,6 +541,14 @@ export default function WordManagerMarkdown({
         );
     }, []);
 
+    const handleReviewRatingToggle = useCallback((rating: SrsReviewRating) => {
+        setSelectedReviewRatings((prev) =>
+            prev.includes(rating)
+                ? prev.filter((item) => item !== rating)
+                : [...prev, rating],
+        );
+    }, []);
+
     const handlePartsOfSpeechToggle = useCallback((partsOfSpeech: string) => {
         setSelectedPartsOfSpeech((prev) =>
             prev.includes(partsOfSpeech)
@@ -534,6 +561,7 @@ export default function WordManagerMarkdown({
         setSelectedTags([]);
         setSelectedCategories([]);
         setSelectedLevels([]);
+        setSelectedReviewRatings([]);
         setSelectedPartsOfSpeech([]);
         setSearchTerm('');
         console.log('清除所有筛选');
@@ -1277,6 +1305,7 @@ export default function WordManagerMarkdown({
                                 {selectedTags.length +
                                     selectedCategories.length +
                                     selectedLevels.length +
+                                    selectedReviewRatings.length +
                                     selectedPartsOfSpeech.length >
                                     0 && (
                                     <span
@@ -1293,6 +1322,7 @@ export default function WordManagerMarkdown({
                                         {selectedTags.length +
                                             selectedCategories.length +
                                             selectedLevels.length +
+                                            selectedReviewRatings.length +
                                             selectedPartsOfSpeech.length}
                                     </span>
                                 )}{' '}
@@ -1625,6 +1655,62 @@ export default function WordManagerMarkdown({
                             </div>
 
                             {/* 鍒嗙被杩囨护 */}
+                            <div style={{ marginBottom: 20 }}>
+                                <div
+                                    style={{
+                                        fontSize: '15px',
+                                        fontWeight: '600',
+                                        marginBottom: 10,
+                                        color: 'var(--text-muted)',
+                                    }}>
+                                    复习程度筛选
+                                </div>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: 8,
+                                    }}>
+                                    {REVIEW_RATING_OPTIONS.map((rating) => (
+                                        <button
+                                            key={rating}
+                                            aria-pressed={selectedReviewRatings.includes(
+                                                rating,
+                                            )}
+                                            onClick={() =>
+                                                handleReviewRatingToggle(rating)
+                                            }
+                                            style={{
+                                                padding: '8px 16px',
+                                                fontSize: '14px',
+                                                backgroundColor:
+                                                    selectedReviewRatings.includes(
+                                                        rating,
+                                                    )
+                                                        ? 'var(--la-accent)'
+                                                        : 'var(--la-surface-subtle)',
+                                                color: selectedReviewRatings.includes(
+                                                    rating,
+                                                )
+                                                    ? 'var(--text-on-accent)'
+                                                    : 'var(--la-text-strong)',
+                                                border: 'none',
+                                                borderRadius: 'var(--la-radius-sm)',
+                                                cursor: 'pointer',
+                                                fontWeight: '500',
+                                                transition:
+                                                    'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                            }}
+                                            type="button">
+                                            {rating}
+                                            {selectedReviewRatings.includes(
+                                                rating,
+                                            ) && <Check size={14} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             {allCategories.length > 0 && (
                                 <div style={{ marginBottom: 20 }}>
                                     <div
@@ -1856,6 +1942,7 @@ export default function WordManagerMarkdown({
                             selectedTags.length > 0 ||
                             selectedCategories.length > 0 ||
                             selectedLevels.length > 0 ||
+                            selectedReviewRatings.length > 0 ||
                             selectedPartsOfSpeech.length > 0) && (
                             <span
                                 style={{
@@ -1871,6 +1958,10 @@ export default function WordManagerMarkdown({
                                     ` | 分类: ${selectedCategories.join(', ')}`}
                                 {selectedLevels.length > 0 &&
                                     ` | 等级: ${selectedLevels.join(', ')}`}
+                                {selectedReviewRatings.length > 0 &&
+                                    ` | 复习程度: ${selectedReviewRatings.join(
+                                        ', ',
+                                    )}`}
                                 {selectedPartsOfSpeech.length > 0 &&
                                     ` | 词性: ${selectedPartsOfSpeech.join(
                                         ', ',

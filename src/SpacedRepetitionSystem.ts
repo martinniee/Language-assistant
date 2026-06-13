@@ -1,7 +1,7 @@
 // 间隔重复学习系统 (Spaced Repetition System)
 // 基于Anki的SM2算法实现
 
-import { Word, WordHelper } from './MarkdownWordStorage';
+import { Word, WordHelper, type SrsReviewRating } from './MarkdownWordStorage';
 import { formatTimestamp } from './utils/date';
 
 export enum ReviewResult {
@@ -14,6 +14,26 @@ export enum ReviewResult {
 export interface ReviewResponse {
     result: ReviewResult;
     reviewTime?: number; // 复习用时(秒)
+}
+
+/**
+ * 将间隔复习按钮枚举转换为可读的最近复习程度，用于单词管理筛选。
+ */
+export function getReviewResultRating(
+    result: ReviewResult,
+): SrsReviewRating {
+    switch (result) {
+        case ReviewResult.AGAIN:
+            return '陌生';
+        case ReviewResult.HARD:
+            return '模糊';
+        case ReviewResult.GOOD:
+            return '熟悉';
+        case ReviewResult.EASY:
+            return '简单';
+        default:
+            return '陌生';
+    }
 }
 
 export interface SRSConfig {
@@ -250,6 +270,9 @@ export class SRSAlgorithm {
                 srsLevel: calculation.newSrsLevel,
                 nextReviewDate: formatTimestamp(calculation.nextReviewDate),
                 lastReviewDate: now,
+                lastReviewAt: now,
+                lastReviewResult: response.result,
+                lastReviewRating: getReviewResultRating(response.result),
                 reviewCount: WordHelper.getReviewCount(word) + 1,
                 correctCount:
                     WordHelper.getCorrectCount(word) +
