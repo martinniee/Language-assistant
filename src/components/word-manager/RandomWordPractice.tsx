@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
     CheckCircle2,
     Eye,
@@ -13,13 +13,23 @@ import { WordHelper } from '../../MarkdownWordStorage';
 import { getWordId } from '../../utils/wordManager';
 import { RichText } from '../common';
 
-type RandomPracticeRating = 'known' | 'unsure';
+export type RandomPracticeRating = 'known' | 'unsure';
 
 interface RandomWordPracticeProps {
     app: App;
     markdownSourcePath: string;
     words: Word[];
     onOpenDetail: (word: Word) => void;
+    sampleCount: number;
+    randomWords: Word[];
+    revealedIds: Set<string>;
+    ratings: Partial<Record<string, RandomPracticeRating>>;
+    onSampleCountChange: React.Dispatch<React.SetStateAction<number>>;
+    onRandomWordsChange: React.Dispatch<React.SetStateAction<Word[]>>;
+    onRevealedIdsChange: React.Dispatch<React.SetStateAction<Set<string>>>;
+    onRatingsChange: React.Dispatch<
+        React.SetStateAction<Partial<Record<string, RandomPracticeRating>>>
+    >;
 }
 
 /**
@@ -85,44 +95,87 @@ export default function RandomWordPractice({
     markdownSourcePath,
     words,
     onOpenDetail,
+    sampleCount,
+    randomWords,
+    revealedIds,
+    ratings,
+    onSampleCountChange,
+    onRandomWordsChange,
+    onRevealedIdsChange,
+    onRatingsChange,
 }: RandomWordPracticeProps): React.ReactElement {
-    const defaultCount = Math.min(5, Math.max(words.length, 1));
-    const [sampleCount, setSampleCount] = useState(defaultCount);
-    const [randomWords, setRandomWords] = useState<Word[]>([]);
-    const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
-    const [ratings, setRatings] = useState<
-        Partial<Record<string, RandomPracticeRating>>
-    >({});
-
     const maxSampleCount = words.length;
     const safeSampleCount = clampSampleCount(sampleCount, maxSampleCount);
+    const displayedRandomWords = useMemo(() => {
+        const latestWordsById = new Map<string, Word>();
+
+        words.forEach((word) => {
+            latestWordsById.set(getWordId(word) || word.name, word);
+        });
+
+        return randomWords
+            .map((word) => latestWordsById.get(getWordId(word) || word.name))
+            .filter((word): word is Word => Boolean(word));
+    }, [randomWords, words]);
+    const displayedWordIds = useMemo(
+        () =>
+            new Set(
+                displayedRandomWords.map((word) => getWordId(word) || word.name),
+            ),
+        [displayedRandomWords],
+    );
     const knownCount = useMemo(
-        () => Object.values(ratings).filter((rating) => rating === 'known').length,
-        [ratings],
+        () =>
+            Object.entries(ratings).filter(
+                ([wordId, rating]) =>
+                    displayedWordIds.has(wordId) && rating === 'known',
+            ).length,
+        [displayedWordIds, ratings],
     );
     const unsureCount = useMemo(
-        () => Object.values(ratings).filter((rating) => rating === 'unsure').length,
-        [ratings],
+        () =>
+            Object.entries(ratings).filter(
+                ([wordId, rating]) =>
+                    displayedWordIds.has(wordId) && rating === 'unsure',
+            ).length,
+        [displayedWordIds, ratings],
     );
 
+    /**
+     * 生成新一轮随机单词，并重置本轮的释义展开状态与自评状态。
+     */
     const handleGenerate = useCallback(() => {
-        const nextCount = clampSampleCount(sampleCount, words.length);
-        setSampleCount(nextCount);
-        setRandomWords(sampleWords(words, nextCount));
-        setRevealedIds(new Set());
-        setRatings({});
-    }, [sampleCount, words]);
+        try {
+            const nextCount = clampSampleCount(sampleCount, words.length);
+            onSampleCountChange(nextCount);
+            onRandomWordsChange(sampleWords(words, nextCount));
+            onRevealedIdsChange(new Set());
+            onRatingsChange({});
+        } catch (error) {
+            console.error('随机单词抽取失败:', error);
+            onRandomWordsChange([]);
+            onRevealedIdsChange(new Set());
+            onRatingsChange({});
+        }
+    }, [
+        onRandomWordsChange,
+        onRatingsChange,
+        onRevealedIdsChange,
+        onSampleCountChange,
+        sampleCount,
+        words,
+    ]);
 
     const handleCountChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
             const nextValue = Number(event.target.value);
-            setSampleCount(clampSampleCount(nextValue, maxSampleCount));
+            onSampleCountChange(clampSampleCount(nextValue, maxSampleCount));
         },
-        [maxSampleCount],
+        [maxSampleCount, onSampleCountChange],
     );
 
     const toggleReveal = useCallback((wordId: string) => {
-        setRevealedIds((current) => {
+        onRevealedIdsChange((current) => {
             const next = new Set(current);
 
             if (next.has(wordId)) {
@@ -133,16 +186,16 @@ export default function RandomWordPractice({
 
             return next;
         });
-    }, []);
+    }, [onRevealedIdsChange]);
 
     const rateWord = useCallback(
         (wordId: string, rating: RandomPracticeRating) => {
-            setRatings((current) => ({
+            onRatingsChange((current) => ({
                 ...current,
                 [wordId]: rating,
             }));
         },
-        [],
+        [onRatingsChange],
     );
 
     if (words.length === 0) {
@@ -188,21 +241,21 @@ export default function RandomWordPractice({
                 </div>
             </div>
 
-            {randomWords.length > 0 && (
+            {displayedRandomWords.length > 0 && (
                 <div className="la-random-practice-summary" aria-live="polite">
-                    <span>本轮 {randomWords.length} 个</span>
+                    <span>本轮 {displayedRandomWords.length} 个</span>
                     <span>认识 {knownCount}</span>
                     <span>模糊 {unsureCount}</span>
                 </div>
             )}
 
-            {randomWords.length === 0 ? (
+            {displayedRandomWords.length === 0 ? (
                 <div className="la-random-practice-empty">
                     设置数量后点击抽取，开始一次不写入数据的轻量自测。
                 </div>
             ) : (
                 <div className="la-random-practice-list">
-                    {randomWords.map((word, index) => {
+                    {displayedRandomWords.map((word, index) => {
                         const wordId = getWordId(word) || word.name;
                         const isRevealed = revealedIds.has(wordId);
                         const rating = ratings[wordId];

@@ -37,6 +37,7 @@ import {
     WordCard,
     WordDetailOutline,
 } from './components/word-manager';
+import type { RandomPracticeRating } from './components/word-manager/RandomWordPractice';
 import { MarkdownFormatField, RichText } from './components/common';
 import { parseTimestamp } from './utils/date';
 
@@ -82,6 +83,16 @@ export default function WordManagerMarkdown({
 }: WordManagerProps) {
     const [showAdd, setShowAdd] = useState(false);
     const [showRandomPractice, setShowRandomPractice] = useState(false);
+    const [randomSampleCount, setRandomSampleCount] = useState(() =>
+        Math.min(5, Math.max(words.length, 1)),
+    );
+    const [randomWords, setRandomWords] = useState<Word[]>([]);
+    const [randomRevealedIds, setRandomRevealedIds] = useState<Set<string>>(
+        () => new Set(),
+    );
+    const [randomRatings, setRandomRatings] = useState<
+        Partial<Record<string, RandomPracticeRating>>
+    >({});
     const [editTarget, setEditTarget] = useState<Word | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [enableFullHighlight, setEnableFullHighlight] = useState(false);
@@ -1294,6 +1305,14 @@ export default function WordManagerMarkdown({
                             app={app}
                             markdownSourcePath={markdownSourcePath}
                             onOpenDetail={handleOpenRandomWordDetail}
+                            onRandomWordsChange={setRandomWords}
+                            onRatingsChange={setRandomRatings}
+                            onRevealedIdsChange={setRandomRevealedIds}
+                            onSampleCountChange={setRandomSampleCount}
+                            randomWords={randomWords}
+                            ratings={randomRatings}
+                            revealedIds={randomRevealedIds}
+                            sampleCount={randomSampleCount}
                             words={words}
                         />
                     )}
