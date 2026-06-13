@@ -519,6 +519,28 @@ export default function WordManagerMarkdown({
         setShowAdd(true);
     }, []);
 
+    /**
+     * 搜索无结果时打开新增表单，并把当前搜索词预填为单词名称。
+     */
+    const handleAddFromSearch = useCallback(() => {
+        try {
+            const wordName = searchTerm.trim();
+            if (!wordName) return;
+
+            setEditTarget(null);
+            setErrorMessage('');
+            setNewTagInput('');
+            setForm({
+                ...createEmptyWord(),
+                name: wordName,
+            });
+            setShowAdd(true);
+        } catch (error) {
+            console.error('从搜索结果创建单词失败:', error);
+            setErrorMessage('打开添加单词表单失败，请重试');
+        }
+    }, [searchTerm]);
+
     // 鏍囩鍜屽垎绫昏繃婊ゅ鐞嗗嚱鏁?
     const handleTagToggle = useCallback((tag: string) => {
         setSelectedTags((prev) =>
@@ -2007,13 +2029,46 @@ export default function WordManagerMarkdown({
                         }`}>
                         {paginatedWords.length === 0 ? (
                             <div className="la-word-empty-state">
-                                {sortedWords.length === 0
-                                    ? searchTerm ||
-                                      selectedTags.length > 0 ||
-                                      selectedCategories.length > 0
-                                        ? '没有找到匹配的单词'
-                                        : '暂无单词，点击上方按钮添加'
-                                    : '没有更多单词了，请返回上一页'}
+                                <div>
+                                    {sortedWords.length === 0
+                                        ? searchTerm ||
+                                          selectedTags.length > 0 ||
+                                          selectedCategories.length > 0
+                                            ? '没有找到匹配的单词'
+                                            : '暂无单词，点击上方按钮添加'
+                                        : '没有更多单词了，请返回上一页'}
+                                </div>
+                                {sortedWords.length === 0 &&
+                                    searchTerm.trim() && (
+                                        <button
+                                            type="button"
+                                            aria-label={`添加 ${searchTerm.trim()}`}
+                                            onClick={handleAddFromSearch}
+                                            style={{
+                                                marginTop: '14px',
+                                                padding: '10px 16px',
+                                                border: 'none',
+                                                borderRadius:
+                                                    'var(--la-radius-sm)',
+                                                backgroundColor:
+                                                    'var(--la-accent)',
+                                                color: 'white',
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '6px',
+                                                fontSize: '15px',
+                                                fontWeight: '600',
+                                                fontFamily: 'var(--la-font)',
+                                            }}>
+                                            <Plus
+                                                size={16}
+                                                aria-hidden="true"
+                                            />
+                                            添加“{searchTerm.trim()}”
+                                        </button>
+                                    )}
                             </div>
                         ) : (
                             paginatedWords.map((word) => (
