@@ -20,6 +20,10 @@ type ColorDraft = {
     outerStart: number;
     outerEnd: number;
 };
+type TextRange = {
+    start: number;
+    end: number;
+};
 
 interface MarkdownFormatFieldProps {
     value: string;
@@ -37,6 +41,39 @@ const COLORS: MarkdownColor[] = [
     { label: '蓝', value: '#0000ff' },
     { label: '绿', value: '#008000' },
 ];
+
+const WORD_CHARACTER_PATTERN = /[\p{L}\p{N}_'\u2019-]/u;
+
+/**
+ * 判断字符是否属于可被格式化按钮自动识别的词段字符。
+ */
+function isWordCharacter(character: string): boolean {
+    return WORD_CHARACTER_PATTERN.test(character);
+}
+
+/**
+ * 无选区时，从光标位置向两侧扩展当前词段，便于直接加粗或取消加粗光标所在单词。
+ */
+function getMarkdownMarkerTargetRange(
+    value: string,
+    start: number,
+    end: number,
+): TextRange {
+    if (start !== end) return { start, end };
+
+    let nextStart = start;
+    let nextEnd = end;
+
+    while (nextStart > 0 && isWordCharacter(value[nextStart - 1])) {
+        nextStart -= 1;
+    }
+
+    while (nextEnd < value.length && isWordCharacter(value[nextEnd])) {
+        nextEnd += 1;
+    }
+
+    return { start: nextStart, end: nextEnd };
+}
 
 /**
  * 判断选中的内容或选区外侧是否已带有指定 Markdown 标记，并返回切换后的文本与选区。
@@ -297,7 +334,17 @@ export default function MarkdownFormatField({
         (marker: string) => {
             try {
                 const { start, end } = getSelectionRange();
-                const result = toggleMarkdownMarker(value, start, end, marker);
+                const targetRange = getMarkdownMarkerTargetRange(
+                    value,
+                    start,
+                    end,
+                );
+                const result = toggleMarkdownMarker(
+                    value,
+                    targetRange.start,
+                    targetRange.end,
+                    marker,
+                );
                 onChange(result.nextValue);
                 updateSelection(controlRef.current, result.nextStart, result.nextEnd);
             } catch (error) {
