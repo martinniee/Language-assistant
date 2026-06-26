@@ -6,7 +6,8 @@
     "scripts": {
         "build-app": "node esbuild.config.mjs",
         "package-plugin": "node scripts/package-plugin.mjs",
-        "build-release": "npm run build-app && npm run package-plugin"
+        "build-release": "npm run build-app && npm run package-plugin",
+        "build-migration":"node esbuild.config.mjs && sh sync-to-work-vault.sh"
     },
     "dependencies": {
         "lucide-react": "^0.577.0",
