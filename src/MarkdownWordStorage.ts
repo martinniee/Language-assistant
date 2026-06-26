@@ -326,6 +326,49 @@ export class MarkdownWordStorage {
         this.wordsFilePath = wordsFilePath;
     }
 
+    /**
+     * 判断文本是否为系统自动生成的分类别名，用于识别已失效的孤立引用。
+     */
+    private isGeneratedCategoryAlias(value: string): boolean {
+        return /^c\d+(?:_\d+)?$/.test(value);
+    }
+
+    /**
+     * 获取保存时应写入的分类显示文本；已删除映射留下的 c1/c2 类别名会被视为未分类。
+     */
+    private getCategoryForMarkdown(
+        word: Word,
+        categories: Record<string, string>,
+    ): string {
+        const visibleCategory = (word.category || '').trim();
+        const itemMetaCategory = (word.itemMeta.category || '').trim();
+
+        if (
+            visibleCategory &&
+            this.isGeneratedCategoryAlias(visibleCategory) &&
+            !categories[visibleCategory]
+        ) {
+            return '';
+        }
+
+        if (visibleCategory) {
+            return visibleCategory;
+        }
+
+        if (itemMetaCategory && categories[itemMetaCategory]) {
+            return categories[itemMetaCategory];
+        }
+
+        if (
+            itemMetaCategory &&
+            this.isGeneratedCategoryAlias(itemMetaCategory)
+        ) {
+            return '';
+        }
+
+        return itemMetaCategory;
+    }
+
     // 生成 UUID
     generateId(): string {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
@@ -657,7 +700,10 @@ export class MarkdownWordStorage {
             const wordWithData = {
                 ...word,
                 tags: WordHelper.getTags(word),
-                category: WordHelper.getCategory(word),
+                category: this.getCategoryForMarkdown(
+                    word,
+                    globalMetaManager.getConfig().categories,
+                ),
                 level: WordHelper.getLevel(word),
                 partsOfSpeech: word.partsOfSpeech,
             };

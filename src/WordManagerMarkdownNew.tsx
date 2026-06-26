@@ -1,8 +1,10 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
+import { Notice } from 'obsidian';
 import { Word, WordHelper, type SrsReviewRating } from './MarkdownWordStorage';
 import {
     Plus,
     Search,
+    Copy,
     Trash2,
     Edit2,
     ChevronLeft,
@@ -119,6 +121,36 @@ export default function WordManagerMarkdown({
         useState<DefinitionDropTarget | null>(null);
     const [exampleDropTarget, setExampleDropTarget] =
         useState<ExampleDropTarget | null>(null);
+
+    /**
+     * 将当前详情页单词文本写入系统剪贴板，并在成功或失败时给出明确反馈。
+     */
+    const handleCopyCurrentWord = useCallback(async () => {
+        const wordText = currentWord?.name.trim();
+
+        if (!wordText) {
+            new Notice('没有可复制的单词文本');
+            return;
+        }
+
+        try {
+            const activeWindow = rootRef.current?.ownerDocument.defaultView;
+            const clipboard = activeWindow?.navigator.clipboard;
+
+            if (!clipboard?.writeText) {
+                throw new Error('当前环境不支持剪贴板写入');
+            }
+
+            await clipboard.writeText(wordText);
+            new Notice(`已复制单词: ${wordText}`);
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+
+            console.error('复制单词失败:', error);
+            new Notice(`复制单词失败: ${errorMessage}`);
+        }
+    }, [currentWord]);
 
     /**
      * 获取当前插件内容区的滚动容器，列表和详情共用该容器。
@@ -2314,9 +2346,20 @@ export default function WordManagerMarkdown({
 
                     <div
                         className="la-word-detail">
-                        <h1 className="la-word-detail-title">
-                            {currentWord.name}
-                        </h1>
+                        <div className="la-word-detail-title-row">
+                            <h1 className="la-word-detail-title">
+                                {currentWord.name}
+                            </h1>
+                            <button
+                                type="button"
+                                className="la-icon-button la-word-copy-button"
+                                onClick={handleCopyCurrentWord}
+                                aria-label="复制单词文本"
+                                title="复制单词文本"
+                                data-tooltip-position="top">
+                                <Copy size={18} />
+                            </button>
+                        </div>
                         <div
                             className="la-word-detail-meta">
                             <div>

@@ -1,6 +1,7 @@
 // 数据统计组件 - iOS 风格
 import React, { useMemo } from 'react';
 import { Word, WordHelper } from './MarkdownWordStorage';
+import { GlobalMetaManager } from './GlobalMetaManager';
 import { defaultSRS } from './SpacedRepetitionSystem';
 import {
     AlarmClock,
@@ -20,13 +21,47 @@ interface DataStatisticsProps {
     words: Word[];
 }
 
+/**
+ * 将单词分类解析为用户可见文本，解析失败时保留原始分类文本。
+ */
+const getCategoryDisplayName = (
+    word: Word,
+    globalMetaManager: GlobalMetaManager,
+): string => {
+    try {
+        const categories = globalMetaManager.getConfig().categories;
+        const rawCategory = WordHelper.getCategory(word).trim();
+
+        if (!rawCategory) {
+            return '未分类';
+        }
+
+        if (
+            /^c\d+(?:_\d+)?$/.test(rawCategory) &&
+            !categories[rawCategory]
+        ) {
+            return '未分类';
+        }
+
+        const resolvedCategory = globalMetaManager
+            .resolveCategory(rawCategory)
+            .trim();
+
+        return resolvedCategory || rawCategory;
+    } catch (error) {
+        console.error('解析分类显示文本失败:', error);
+        return WordHelper.getCategory(word).trim() || '未分类';
+    }
+};
+
 const DataStatistics: React.FC<DataStatisticsProps> = ({ words }) => {
     const stats = useMemo(() => {
+        const globalMetaManager = GlobalMetaManager.getInstance();
         const srsStats = defaultSRS.getStudyStats(words);
 
         // 计算分类统计
         const categoryStats = words.reduce((acc, word) => {
-            const category = word.category || '未分类';
+            const category = getCategoryDisplayName(word, globalMetaManager);
             acc[category] = (acc[category] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);

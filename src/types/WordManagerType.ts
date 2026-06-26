@@ -24,6 +24,6 @@ export interface MainAppProps {
     onAdd: (word: Word) => void;
     onEdit: (word: Word, originalWord?: Word, silent?: boolean) => void;
     onDelete: (name: string) => void;
-    onBatchUpdate?: (words: Word[]) => void; // 新增批量更新方法
+    onBatchUpdate?: (words: Word[]) => Promise<void> | void; // 新增批量更新方法
     onJumpToSource: (wordId: string) => void;
 }

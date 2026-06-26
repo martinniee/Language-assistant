@@ -1,6 +1,8 @@
 // 全局元数据配置组件
 import React, { useState, useEffect } from 'react';
+import { Notice } from 'obsidian';
 import { GlobalMetaManager, GlobalMetaConfig } from './GlobalMetaManager';
+import type { Word } from './MarkdownWordStorage';
 import { formatTimestampForDisplay } from './utils/date';
 import {
     AlertTriangle,
@@ -20,8 +22,8 @@ import {
 } from 'lucide-react';
 
 interface GlobalMetaConfigProps {
-    words?: any[]; // 可选的单词数组用于统计和管理
-    onWordsUpdate?: (words: any[]) => void; // 单词更新回调
+    words?: Word[]; // 可选的单词数组用于统计和管理
+    onWordsUpdate?: (words: Word[]) => Promise<void> | void; // 单词更新回调
 }
 
 const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
@@ -46,6 +48,29 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
     const [usageStats, setUsageStats] = useState<any>(null);
 
     const globalMetaManager = GlobalMetaManager.getInstance();
+
+    /**
+     * 保存当前全局元数据配置；即使单词内容没有变化，也会重写 words.md 中的 global-meta。
+     */
+    const persistGlobalMetaConfig = async (
+        nextWords: Word[] = words,
+    ): Promise<boolean> => {
+        if (!onWordsUpdate) {
+            return true;
+        }
+
+        try {
+            await Promise.resolve(onWordsUpdate(nextWords));
+            return true;
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
+
+            console.error('保存全局元数据配置失败:', error);
+            new Notice(`保存全局元数据配置失败: ${errorMessage}`);
+            return false;
+        }
+    };
 
     useEffect(() => {
         loadConfig();
@@ -126,7 +151,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
         setEditingCategory(null);
         loadConfig();
     };
-    const handleDeleteTag = (
+    const handleDeleteTag = async (
         alias: string,
         _removeFromWords: boolean = false,
     ) => {
@@ -153,13 +178,15 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
 
             if (choice) {
                 // 用户选择移除引用
-                if (onWordsUpdate) {
-                    const updatedWords =
-                        globalMetaManager.removeTagAliasFromWords(alias, words);
-                    onWordsUpdate(updatedWords);
-                }
                 globalMetaManager.deleteTagMapping(alias);
-                loadConfig();
+                const updatedWords = globalMetaManager.removeTagAliasFromWords(
+                    alias,
+                    words,
+                );
+
+                if (await persistGlobalMetaConfig(updatedWords)) {
+                    loadConfig();
+                }
             }
         } else {
             // 未使用的标签直接删除
@@ -167,11 +194,13 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                 confirm(`确定要删除未使用的标签 "${tagName}" (${alias}) 吗？`)
             ) {
                 globalMetaManager.deleteTagMapping(alias);
-                loadConfig();
+                if (await persistGlobalMetaConfig()) {
+                    loadConfig();
+                }
             }
         }
     };
-    const handleDeleteCategory = (
+    const handleDeleteCategory = async (
         alias: string,
         _removeFromWords: boolean = false,
     ) => {
@@ -198,16 +227,16 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
 
             if (choice) {
                 // 用户选择移除引用
-                if (onWordsUpdate) {
-                    const updatedWords =
-                        globalMetaManager.removeCategoryAliasFromWords(
-                            alias,
-                            words,
-                        );
-                    onWordsUpdate(updatedWords);
-                }
                 globalMetaManager.deleteCategoryMapping(alias);
-                loadConfig();
+                const updatedWords =
+                    globalMetaManager.removeCategoryAliasFromWords(
+                        alias,
+                        words,
+                    );
+
+                if (await persistGlobalMetaConfig(updatedWords)) {
+                    loadConfig();
+                }
             }
         } else {
             // 未使用的分类直接删除
@@ -217,7 +246,9 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                 )
             ) {
                 globalMetaManager.deleteCategoryMapping(alias);
-                loadConfig();
+                if (await persistGlobalMetaConfig()) {
+                    loadConfig();
+                }
             }
         }
     };
@@ -1633,7 +1664,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 flexWrap: 'wrap',
                             }}>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     const unusedTags = Object.entries(
                                         config.tags,
                                     ).filter(
@@ -1663,11 +1694,13 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                             );
                                         });
 
-                                        // 立即保存配置更改 (标签删除不需要更新单词数据，因为它们本来就未使用)
-                                        loadConfig();
-                                        console.log(
-                                            `已删除 ${unusedTags.length} 个未使用的标签`,
-                                        );
+                                        if (await persistGlobalMetaConfig()) {
+                                            // 立即保存配置更改 (标签删除不需要更新单词数据，因为它们本来就未使用)
+                                            loadConfig();
+                                            console.log(
+                                                `已删除 ${unusedTags.length} 个未使用的标签`,
+                                            );
+                                        }
                                     }
                                 }}
                                 style={{
@@ -1687,7 +1720,7 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                 清理未使用标签
                             </button>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     const unusedCategories = Object.entries(
                                         config.categories,
                                     ).filter(
@@ -1717,11 +1750,13 @@ const GlobalMetaConfigComponent: React.FC<GlobalMetaConfigProps> = ({
                                             );
                                         });
 
-                                        // 立即保存配置更改 (分类删除不需要更新单词数据，因为它们本来就未使用)
-                                        loadConfig();
-                                        console.log(
-                                            `已删除 ${unusedCategories.length} 个未使用的分类`,
-                                        );
+                                        if (await persistGlobalMetaConfig()) {
+                                            // 立即保存配置更改 (分类删除不需要更新单词数据，因为它们本来就未使用)
+                                            loadConfig();
+                                            console.log(
+                                                `已删除 ${unusedCategories.length} 个未使用的分类`,
+                                            );
+                                        }
                                     }
                                 }}
                                 style={{
